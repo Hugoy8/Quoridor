@@ -41,7 +41,9 @@ class Fence:
     
     def set_build(self, build):
         self.__build = build
-        
+    
+    def buildFence(self):
+        self.__build = 1    
     
     def displayFence(self):
         if self.__build == 0:
@@ -62,8 +64,12 @@ class Pillar:
     
     def set_build(self, build):
         self.__build = build
-        
     
+        
+    def buildPillar(self):
+        self.__build = 1
+    
+        
     def displayPillar(self):
         if self.__build == 0:
             return "PF"
@@ -227,17 +233,15 @@ class Board:
         case.set_player(self.current_player.get_player())
         self.current_player.move(position[0],position[1]+2)
         
+    
+    def buildFence(self,x,y):
+        pillar = self.board[x][y]
+        pillar.buildPillar()
+        fence = self.board[x-1][y]
+        fence.buildFence()
+        fence = self.board[x+1][y]
+        fence.buildFence()
         
-        
-        
-        
-        
-
-
-
-
-
-
 
 jeu = Board(7)
 jeu.start(4)
@@ -248,4 +252,5 @@ jeu.refreshCurrentPlayer(4)
 jeu.moveRight()
 jeu.refreshCurrentPlayer(4)
 jeu.moveLeft()
+jeu.buildFence(1,1)
 jeu.displayBoard()
