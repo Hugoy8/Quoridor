@@ -100,7 +100,7 @@ class Player:
         
 class Board:
     
-    def __init__(self, size):
+    def __init__(self, size, nb_players):
         
         self.display = Tk()
         largeur_ecran= self.display.winfo_screenwidth()
@@ -109,8 +109,10 @@ class Board:
         self.display.geometry("900x510")
         
         self.__size = size
+        self.__nb_players = nb_players
         self.players = []
         self.board = []
+        self.fence_orientation = "vertical"
         for i in range(self.__size*2-1):
             if i%2 == 0 :
                 tab2 = []
@@ -212,8 +214,7 @@ class Board:
         case.set_player(0)
         case = self.board[position[0]+2][position[1]]
         case.set_player(self.current_player.get_player())
-        self.current_player.move(position[0]+2,position[1])
-        
+        self.current_player.move(position[0]+2,position[1])    
         
 
     def moveLeft(self):
@@ -234,23 +235,51 @@ class Board:
         self.current_player.move(position[0],position[1]+2)
         
     
+    def changeFenceOrientation(self):
+        if self.fence_orientation == "vertical":
+            self.fence_orientation = "horizontal"
+        else :
+            self.fence_orientation = "vertical"
+        
+    
+    
+    def isPossibleFence(self,x,y):
+        if self.fence_orientation == "vertical":
+            fence = self.board[x-1][y]
+            if fence.get_build() == 1:
+                return False
+            fence = self.board[x+1][y]
+            if fence.get_build() == 1:
+                return False
+        else :
+            fence = self.board[x][y-1]
+            if fence.get_build() == 1:
+                return False
+            fence = self.board[x][y+1]
+            if fence.get_build() == 1:
+                return False
+        return True
+    
+    
     def buildFence(self,x,y):
         pillar = self.board[x][y]
         pillar.buildPillar()
-        fence = self.board[x-1][y]
-        fence.buildFence()
-        fence = self.board[x+1][y]
-        fence.buildFence()
+        if self.fence_orientation == "vertical":
+            fence = self.board[x-1][y]
+            fence.buildFence()
+            fence = self.board[x+1][y]
+            fence.buildFence()
+        else :
+            fence = self.board[x][y-1]
+            fence.buildFence()
+            fence = self.board[x][y+1]
+            fence.buildFence()
         
 
 jeu = Board(7)
 jeu.start(4)
-jeu.moveDown()
-jeu.refreshCurrentPlayer(4)
-jeu.moveUp()
-jeu.refreshCurrentPlayer(4)
-jeu.moveRight()
-jeu.refreshCurrentPlayer(4)
-jeu.moveLeft()
+print(jeu.isPossibleFence(1,1))
 jeu.buildFence(1,1)
+jeu.changeFenceOrientation()
+print(jeu.isPossibleFence(1,1))
 jeu.displayBoard()
