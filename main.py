@@ -18,15 +18,15 @@ class Case:
     
     def displayPlayer(self):
         if self.__player == 1:
-            return 'Player1'
+            return 'P1'
         elif self.__player == 2:
-            return 'Player2'
+            return 'P2'
         elif self.__player == 3:
-            return 'Player3'
+            return 'P3'
         elif self.__player == 4:
-            return 'Player4'
+            return 'P4'
         else:
-            return 'NoPlayer'
+            return 'NP'
 
 
 class Fence:
@@ -45,9 +45,9 @@ class Fence:
     
     def displayFence(self):
         if self.__build == 0:
-            return False
+            return "FF"
         else : 
-            return True
+            return "FT"
 
         
 class Pillar:
@@ -66,9 +66,9 @@ class Pillar:
     
     def displayPillar(self):
         if self.__build == 0:
-            return False
+            return "PF"
         else : 
-            return True
+            return "PT"
 
         
 class Player:
@@ -103,6 +103,7 @@ class Board:
         self.display.geometry("900x510")
         
         self.__size = size
+        self.players = []
         self.board = []
         for i in range(self.__size*2-1):
             if i%2 == 0 :
@@ -166,45 +167,65 @@ class Board:
         self.display.mainloop()
     
     
-    def start(self):
+    def start(self,nb_players):
         case = self.board[0][self.__size-1]
         case.set_player(1)
-        self.player1 = Player(0,self.__size-1,1)
-        print(self.player1.displayPlace())
+        self.players.append(Player(0,self.__size-1,1))
         case = self.board[-1][self.__size-1]
         case.set_player(2)
-        self.player2 = Player((self.__size-1)*2,self.__size-1,2)
-        print(self.player2.displayPlace())
-        
-    def moveUp(self,x,y,joueur):
-        case = self.board[x][y]
+        self.players.append(Player((self.__size-1)*2,self.__size-1,2))
+        if nb_players == 4 :
+            case = self.board[self.__size-1][0]
+            case.set_player(3)
+            self.players.append(Player(self.__size-1,0,3))
+            case = self.board[self.__size-1][-1]
+            case.set_player(4)
+            self.players.append(Player(self.__size-1,(self.__size-1)*2,4))
+        self.current_player = self.players[0]
+    
+    
+    def refreshCurrentPlayer(self,nb_players) :
+        if self.current_player.get_player() == nb_players :
+            self.current_player = self.players[0]
+        else :
+            self.current_player = self.players[self.current_player.get_player()]
+            
+            
+    def moveUp(self):
+        position = self.current_player.displayPlace()
+        case = self.board[position[0]][position[1]]
         case.set_player(0)
-        case = self.board[x-2][y]
-        case.set_player(joueur)
+        case = self.board[position[0]-2][position[1]]
+        case.set_player(self.current_player.get_player())
+        self.current_player.move(position[0]-2,position[1])
         
         
     def moveDown(self):
-        position = self.player1.displayPlace()
+        position = self.current_player.displayPlace()
         case = self.board[position[0]][position[1]]
         case.set_player(0)
         case = self.board[position[0]+2][position[1]]
-        case.set_player(1)
-        self.player1.move(position[0]+2,position[1])
+        case.set_player(self.current_player.get_player())
+        self.current_player.move(position[0]+2,position[1])
         
         
 
-    def moveLeft(self,x,y,joueur):
-        case = self.board[x][y]
+    def moveLeft(self):
+        position = self.current_player.displayPlace()
+        case = self.board[position[0]][position[1]]
         case.set_player(0)
-        case = self.board[x][y-2]
-        case.set_player(joueur)
+        case = self.board[position[0]][position[1]-2]
+        case.set_player(self.current_player.get_player())
+        self.current_player.move(position[0],position[1]-2)
         
         
-    def moveRight(self,x,y,joueur):
-        case = self.board[x][y]
+    def moveRight(self):
+        position = self.current_player.displayPlace()
+        case = self.board[position[0]][position[1]]
         case.set_player(0)
-        case = self.board[x][y+2]
-        case.set_player(joueur)
+        case = self.board[position[0]][position[1]+2]
+        case.set_player(self.current_player.get_player())
+        self.current_player.move(position[0],position[1]+2)
         
         
         
@@ -219,6 +240,12 @@ class Board:
 
 
 jeu = Board(7)
-jeu.start()
+jeu.start(4)
 jeu.moveDown()
+jeu.refreshCurrentPlayer(4)
+jeu.moveUp()
+jeu.refreshCurrentPlayer(4)
+jeu.moveRight()
+jeu.refreshCurrentPlayer(4)
+jeu.moveLeft()
 jeu.displayBoard()
