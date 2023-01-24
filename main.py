@@ -79,8 +79,9 @@ class Pillar:
         
 class Player:
     
-    def __init__(self, x, y, player):
+    def __init__(self, x, y, player, nb_fence):
         self.__player = player
+        self.nb_fence = nb_fence
         self.__x = x
         self.__y = y
     
@@ -91,6 +92,14 @@ class Player:
     def set_player(self, player):
         self.__player = player
     
+    
+    def get_nb_fence(self):
+        return self.__nb_fence
+    
+    
+    def set_fence(self, nb_fence):
+        self.__nb_fence = nb_fence
+    
     def move(self, x, y):
         self.__x = x
         self.__y = y
@@ -100,16 +109,17 @@ class Player:
         
 class Board:
     
-    def __init__(self, size, nb_players):
+    def __init__(self, size, nb_players, nb_fence):
         
-        self.display = Tk()
-        largeur_ecran= self.display.winfo_screenwidth()
-        hauteur_ecran = self.display.winfo_screenheight()
-        self.display.geometry(f"+{(largeur_ecran - 900) // 2}+{(hauteur_ecran - 510) // 2}")
-        self.display.geometry("900x510")
+        # self.display = Tk()
+        # largeur_ecran= self.display.winfo_screenwidth()
+        # hauteur_ecran = self.display.winfo_screenheight()
+        # self.display.geometry(f"+{(largeur_ecran - 900) // 2}+{(hauteur_ecran - 510) // 2}")
+        # self.display.geometry("900x510")
         
         self.__size = size
         self.__nb_players = nb_players
+        self.__nb_fence = nb_fence
         self.players = []
         self.board = []
         self.fence_orientation = "vertical"
@@ -133,8 +143,8 @@ class Board:
     
     
     def displayBoard(self): 
-        self.c = Canvas(self.display, width=900, height=510)
-        self.c.grid(row=self.__size, column=self.__size, padx=5, pady=5)
+        # self.c = Canvas(self.display, width=900, height=510)
+        # self.c.grid(row=self.__size, column=self.__size, padx=5, pady=5)
         tab =[]
         for i in range(self.__size*2-1):
             if i%2 == 0 :
@@ -148,11 +158,11 @@ class Board:
                         case = self.board[i][j]
                         tab2.append(case.displayPlayer())
                         
-                        self.c.create_rectangle(x1, y1, x2, y2, fill='white', outline="black", width=1)
+                        # self.c.create_rectangle(x1, y1, x2, y2, fill='white', outline="black", width=1)
                     else :
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
-                        self.c.create_rectangle(x1+10, y1, x2+5, y2-20, fill='brown', outline="black", width=1)
+                        # self.c.create_rectangle(x1+10, y1, x2+5, y2-20, fill='brown', outline="black", width=1)
                 tab.append(tab2)
             else :
                 tab2 = []
@@ -164,76 +174,51 @@ class Board:
                     if j%2 == 0 :
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
-                        self.c.create_rectangle(x1+10, y1, x2-10, y2, fill='brown', outline="black", width=1)
+                        # self.c.create_rectangle(x1+10, y1, x2-10, y2, fill='brown', outline="black", width=1)
                     else :
                         pillar = self.board[i][j]
                         tab2.append(pillar.displayPillar())
-                        self.c.create_rectangle(x1+15, y1+10, x2-15, y2-15, fill='gray', outline="black", width=1)
+                        # self.c.create_rectangle(x1+15, y1+10, x2-15, y2-15, fill='gray', outline="black", width=1)
                 tab.append(tab2)
         for x in tab :
             print(x)
-        self.display.mainloop()
+        # self.display.mainloop()
     
     
-    def start(self,nb_players):
+    def start(self):
+        nb_fence_each_player = int(self.__nb_fence / self.__nb_players)
+        print(nb_fence_each_player)
         case = self.board[0][self.__size-1]
         case.set_player(1)
-        self.players.append(Player(0,self.__size-1,1))
+        self.players.append(Player(0,self.__size-1,1,nb_fence_each_player))
         case = self.board[-1][self.__size-1]
         case.set_player(2)
-        self.players.append(Player((self.__size-1)*2,self.__size-1,2))
-        if nb_players == 4 :
+        self.players.append(Player((self.__size-1)*2,self.__size-1,2,nb_fence_each_player))
+        if self.__nb_players == 4 :
             case = self.board[self.__size-1][0]
             case.set_player(3)
-            self.players.append(Player(self.__size-1,0,3))
+            self.players.append(Player(self.__size-1,0,3,nb_fence_each_player))
             case = self.board[self.__size-1][-1]
             case.set_player(4)
-            self.players.append(Player(self.__size-1,(self.__size-1)*2,4))
+            self.players.append(Player(self.__size-1,(self.__size-1)*2,4,nb_fence_each_player))
         self.current_player = self.players[0]
     
     
-    def refreshCurrentPlayer(self,nb_players) :
-        if self.current_player.get_player() == nb_players :
+    def refreshCurrentPlayer(self) :
+        if self.current_player.get_player() == self.__nb_players :
             self.current_player = self.players[0]
         else :
             self.current_player = self.players[self.current_player.get_player()]
+    
             
-            
-    def moveUp(self):
+    def move(self,x,y) :
         position = self.current_player.displayPlace()
         case = self.board[position[0]][position[1]]
         case.set_player(0)
-        case = self.board[position[0]-2][position[1]]
+        case = self.board[position[0]+x][position[1]+y]
         case.set_player(self.current_player.get_player())
-        self.current_player.move(position[0]-2,position[1])
-        
-        
-    def moveDown(self):
-        position = self.current_player.displayPlace()
-        case = self.board[position[0]][position[1]]
-        case.set_player(0)
-        case = self.board[position[0]+2][position[1]]
-        case.set_player(self.current_player.get_player())
-        self.current_player.move(position[0]+2,position[1])    
-        
-
-    def moveLeft(self):
-        position = self.current_player.displayPlace()
-        case = self.board[position[0]][position[1]]
-        case.set_player(0)
-        case = self.board[position[0]][position[1]-2]
-        case.set_player(self.current_player.get_player())
-        self.current_player.move(position[0],position[1]-2)
-        
-        
-    def moveRight(self):
-        position = self.current_player.displayPlace()
-        case = self.board[position[0]][position[1]]
-        case.set_player(0)
-        case = self.board[position[0]][position[1]+2]
-        case.set_player(self.current_player.get_player())
-        self.current_player.move(position[0],position[1]+2)
-        
+        self.current_player.move(position[0]+x,position[1]+y)
+                    
     
     def changeFenceOrientation(self):
         if self.fence_orientation == "vertical":
@@ -242,6 +227,12 @@ class Board:
             self.fence_orientation = "vertical"
         
     
+    
+    def playerHasFence(self):
+        nb_fence_current_player  = self.current_players.get_nb_fence()
+        if nb_fence_current_player <= 0 :
+            return False
+        return True
     
     def isPossibleFence(self,x,y):
         if self.fence_orientation == "vertical":
@@ -274,12 +265,28 @@ class Board:
             fence.buildFence()
             fence = self.board[x][y+1]
             fence.buildFence()
+        nb_fence_current_player  = self.current_players.get_nb_fence()
+        self.current_players.set_nb_fence(nb_fence_current_player-1)
+        
+    
+    def victory(self):
+        position = self.current_player.displayPlace()
+        if self.current_player.get_player() == 1 :
+            if position[0] == (self.__size-1)*2 :
+                return True
+        elif self.current_player.get_player() == 2 : 
+            if position[0] == 0 :
+                return True
+        elif self.current_player.get_player() == 3 : 
+            if position[1] == (self.__size-1)*2 :
+                return True
+        elif self.current_player.get_player() == 4 : 
+            if position[1] == 0 :
+                return True
+        return False
+        
         
 
-jeu = Board(7)
-jeu.start(4)
-print(jeu.isPossibleFence(1,1))
-jeu.buildFence(1,1)
-jeu.changeFenceOrientation()
-print(jeu.isPossibleFence(1,1))
+jeu = Board(5,2,20)
+jeu.start()
 jeu.displayBoard()
