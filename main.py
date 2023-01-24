@@ -146,6 +146,7 @@ class Board:
         # self.c = Canvas(self.display, width=900, height=510)
         # self.c.grid(row=self.__size, column=self.__size, padx=5, pady=5)
         tab =[]
+        coucou = 0
         for i in range(self.__size*2-1):
             if i%2 == 0 :
                 tab2 = []
@@ -160,6 +161,7 @@ class Board:
                         
                         # self.c.create_rectangle(x1, y1, x2, y2, fill='white', outline="black", width=1)
                     else :
+                        coucou +=1
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
                         # self.c.create_rectangle(x1+10, y1, x2+5, y2-20, fill='brown', outline="black", width=1)
@@ -172,6 +174,7 @@ class Board:
                     x2 = x1 + 50
                     y2 = y1 + 50
                     if j%2 == 0 :
+                        coucou +=1
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
                         # self.c.create_rectangle(x1+10, y1, x2-10, y2, fill='brown', outline="black", width=1)
@@ -183,6 +186,7 @@ class Board:
         for x in tab :
             print(x)
         # self.display.mainloop()
+        print(coucou/2)
     
     
     def start(self):
@@ -286,7 +290,11 @@ class Board:
         return False
         
         
-
-jeu = Board(5,2,20)
+# Si taille plateau = 5 : max barriere = 20
+# Si taille plateau = 7 : max barriere = 40
+taille = 7
+nb_joueur = 2
+nb_barriere = 20
+jeu = Board(taille, nb_joueur, nb_barriere)
 jeu.start()
 jeu.displayBoard()
