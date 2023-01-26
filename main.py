@@ -186,12 +186,10 @@ class Board:
         for x in tab :
             print(x)
         # self.display.mainloop()
-        print(coucou/2)
     
     
     def start(self):
         nb_fence_each_player = int(self.__nb_fence / self.__nb_players)
-        print(nb_fence_each_player)
         case = self.board[0][self.__size-1]
         case.set_player(1)
         self.players.append(Player(0,self.__size-1,1,nb_fence_each_player))
@@ -289,7 +287,103 @@ class Board:
                 return True
         return False
         
+    
+    def alreadyChecked(self, x, y):
+        if self.way_find == True :
+            return False
+        for i in self.list_case_check:
+                    if i[0] == x and i[1] == y:
+                        return True
+        return False
         
+    def isPossibleWay(self, x, y):
+        self.list_case_check.append([x, y])
+        if x == (self.__size-1)*2:
+            return True
+        if x == 0:
+            if y == 0:
+                if self.alreadyChecked(0, 2) == False:
+                    return self.isPossibleWay(0, 2)
+                        
+                if self.alreadyChecked(2, 0) == False:
+                    return self.isPossibleWay(2, 0)
+                        
+            elif y==(self.__size-1)*2:
+                if self.alreadyChecked(0, y-2) == False:
+                    return self.isPossibleWay(0, y-2)
+                        
+                if self.alreadyChecked(2, y) == False:
+                    return self.isPossibleWay(2, y)
+                        
+            else:
+                
+                if self.alreadyChecked(x, y-2) == False:
+                    return self.isPossibleWay(x, y-2) 
+                        
+                if self.alreadyChecked(x, y+2) == False:
+                    return self.isPossibleWay(x, y+2) 
+                        
+                if self.alreadyChecked(x+2, y) == False:
+                    return self.isPossibleWay(x+2, y) 
+                        
+        elif y==0:
+            if x == (self.__size-1)*2:
+                if self.alreadyChecked(x-2, y) == False:
+                    return self.isPossibleWay(x-2, y)
+                        
+                if self.alreadyChecked(x, y+2) == False:
+                    return self.isPossibleWay(x, y+2) 
+                        
+            else :
+                if self.alreadyChecked(x-2, y) == False:
+                    return self.isPossibleWay(x-2, y) 
+                        
+                if self.alreadyChecked(x+2, y) == False:
+                    return self.isPossibleWay(x+2, y) 
+                        
+                if self.alreadyChecked(x, y+2) == False:
+                    return self.isPossibleWay(x, y+2) 
+                        
+        elif y==(self.__size-1)*2:
+            if x == (self.__size-1)*2:
+                if self.alreadyChecked(x-2, y) == False:
+                    return self.isPossibleWay(x-2, y) 
+                        
+                if self.alreadyChecked(x, y-2) == False:
+                    return self.isPossibleWay(x, y-2) 
+                        
+            else:
+                if self.alreadyChecked(x-2, y) == False:
+                    return self.isPossibleWay(x-2, y) 
+                        
+                if self.alreadyChecked(x+2, y) == False:
+                    return self.isPossibleWay(x+2, y) 
+                        
+                if self.alreadyChecked(x, y-2) == False:
+                    return self.isPossibleWay(x, y-2) 
+                        
+        else:
+            if self.alreadyChecked(x-2, y) == False:
+                return self.isPossibleWay(x-2, y) 
+                        
+            if self.alreadyChecked(x+2, y) == False:
+                return self.isPossibleWay(x+2, y) 
+                        
+            if self.alreadyChecked(x, y-2) == False:
+                return self.isPossibleWay(x, y-2) 
+                        
+            if self.alreadyChecked(x, y+2) == False:
+                return self.isPossibleWay(x, y+2) 
+                        
+        
+    
+    def seachWay(self):
+        self.way_find = False
+        self.list_case_check = []
+        print(self.isPossibleWay(0,6)) 
+        
+        
+            
 # Si taille plateau = 5 : max barriere = 20
 # Si taille plateau = 7 : max barriere = 40
 taille = 7
@@ -298,3 +392,4 @@ nb_barriere = 20
 jeu = Board(taille, nb_joueur, nb_barriere)
 jeu.start()
 jeu.displayBoard()
+jeu.seachWay()
