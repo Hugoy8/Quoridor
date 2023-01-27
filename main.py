@@ -416,9 +416,8 @@ class Board:
         
             
 # Si taille plateau = 5 : max barriere = 20
-# Si taille plateau = 7 : max barriere = 40
-taille = 5
-nb_joueur = 4
+taille = 11
+nb_joueur = 2
 nb_barriere = 20
 jeu = Board(taille, nb_joueur, nb_barriere)
 jeu.start()
