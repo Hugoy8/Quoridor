@@ -25,7 +25,7 @@ class Case:
             return '🟢'
         elif self.__player == 4:
             return '🟡'
-        else:
+        elif self.__player == 0:
             return '⬜️'
 
 
@@ -47,7 +47,7 @@ class Fence:
     
     def displayFence(self):
         if self.__build == 0:
-            return "FF"
+            return "--"
         else : 
             return "🚧"
 
@@ -72,7 +72,7 @@ class Pillar:
         
     def displayPillar(self):
         if self.__build == 0:
-            return "PF"
+            return "⚪️"
         else : 
             return "⚫️"
 
@@ -138,7 +138,6 @@ class Board:
     
     def displayBoard(self): 
         tab =[]
-        coucou = 0
         for i in range(self.__size*2-1):
             if i%2 == 0 :
                 tab2 = []
@@ -151,7 +150,6 @@ class Board:
                         case = self.board[i][j]
                         tab2.append(case.displayPlayer())
                     else :
-                        coucou +=1
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
                 tab.append(tab2)
@@ -163,7 +161,6 @@ class Board:
                     x2 = x1 + 50
                     y2 = y1 + 50
                     if j%2 == 0 :
-                        coucou +=1
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
                     else :
@@ -257,6 +254,21 @@ class Board:
         nb_fence_current_player  = self.current_player.get_nb_fence()
         self.current_player.set_fence(nb_fence_current_player-1)
         
+    def deBuildFence(self,x,y):
+        pillar = self.board[x][y]
+        pillar.set_build(0)
+        if self.fence_orientation == "vertical":
+            fence = self.board[x-1][y]
+            fence.set_build(0)
+            fence = self.board[x+1][y]
+            fence.set_build(0)
+        else :
+            fence = self.board[x][y-1]
+            fence.set_build(0)
+            fence = self.board[x][y+1]
+            fence.set_build(0)
+        nb_fence_current_player  = self.current_player.get_nb_fence()
+        self.current_player.set_fence(nb_fence_current_player+1)
     
     def victory(self):
         position = self.current_player.displayPlace()
@@ -418,12 +430,119 @@ class Board:
             if jeu.seachPossibleWayForPlayer(i+1) == False :
                 return False
         return True
-                
-# Si taille plateau = 5 : max barriere = 20
-taille = 5
-nb_joueur = 4
-nb_barriere = 20
+    
+    def isPossibleMove(self, x, y):
+        position = self.current_player.displayPlace()
+        if position[0]==0:
+            if x ==-2:
+                return False
+        if position[1]==0:
+            if y==-2:
+                return False
+        if position[0]==(self.__size-1)*2:
+            if x==2:
+                return False
+        if position[1]==(self.__size-1)*2:
+            if y==2:
+                return False
+        if self.thereIsFence(position[0]+int(x/2), position[1]+int(y/2)) == True :
+            return False
+        
+        return True   
+    
+    def game(self) :
+        jeu.start()
+        jeu.displayBoard()
+        while self.victory() == False : 
+            value = int(input("tape 1 pour placer barriere sinon 0 pour déplacement:"))
+            if value == 1  and self.playerHasFence() == True:
+                print("donne les co du pillier ou placer barriere")
+                x_co_fence = int(input("x du pillier"))
+                y_co_fence = int(input("y du pillier"))
+                orientation = int(input("orientation barriere 0= vertical sinon placer en horizontal:"))
+                if orientation == 0 :
+                    self.fence_orientation = "vertical"
+                else :
+                    self.fence_orientation = "horizontal"
+                print(self.isPossibleFence(x_co_fence,y_co_fence))
+                if self.isPossibleFence(x_co_fence,y_co_fence) == True :
+                    self.buildFence(x_co_fence,y_co_fence)
+                else :
+                    x_co_fence = int(input("x du pillier"))
+                    y_co_fence = int(input("y du pillier"))
+                    orientation = int(input("orientation barriere 0=vertical sinon horizontal"))
+                    if orientation == 0 :
+                        self.fence_orientation = "vertical"
+                    else :
+                        self.fence_orientation = "horizontal"
+                if self.fenceNotCloseAccesGoal()==False :
+                    self.deBuildFence(x_co_fence,y_co_fence)
+                    print("tu bloques le chemin idiot")
+            else :
+                if value == 1  and self.playerHasFence() == False:
+                    print("ta plus de barriere chacal")
+                can_move = False
+                position = self.current_player.displayPlace()
+                while can_move == False :
+                    move = int(input("haut = 1, droite = 2, bas = 3, gauche = 4 :"))
+                    if move == 1:
+                        if self.isPossibleMove(-2,0) == True :
+                            if self.board[position[0]-2][position[1]].get_player() !=0:
+                                if position[0] == 2 :
+                                    print("case occupée")
+                                else:
+                                    self.move(-4,0)
+                                    can_move = True
+                            else:
+                                self.move(-2,0)
+                                can_move = True
+                    elif move == 2:
+                        if self.isPossibleMove(0,2) == True :
+                            if self.board[position[0]][position[1]+2].get_player() !=0:
+                                if position[1] == (self.__size-1)*2-2 :
+                                    print("case occupée")
+                                else:
+                                    self.move(0,4)
+                                    can_move = True
+                            else :
+                                self.move(0,2)
+                                can_move = True
+                    elif move == 3:
+                        if self.isPossibleMove(2,0) == True :
+                            if self.board[position[0]+2][position[1]].get_player() !=0:
+                                if position[0] == (self.__size-1)*2-2 :
+                                    print("case occupée")
+                                else:
+                                    self.move(4,0)
+                                    can_move = True
+                            else :
+                                self.move(2,0)
+                                can_move = True
+                    elif move == 4:
+                        if self.isPossibleMove(0,-2) == True :
+                            if self.board[position[0]][position[1]-2].get_player() !=0:
+                                if position[1] == 2 :
+                                        print("case occupée")
+                                else:
+                                    self.move(0,-4)
+                                    can_move = True
+                            else :
+                                self.move(0,-2)
+                                can_move = True
+            if self.victory() == True :
+                jeu.displayBoard()
+                break    
+            jeu.displayBoard()
+            self.refreshCurrentPlayer()    
+        print("EH JOUEUR", self.current_player.get_player(), " BRAVO SAL BATARD !!! ")            
+            
+            
+            
+            # Si taille plateau = 5 : max barriere = 20
+taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
+nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
+nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 40) :"))
 jeu = Board(taille, nb_joueur, nb_barriere)
-jeu.start()
-jeu.displayBoard()
+jeu.game()
+
 
