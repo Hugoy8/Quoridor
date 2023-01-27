@@ -18,15 +18,15 @@ class Case:
     
     def displayPlayer(self):
         if self.__player == 1:
-            return 'P1'
+            return '🔵'
         elif self.__player == 2:
-            return 'P2'
+            return '🔴'
         elif self.__player == 3:
-            return 'P3'
+            return '🟢'
         elif self.__player == 4:
-            return 'P4'
+            return '🟡'
         else:
-            return 'NP'
+            return '⬜️'
 
 
 class Fence:
@@ -49,7 +49,7 @@ class Fence:
         if self.__build == 0:
             return "FF"
         else : 
-            return "FT"
+            return "🚧"
 
         
 class Pillar:
@@ -74,7 +74,7 @@ class Pillar:
         if self.__build == 0:
             return "PF"
         else : 
-            return "PT"
+            return "⚫️"
 
         
 class Player:
@@ -406,26 +406,24 @@ class Board:
                         
         
     
-    def seachPossibleWayding(self):
+    def seachPossibleWayForPlayer(self, player):
         self.list_case_check = []
-        for i in range(self.__nb_players):
-            position = self.players[i].displayPlace()
-            if self.isPossibleWay(position[0], position[1], i+1) !=True :
-                return False
+        position = self.players[player-1].displayPlace()
+        if self.isPossibleWay(position[0], position[1], player) !=True :
+            return False
         return True
         
-            
+    def fenceNotCloseAccesGoal(self):
+        for i in range(self.__nb_players):
+            if jeu.seachPossibleWayForPlayer(i+1) == False :
+                return False
+        return True
+                
 # Si taille plateau = 5 : max barriere = 20
-taille = 11
-nb_joueur = 2
+taille = 5
+nb_joueur = 4
 nb_barriere = 20
 jeu = Board(taille, nb_joueur, nb_barriere)
 jeu.start()
-jeu.move(2,0)
-# jeu.buildFence(1,1)
-# jeu.buildFence(1,3)
-# jeu.buildFence(1,5)
-# jeu.buildFence(1,7)
 jeu.displayBoard()
-print(jeu.seachPossibleWayding())
 
