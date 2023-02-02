@@ -1,6 +1,9 @@
 from tkinter import*
-<<<<<<< Updated upstream
-
+# from case import *
+# from fence import*
+# from pillar import*
+# from player import*
+import random
 
 
 class Case:
@@ -80,11 +83,12 @@ class Pillar:
         
 class Player:
     
-    def __init__(self, x, y, player, nb_fence):
+    def __init__(self, x, y, player, nb_fence, IA_level):
         self.__player = player
         self.__nb_fence = nb_fence
         self.__x = x
         self.__y = y
+        self.__IA_level = IA_level
     
     def get_player(self):
         return self.__player
@@ -107,14 +111,14 @@ class Player:
         
     def displayPlace(self):
         return [self.__x, self.__y]
-=======
-from case import *
-from fence import*
-from pillar import*
-from player import*
-import random
-
->>>>>>> Stashed changes
+    
+    
+    def get_IALevel(self):
+        return self.__IA_level
+    
+    
+    def set_IALevel(self, IA_level):
+        self.__IA_level = IA_level
         
 class Board:
     
@@ -179,32 +183,18 @@ class Board:
         for x in tab :
             print(x)
 
-<<<<<<< Updated upstream
-=======
+
     def decideIALevel(self, player):
         if int(input(f"Entrez 1 pour mettre le joueur {player} en IA ")) == 1 :
             return 1
         return False
->>>>>>> Stashed changes
+
     
     
     def start(self):
         nb_fence_each_player = int(self.__nb_fence / self.__nb_players)
         case = self.board[0][self.__size-1]
         case.set_player(1)
-<<<<<<< Updated upstream
-        self.players.append(Player(0,self.__size-1,1,nb_fence_each_player))
-        case = self.board[-1][self.__size-1]
-        case.set_player(2)
-        self.players.append(Player((self.__size-1)*2,self.__size-1,2,nb_fence_each_player))
-        if self.__nb_players == 4 :
-            case = self.board[self.__size-1][0]
-            case.set_player(3)
-            self.players.append(Player(self.__size-1,0,3,nb_fence_each_player))
-            case = self.board[self.__size-1][-1]
-            case.set_player(4)
-            self.players.append(Player(self.__size-1,(self.__size-1)*2,4,nb_fence_each_player))
-=======
         self.players.append(Player(0,self.__size-1,1,nb_fence_each_player,self.decideIALevel(1)))
         case = self.board[-1][self.__size-1]
         case.set_player(2)
@@ -216,7 +206,6 @@ class Board:
             case = self.board[self.__size-1][-1]
             case.set_player(4)
             self.players.append(Player(self.__size-1,(self.__size-1)*2,4,nb_fence_each_player,self.decideIALevel(4)))
->>>>>>> Stashed changes
         self.current_player = self.players[0]
     
     
@@ -592,7 +581,49 @@ class Board:
             self.refreshCurrentPlayer()    
         print("EH JOUEUR", self.current_player.get_player(), " BRAVO SAL BATARD !!! ")            
             
-            
+
+    #partie IA
+    
+    def allPossibleMoveForPlayer(self):
+        list = []
+        position = self.current_player.displayPlace()
+        if self.isPossibleMove(-2,0) == True :
+            if self.board[position[0]-2][position[1]].get_player() !=0:
+                if position[0] != 2 :
+                    list.append([-4,0])
+            else:
+                list.append([-2,0])
+        if self.isPossibleMove(2,0) == True :
+            if self.board[position[0]+2][position[1]].get_player() !=0:
+                if position[0] != 2 :
+                    list.append([4,0])
+            else:
+                list.append([2,0])
+        if self.isPossibleMove(0,-2) == True :
+            if self.board[position[0]][position[1]-2].get_player() !=0:
+                if position[0] == (self.__size-1)*2-2 :
+                    list.append([0,-4])
+            else:
+                list.append([0,-2])
+        if self.isPossibleMove(0,2) == True :
+            if self.board[position[0]][position[1]+2].get_player() !=0:
+                if position[1] == (self.__size-1)*2-2 :
+                    list.append([0,4])
+            else:
+                list.append([0,2])
+        return list
+    
+    def allPossibleBuildFence(self):
+        list = [] 
+        for i in range(1,self.__size*2-1,2):
+            for j in range(1,self.__size*2-1,2):
+                self.fence_orientation == "vertical"
+                if self.isPossibleFence(i, j) == True :
+                    list.append([i,j,0])
+                self.fence_orientation == "horizontal"
+                if self.isPossibleFence(i, j) == True :
+                    list.append([i,j,1])
+        return list
             
             # Si taille plateau = 5 : max barriere = 20
 taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
@@ -601,5 +632,3 @@ nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 ent
 jeu = Board(taille, nb_joueur, nb_barriere)
 # print(jeu.allPossibleBuildFence())
 jeu.game()
-
-
