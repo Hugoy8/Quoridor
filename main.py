@@ -592,54 +592,8 @@ class Board:
             self.refreshCurrentPlayer()    
         print("EH JOUEUR", self.current_player.get_player(), " BRAVO SAL BATARD !!! ")            
             
-<<<<<<< Updated upstream
             
             
-=======
-    
-    #partie IA
-    
-    def allPossibleMoveForPlayer(self):
-        list = []
-        position = self.current_player.displayPlace()
-        if self.isPossibleMove(-2,0) == True :
-            if self.board[position[0]-2][position[1]].get_player() !=0:
-                if position[0] != 2 :
-                    list.append([-4,0])
-            else:
-                list.append([-2,0])
-        if self.isPossibleMove(2,0) == True :
-            if self.board[position[0]+2][position[1]].get_player() !=0:
-                if position[0] != 2 :
-                    list.append([4,0])
-            else:
-                list.append([2,0])
-        if self.isPossibleMove(0,-2) == True :
-            if self.board[position[0]][position[1]-2].get_player() !=0:
-                if position[0] == (self.__size-1)*2-2 :
-                    list.append([0,-4])
-            else:
-                list.append([0,-2])
-        if self.isPossibleMove(0,2) == True :
-            if self.board[position[0]][position[1]+2].get_player() !=0:
-                if position[1] == (self.__size-1)*2-2 :
-                    list.append([0,4])
-            else:
-                list.append([0,2])
-        return list
-    
-    def allPossibleBuildFence(self):
-        list = [] 
-        for i in range(1,self.__size*2-1,2):
-            for j in range(1,self.__size*2-1,2):
-                self.fence_orientation == "vertical"
-                if self.isPossibleFence(i, j) == True :
-                    list.append([i,j,0])
-                self.fence_orientation == "horizontal"
-                if self.isPossibleFence(i, j) == True :
-                    list.append([i,j,1])
-        return list
->>>>>>> Stashed changes
             # Si taille plateau = 5 : max barriere = 20
 taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
 nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
