@@ -351,8 +351,7 @@ class Board:
             if y==2:
                 return False
         if self.thereIsFence(position[0]+int(x/2), position[1]+int(y/2)) == True :
-            return False
-        
+            return False        
         return True   
     
     def game(self) :
@@ -364,14 +363,19 @@ class Board:
                 value= random.choice(list)
             else :
                 value = int(input("tape 1 pour placer barriere sinon 0 pour déplacement:"))
-            if value == 1  and self.playerHasFence() == True:
+            if value == 1  and self.playerHasFence() == True and self.allPossibleBuildFence() !=[]:
                 can_build = False
                 while can_build == False :
-                    if self.current_player.get_IALevel() == 1 :
+                    if self.current_player.get_IALevel() == 1:
                         build = random.choice(self.allPossibleBuildFence())
                         x_co_fence = build[0]
                         y_co_fence = build[1]
-                        self.fence_orientation = build[2]
+                        orientation = build[2]
+                        if orientation == 0 :
+                            self.fence_orientation = "vertical"
+                        else :
+                            self.fence_orientation = "horizontal"
+                        print(self.fence_orientation)
                         self.buildFence(x_co_fence,y_co_fence)
                         if self.fenceNotCloseAccesGoal()==False :
                             self.deBuildFence(x_co_fence,y_co_fence)
@@ -403,6 +407,10 @@ class Board:
             else :
                 if value == 1  and self.playerHasFence() == False:
                     print("ta plus de barriere chacal")
+                    if self.current_player.get_IALevel() == 1 :
+                        movement = random.choice(self.allPossibleMoveForPlayer())
+                        print(movement,self.current_player.get_player())
+                        self.move(movement[0],movement[1])
                 else : 
                     # partie IA
                     if self.current_player.get_IALevel() == 1 :
@@ -481,19 +489,19 @@ class Board:
                 list.append([-2,0])
         if self.isPossibleMove(2,0) == True :
             if self.board[position[0]+2][position[1]].get_player() !=0:
-                if position[0] != 2 :
+                if position[0] != (self.__size-1)*2-2 :
                     list.append([4,0])
             else:
                 list.append([2,0])
         if self.isPossibleMove(0,-2) == True :
             if self.board[position[0]][position[1]-2].get_player() !=0:
-                if position[0] == (self.__size-1)*2-2 :
+                if position[1] != 2 :
                     list.append([0,-4])
             else:
                 list.append([0,-2])
         if self.isPossibleMove(0,2) == True :
             if self.board[position[0]][position[1]+2].get_player() !=0:
-                if position[1] == (self.__size-1)*2-2 :
+                if position[1] != (self.__size-1)*2-2 :
                     list.append([0,4])
             else:
                 list.append([0,2])
