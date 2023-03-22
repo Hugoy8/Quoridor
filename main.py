@@ -135,7 +135,6 @@ class Board:
                 tab.append(tab2)
         for x in tab :
             print(x)
-        mainloop()
 
 
     def decideIALevel(self, player):
@@ -594,3 +593,4 @@ class Board:
 jeu = Board(5, 2, 4)
 # print(jeu.allPossibleBuildFence())
 jeu.game()
+mainloop()
