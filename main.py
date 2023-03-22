@@ -25,8 +25,8 @@ class Board:
         
         # Création des images du plateau
         # IMAGE DES CASES
-        width = 40
-        height = 40
+        width = 80
+        height = 80
         no_player = Image.open("./assets/case.png")
         no_player = no_player.resize((width, height), Image.ANTIALIAS)
         self.no_player = ImageTk.PhotoImage(no_player)
@@ -48,21 +48,21 @@ class Board:
         self.image_player_4 = PhotoImage(width=40, height=40, file="./assets/player_4.png")
         
         #IMAGES DES FENCES
-        fence_vertical_width = 10
-        fence_vertical_height = 40
+        fence_vertical_width = 20
+        fence_vertical_height = 80
         fence_height = Image.open("./assets/fence_height.png")
         fence_height = fence_height.resize((fence_vertical_width, fence_vertical_height), Image.ANTIALIAS)
         self.fence_height = ImageTk.PhotoImage(fence_height)
         
-        fence_horizontal_width = 40
-        fence_horizontal_height = 10
+        fence_horizontal_width = 80
+        fence_horizontal_height = 20
         fence_width = Image.open("./assets/fence_width.png")
         fence_width = fence_width.resize((fence_horizontal_width, fence_horizontal_height), Image.ANTIALIAS)
         self.fence_width = ImageTk.PhotoImage(fence_width)
         
         # IMAGE DES PILLIERS
         pillar = Image.open("./assets/pillier.png")
-        pillar = pillar.resize((10, 10), Image.ANTIALIAS)
+        pillar = pillar.resize((20, 20), Image.ANTIALIAS)
         self.pillar = ImageTk.PhotoImage(pillar)
 
         for i in range(self.__size*2-1):
@@ -85,8 +85,8 @@ class Board:
     
     
     def displayBoard(self): 
-        canvas = Canvas(self.window, width=500, height=500, bg="gray")
-        canvas.pack()
+        canvas = Canvas(self.window, width=1000, height=700, bg="gray")
+        canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
         tab =[]
         for i in range(self.__size*2-1):
             if i%2 == 0 :
@@ -100,20 +100,20 @@ class Board:
                         case = self.board[i][j]
                         tab2.append(case.displayPlayer())
                         if case.displayPlayer() == "P0" :
-                            canvas.create_image((j*20)+(j*5), (i*20)+(i*5), image=self.no_player, anchor="nw")
+                            canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.no_player, anchor="nw")
                         elif case.displayPlayer() == "P1" :
-                            canvas.create_image((j*20)+(j*5), (i*20)+(i*5), image=self.image_player_1, anchor="nw")
+                            canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.image_player_1, anchor="nw")
                         elif case.displayPlayer() == "P2" :
-                            canvas.create_image((j*20)+(j*5), (i*20)+(i*5), image=self.image_player_2, anchor="nw")
+                            canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.image_player_2, anchor="nw")
                         elif case.displayPlayer() == "P3" :
-                            canvas.create_image((j*20)+(j*5), (i*20)+(i*5), image=self.image_player_3, anchor="nw")
+                            canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.image_player_3, anchor="nw")
                         elif case.displayPlayer() == "P4" :
-                            canvas.create_image((j*20)+(j*5), (i*20)+(i*5), image=self.image_player_4, anchor="nw")
+                            canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.image_player_4, anchor="nw")
                     else :
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
-                        if fence.displayFence() == "F1" :
-                            canvas.create_image((j*20)+(j*5)+15, (i*20)+(i*5), image=self.fence_height, anchor="nw")
+                        if fence.displayFence() == "F0" :
+                            canvas.create_image(((j*20)+(j*5)+15)*2, ((i*20)+(i*5))*2, image=self.fence_height, anchor="nw")
                 tab.append(tab2)
             else :
                 tab2 = []
@@ -125,13 +125,13 @@ class Board:
                     if j%2 == 0 :
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
-                        if fence.displayFence() == "F1" :
-                            canvas.create_image((j*20)+(j*5) ,(i*20)+(i*5)+15, image=self.fence_width, anchor="nw")
+                        if fence.displayFence() == "F0" :
+                            canvas.create_image(((j*20)+(j*5))*2 ,((i*20)+(i*5)+15)*2, image=self.fence_width, anchor="nw")
                     else :
                         pillar = self.board[i][j]
                         tab2.append(pillar.displayPillar())
-                        if pillar.displayPillar() == "B1" :
-                            canvas.create_image((j*20)+(j*5)+15, (i*20)+(i*5)+15, image=self.pillar, anchor="nw")
+                        if pillar.displayPillar() == "B0" :
+                            canvas.create_image(((j*20)+(j*5)+15)*2, ((i*20)+(i*5)+15)*2, image=self.pillar, anchor="nw")
                 tab.append(tab2)
         for x in tab :
             print(x)
