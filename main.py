@@ -4,18 +4,67 @@ from fence import*
 from pillar import*
 from player import*
 import random
+from PIL import Image, ImageTk
 
 
 class Board:
     
     def __init__(self, size, nb_players, nb_fence):
-        
+        self.window = Tk()
+        self.window.geometry("1400x700")
+        self.window.title("Quoridor")
+        self.window.maxsize(1400, 700)
+        self.window.minsize(1400, 700)
+        self.window.iconbitmap('./assets/logo.ico')
         self.__size = size
         self.__nb_players = nb_players
         self.__nb_fence = nb_fence
         self.players = []
         self.board = []
         self.fence_orientation = "horizontal"
+        
+        # Création des images du plateau
+        # IMAGE DES CASES
+        width = 40
+        height = 40
+        no_player = Image.open("./assets/case.png")
+        no_player = no_player.resize((width, height), Image.ANTIALIAS)
+        self.no_player = ImageTk.PhotoImage(no_player)
+        
+        image_player_1 = Image.open("./assets/player_1.png")
+        image_player_1 = image_player_1.resize((width, height), Image.ANTIALIAS)
+        self.image_player_1 = ImageTk.PhotoImage(image_player_1)
+        
+        image_player_2 = Image.open("./assets/player_2.png")
+        image_player_2 = image_player_2.resize((width, height), Image.ANTIALIAS)
+        self.image_player_2 = ImageTk.PhotoImage(image_player_2)
+        
+        image_player_3 = Image.open("./assets/player_3.png")
+        image_player_3 = image_player_3.resize((width, height), Image.ANTIALIAS)
+        self.image_player_3 = ImageTk.PhotoImage(image_player_3)
+        
+        image_player_4 = Image.open("./assets/player_4.png")
+        image_player_4 = image_player_4.resize((width, height), Image.ANTIALIAS)
+        self.image_player_4 = PhotoImage(width=40, height=40, file="./assets/player_4.png")
+        
+        #IMAGES DES FENCES
+        fence_vertical_width = 10
+        fence_vertical_height = 40
+        fence_height = Image.open("./assets/fence_height.png")
+        fence_height = fence_height.resize((fence_vertical_width, fence_vertical_height), Image.ANTIALIAS)
+        self.fence_height = ImageTk.PhotoImage(fence_height)
+        
+        fence_horizontal_width = 40
+        fence_horizontal_height = 10
+        fence_width = Image.open("./assets/fence_width.png")
+        fence_width = fence_width.resize((fence_horizontal_width, fence_horizontal_height), Image.ANTIALIAS)
+        self.fence_width = ImageTk.PhotoImage(fence_width)
+        
+        # IMAGE DES PILLIERS
+        pillar = Image.open("./assets/pillier.png")
+        pillar = pillar.resize((10, 10), Image.ANTIALIAS)
+        self.pillar = ImageTk.PhotoImage(pillar)
+
         for i in range(self.__size*2-1):
             if i%2 == 0 :
                 tab2 = []
@@ -36,6 +85,8 @@ class Board:
     
     
     def displayBoard(self): 
+        canvas = Canvas(self.window, width=500, height=500, bg="gray")
+        canvas.pack()
         tab =[]
         for i in range(self.__size*2-1):
             if i%2 == 0 :
@@ -48,9 +99,21 @@ class Board:
                     if j%2 == 0 :
                         case = self.board[i][j]
                         tab2.append(case.displayPlayer())
+                        if case.displayPlayer() == "P0" :
+                            canvas.create_image((j*20)+(j*5), (i*20)+(i*5), image=self.no_player, anchor="nw")
+                        elif case.displayPlayer() == "P1" :
+                            canvas.create_image((j*20)+(j*5), (i*20)+(i*5), image=self.image_player_1, anchor="nw")
+                        elif case.displayPlayer() == "P2" :
+                            canvas.create_image((j*20)+(j*5), (i*20)+(i*5), image=self.image_player_2, anchor="nw")
+                        elif case.displayPlayer() == "P3" :
+                            canvas.create_image((j*20)+(j*5), (i*20)+(i*5), image=self.image_player_3, anchor="nw")
+                        elif case.displayPlayer() == "P4" :
+                            canvas.create_image((j*20)+(j*5), (i*20)+(i*5), image=self.image_player_4, anchor="nw")
                     else :
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
+                        if fence.displayFence() == "F1" :
+                            canvas.create_image((j*20)+(j*5)+15, (i*20)+(i*5), image=self.fence_height, anchor="nw")
                 tab.append(tab2)
             else :
                 tab2 = []
@@ -62,12 +125,17 @@ class Board:
                     if j%2 == 0 :
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
+                        if fence.displayFence() == "F1" :
+                            canvas.create_image((j*20)+(j*5) ,(i*20)+(i*5)+15, image=self.fence_width, anchor="nw")
                     else :
                         pillar = self.board[i][j]
                         tab2.append(pillar.displayPillar())
+                        if pillar.displayPillar() == "B1" :
+                            canvas.create_image((j*20)+(j*5)+15, (i*20)+(i*5)+15, image=self.pillar, anchor="nw")
                 tab.append(tab2)
         for x in tab :
             print(x)
+        mainloop()
 
 
     def decideIALevel(self, player):
@@ -520,9 +588,9 @@ class Board:
         return list
             
             # Si taille plateau = 5 : max barriere = 20
-taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
-nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
-nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 40) :"))
-jeu = Board(taille, nb_joueur, nb_barriere)
+# taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
+# nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
+# nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 40) :"))
+jeu = Board(5, 2, 4)
 # print(jeu.allPossibleBuildFence())
 jeu.game()
