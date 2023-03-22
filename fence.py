@@ -16,6 +16,6 @@ class Fence:
     
     def displayFence(self):
         if self.__build == 0:
-            return "--"
+            return "F0"
         else : 
-            return "🚧"
+            return "F1"

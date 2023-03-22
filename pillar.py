@@ -18,6 +18,6 @@ class Pillar:
         
     def displayPillar(self):
         if self.__build == 0:
-            return "⚪️"
+            return "B0"
         else : 
-            return "⚫️"
+            return "B1"

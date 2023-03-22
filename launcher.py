@@ -77,6 +77,7 @@ entry.place(x=448, y=520)
 entry.focus_set()
 
 # Fonction appelée lorsqu'on appuie sur Entrée
+
 def validate():
     nbr_ia = int(entry.get())
     if nbr_ia == 1:
@@ -87,5 +88,10 @@ def validate():
 # Ajout du bouton pour valider la saisie
 button = Button(window, text="Valider", command=validate)
 button.place(x=488, y=560)
+
+# Ajout un bouton pour quitter l'application
+start = Button(window, text="Start", command=window.destroy, bg="#0D2338", fg="#FFF")
+start.place(x=850, y=560)
+
 
 window.mainloop()
