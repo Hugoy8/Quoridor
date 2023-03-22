@@ -45,7 +45,7 @@ class Board:
         
         image_player_4 = Image.open("./assets/player_4.png")
         image_player_4 = image_player_4.resize((width, height), Image.ANTIALIAS)
-        self.image_player_4 = PhotoImage(width=40, height=40, file="./assets/player_4.png")
+        self.image_player_4 = ImageTk.PhotoImage(image_player_4)
         
         #IMAGES DES FENCES
         fence_vertical_width = 20
@@ -112,7 +112,7 @@ class Board:
                     else :
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
-                        if fence.displayFence() == "F0" :
+                        if fence.displayFence() == "F1" :
                             canvas.create_image(((j*20)+(j*5)+15)*2, ((i*20)+(i*5))*2, image=self.fence_height, anchor="nw")
                 tab.append(tab2)
             else :
@@ -125,17 +125,16 @@ class Board:
                     if j%2 == 0 :
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
-                        if fence.displayFence() == "F0" :
+                        if fence.displayFence() == "F1" :
                             canvas.create_image(((j*20)+(j*5))*2 ,((i*20)+(i*5)+15)*2, image=self.fence_width, anchor="nw")
                     else :
                         pillar = self.board[i][j]
                         tab2.append(pillar.displayPillar())
-                        if pillar.displayPillar() == "B0" :
+                        if pillar.displayPillar() == "B1" :
                             canvas.create_image(((j*20)+(j*5)+15)*2, ((i*20)+(i*5)+15)*2, image=self.pillar, anchor="nw")
                 tab.append(tab2)
         for x in tab :
             print(x)
-        mainloop()
 
 
     def decideIALevel(self, player):
@@ -591,6 +590,7 @@ class Board:
 # taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
 # nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
 # nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 40) :"))
-jeu = Board(5, 2, 4)
+jeu = Board(5, 2, 20)
 # print(jeu.allPossibleBuildFence())
 jeu.game()
+mainloop()
