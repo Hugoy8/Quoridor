@@ -2,6 +2,7 @@ class Case:
     
     def __init__(self, player, possibleMove):
         self.__player = player
+        self.__possibleMove = possibleMove
 
 
     def get_player(self):
