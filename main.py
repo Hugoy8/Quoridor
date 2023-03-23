@@ -31,6 +31,10 @@ class Board:
         no_player = no_player.resize((width, height), Image.ANTIALIAS)
         self.no_player = ImageTk.PhotoImage(no_player)
         
+        moove_possible = Image.open("./assets/moove_possible.png")
+        moove_possible = moove_possible.resize((width, height), Image.ANTIALIAS)
+        self.moove_possible = ImageTk.PhotoImage(moove_possible)
+        
         image_player_1 = Image.open("./assets/player_1.png")
         image_player_1 = image_player_1.resize((width, height), Image.ANTIALIAS)
         self.image_player_1 = ImageTk.PhotoImage(image_player_1)
@@ -74,7 +78,8 @@ class Board:
                 tab2 = []
                 for j in range(self.__size*2-1):
                     if j%2 == 0 : 
-                        tab2.append(Case(0))
+                        tab2.append(Case(0,0))
+                        
                     else :
                         tab2.append(Fence(0))
                 self.board.append(tab2)
@@ -104,6 +109,12 @@ class Board:
                         case = self.board[i][j]
                         tab2.append(case.displayPlayer())
                         if case.displayPlayer() == "P0" :
+                            # number = case.get_possibleMove()
+                            # print(number)
+                            # if case.get_possibleMove() != 0 :
+                            #     canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.moove_possible, anchor="nw")
+                            # else :
+                            print(case.displayPlayer())
                             canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.no_player, anchor="nw")
                         elif case.displayPlayer() == "P1" :
                             canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.image_player_1, anchor="nw")
@@ -427,8 +438,17 @@ class Board:
     
     def game(self) :
         jeu.start()
-        jeu.displayBoard()
         while self.victory() == False :
+            position = self.current_player.displayPlace()
+            list_possible_move = self.allPossibleMoveForPlayer()
+            print(list_possible_move)
+            for coord in list_possible_move :
+                case = self.board[position[0]+coord[0]][position[1]+coord[1]]
+                case.set_possibleMove([coord[0],coord[1]])
+                if case.get_possibleMove() != 0 :
+                    print(case.get_possibleMove())
+            print("print")
+            jeu.displayBoard()
             if self.current_player.get_IALevel() == 1 :
                 list = [0,1]
                 value= random.choice(list)
