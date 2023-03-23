@@ -45,7 +45,7 @@ class Board:
         
         image_player_4 = Image.open("./assets/player_4.png")
         image_player_4 = image_player_4.resize((width, height), Image.ANTIALIAS)
-        self.image_player_4 = PhotoImage(width=40, height=40, file="./assets/player_4.png")
+        self.image_player_4 = ImageTk.PhotoImage(image_player_4)
         
         #IMAGES DES FENCES
         fence_vertical_width = 20
@@ -590,7 +590,7 @@ class Board:
 # taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
 # nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
 # nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 40) :"))
-jeu = Board(5, 2, 4)
+jeu = Board(5, 4, 4)
 # print(jeu.allPossibleBuildFence())
 jeu.game()
 mainloop()
