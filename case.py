@@ -1,6 +1,6 @@
 class Case:
     
-    def __init__(self, player):
+    def __init__(self, player, possibleMove):
         self.__player = player
 
 
@@ -11,7 +11,13 @@ class Case:
     def set_player(self, player):
         self.__player = player
     
+    def get_possibleMove(self):
+        return self.__possibleMove
     
+    
+    def set_possibleMove(self, possibleMove):
+        self.__possibleMove = possibleMove
+        
     def displayPlayer(self):
         if self.__player == 1:
             return 'P1'
