@@ -47,6 +47,10 @@ class Board:
         image_player_4 = image_player_4.resize((width, height), Image.ANTIALIAS)
         self.image_player_4 = ImageTk.PhotoImage(image_player_4)
         
+        moove_possible = Image.open("./assets/moove_possible.png")
+        moove_possible = moove_possible.resize((width, height), Image.ANTIALIAS)
+        self.moove_possible = ImageTk.PhotoImage(moove_possible)
+        
         #IMAGES DES FENCES
         fence_vertical_width = 20
         fence_vertical_height = 80
