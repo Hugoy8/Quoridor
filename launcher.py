@@ -54,13 +54,13 @@ def toggle_checkbox_map():
 map = IntVar()
 map2 = IntVar()
 map3 = IntVar()
-theme_button_evil = Checkbutton(theme_buttons_frame, text="Evil", bg="#0D2338", fg="#FFF", variable=map, command=toggle_checkbox_map)
+theme_button_evil = Checkbutton(theme_buttons_frame, text="Evil", bg="#0D2338", fg="#FFF", variable=map, cursor="hand2", command=toggle_checkbox_map)
 theme_button_evil.pack(side="left")
 
-theme_button_space = Checkbutton(theme_buttons_frame, text="Space", bg="#0D2338", fg="#FFF", variable=map2, command=toggle_checkbox_map)
+theme_button_space = Checkbutton(theme_buttons_frame, text="Space", bg="#0D2338", fg="#FFF", variable=map2, cursor="hand2", command=toggle_checkbox_map)
 theme_button_space.pack(side="left")
 
-theme_button_forest = Checkbutton(theme_buttons_frame, text="Forest", bg="#0D2338", fg="#FFF", variable=map3, command=toggle_checkbox_map)
+theme_button_forest = Checkbutton(theme_buttons_frame, text="Forest", bg="#0D2338", fg="#FFF", variable=map3, cursor="hand2", command=toggle_checkbox_map)
 theme_button_forest.pack(side="left")
 
 # Nombre d'IA
@@ -75,15 +75,57 @@ def toggle_checkbox_ia():
         
 nbr_ia = IntVar()
 nbr_ia_2 = IntVar()
-ia_1 = Checkbutton(window, text="1", bg="#0D2338", fg="#FFF", variable=nbr_ia, command=toggle_checkbox_ia)
+ia_1 = Checkbutton(window, text="1", bg="#0D2338", fg="#FFF", variable=nbr_ia, cursor="hand2", command=toggle_checkbox_ia)
 ia_1.place(x=470, y=520)
 
-ia_3 = Checkbutton(window, text="3", bg="#0D2338", fg="#FFF", variable=nbr_ia_2, command=toggle_checkbox_ia)
+ia_3 = Checkbutton(window, text="3", bg="#0D2338", fg="#FFF", variable=nbr_ia_2, cursor="hand2", command=toggle_checkbox_ia)
 ia_3.place(x=520, y=520)
 
-# Ajout un bouton pour quitter l'application
-start = Button(window, text="Start", command=window.destroy, bg="#0D2338", fg="#FFF")
-start.place(x=850, y=560)
+# Difficulté d'IA...
+def toggle_checkbox_difficulty_ia():
+    # Désactive les autres cases à cocher
+    if level1.get() == 1:
+        difficulty2.configure(state="disabled")
+        difficulty3.configure(state="disabled")
+        difficulty4.configure(state="disabled")
+    elif level2.get() == 1:
+        difficulty1.configure(state="disabled")
+        difficulty3.configure(state="disabled")
+        difficulty4.configure(state="disabled")
+    elif level3.get() == 1:
+        difficulty2.configure(state="disabled")
+        difficulty1.configure(state="disabled")
+        difficulty4.configure(state="disabled")
+    elif level4.get() == 1:
+        difficulty2.configure(state="disabled")
+        difficulty3.configure(state="disabled")
+        difficulty1.configure(state="disabled")
+    # Réactive toutes les cases à cocher si aucune n'est cochée
+    else:
+        difficulty1.configure(state="normal")
+        difficulty2.configure(state="normal")
+        difficulty3.configure(state="normal")
+        difficulty4.configure(state="normal")
+        
+level1 = IntVar()
+level2 = IntVar()
+level3 = IntVar()
+level4 = IntVar()
+difficulty1 = Checkbutton(window, text="Niveau 1", bg="#0D2338", fg="#FFF", variable=level1, cursor="hand2", command=toggle_checkbox_difficulty_ia)
+difficulty1.place(x=660, y=510)
+
+difficulty2 = Checkbutton(window, text="Niveau 2", bg="#0D2338", fg="#FFF", variable=level2, cursor="hand2", command=toggle_checkbox_difficulty_ia)
+difficulty2.place(x=660, y=530)
+
+difficulty3 = Checkbutton(window, text="Niveau 3", bg="#0D2338", fg="#FFF", variable=level3, cursor="hand2", command=toggle_checkbox_difficulty_ia)
+difficulty3.place(x=660, y=550)
+
+difficulty4 = Checkbutton(window, text="Niveau 4", bg="#0D2338", fg="#FFF", variable=level4, cursor="hand2", command=toggle_checkbox_difficulty_ia)
+difficulty4.place(x=660, y=570)
+
+# Ajout un bouton pour start l'application
+start = Button(window, text="START", command=window.destroy, bg="#0D2338", fg="#FFF", font=("Arial", 15), width=10, cursor="hand2")
+start.place(x=775, y=550)
 
 window.mainloop()
 

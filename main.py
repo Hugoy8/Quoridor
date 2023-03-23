@@ -590,7 +590,7 @@ class Board:
 # taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
 # nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
 # nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 40) :"))
-jeu = Board(5, 2, 20)
+jeu = Board(7, 4, 20)
 # print(jeu.allPossibleBuildFence())
 jeu.game()
 mainloop()
