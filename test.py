@@ -109,6 +109,7 @@ class Board:
         self.canvas = Canvas(self.window, width=1000, height=700, bg="gray")
         self.canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
         tab =[]
+        self.pillar_rects = []
         for i in range(self.__size*2-1):
             if i%2 == 0 :
                 tab2 = []
@@ -170,13 +171,30 @@ class Board:
                     else :
                         pillar = self.board[i][j]
                         tab2.append(pillar.displayPillar())
-                        if pillar.displayPillar() == "B1" :
-                            self.canvas.create_image(((j*20)+(j*5)+15)*2, ((i*20)+(i*5)+15)*2, image=self.pillar, anchor="nw")
+                        if isinstance(pillar, Pillar):
+                            if pillar.displayPillar() == "B1":
+                                self.pillar_rects.append(self.canvas.create_image(
+                                    ((j*20)+(j*5)+15)*2, ((i*20)+(i*5)+15)*2, image=self.pillar, anchor="nw"))
+                            elif pillar.displayPillar() == "B0":
+                                w, h = self.pillar.width(), self.pillar.height()
+                                self.pillar_rects.append(self.canvas.create_rectangle(((j*20)+(j*5)+15)*2, ((i*20)+(i*5)+15)*2, ((j*20)+(j*5)+15)*2+w, ((i*20)+(i*5)+15)*2+h, fill="gray", outline="", tags=f"pillar{i} {j}"))
+                                self.canvas.tag_bind(self.pillar_rects[-1], "<Enter>", self.on_hover)
+                                self.canvas.tag_bind(self.pillar_rects[-1], "<Leave>", self.on_leave)
                 tab.append(tab2)
         for x in tab :
             print(x)
+        
+    def on_hover(self, event):
+        item_id = event.widget.find_closest(event.x, event.y)[0]
+        index = self.pillar_rects.index(item_id)
+        self.canvas.itemconfig(item_id, fill='red')
 
-
+    def on_leave(self, event):
+        item_id = event.widget.find_withtag(CURRENT)[0]
+        if item_id in self.pillar_rects:
+            index = self.pillar_rects.index(item_id)
+        self.canvas.itemconfig(item_id, fill='gray')
+        
     def decideIALevel(self, player):
         if int(input(f"Entrez 1 pour mettre le joueur {player} en IA ")) == 1 :
             return 1
@@ -648,7 +666,7 @@ class Board:
 # taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
 # nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
 # nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 40) :"))
-jeu = Board(7, 2, 20)
+jeu = Board(5, 2, 10)
 # print(jeu.allPossibleBuildFence())
 jeu.game()
 mainloop()
