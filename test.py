@@ -93,68 +93,16 @@ class Board:
         tags = self.canvas.gettags(item_id)
         if tags[0] == "move_case1":
             print("haut")
-            move = 1
+            return 1
         elif tags[0] == "move_case2":
             print("droite")
-            move = 2
+            return 2
         elif tags[0] == "move_case3":
             print("bas")
-            move = 3
+            return 3
         elif tags[0] == "move_case4":
             print("gauche")
-            move = 4
-        position = self.current_player.displayPlace()
-        if move == 1:
-            if self.isPossibleMove(-2,0) == True :
-                if self.board[position[0]-2][position[1]].get_player() !=0:
-                    if position[0] == 2 :
-                        print("case occupée")
-                    else:
-                        self.move(-4,0)
-                        can_move = True
-                else:
-                    self.move(-2,0)
-                    can_move = True
-        elif move == 2:
-            if self.isPossibleMove(0,2) == True :
-                if self.board[position[0]][position[1]+2].get_player() !=0:
-                    if position[1] == (self.__size-1)*2-2 :
-                        print("case occupée")
-                    else:
-                        self.move(0,4)
-                        can_move = True
-                else :
-                    self.move(0,2)
-                    can_move = True
-        elif move == 3:
-            if self.isPossibleMove(2,0) == True :
-                if self.board[position[0]+2][position[1]].get_player() !=0:
-                    if position[0] == (self.__size-1)*2-2 :
-                        print("case occupée")
-                    else:
-                        self.move(4,0)
-                        can_move = True
-                else :
-                    self.move(2,0)
-                    can_move = True
-        elif move == 4:
-            if self.isPossibleMove(0,-2) == True :
-                if self.board[position[0]][position[1]-2].get_player() !=0:
-                    if position[1] == 2 :
-                            print("case occupée")
-                    else:
-                        self.move(0,-4)
-                        can_move = True
-                else :
-                    self.move(0,-2)
-                    can_move = True
-        if self.victory() == True :
-                jeu.displayBoard()
-                print("EH JOUEUR", self.current_player.get_player(), " BRAVO SAL BATARD !!! ") 
-        self.resetPossibleCaseMovement() 
-        self.refreshCurrentPlayer()
-        self.refreshPossibleCaseMovementForCurrentPlayer()
-        self.displayBoard()
+            return 4
 
     
     def displayBoard(self): 
@@ -528,13 +476,133 @@ class Board:
                         case = self.board[i][j]
                         case.set_possibleMove(0)
                     
-
-    #partie IA
+        
     def game(self) :
         jeu.start()
-        self.refreshPossibleCaseMovementForCurrentPlayer()
-        jeu.displayBoard()
-        
+        while self.victory() == False :
+            self.refreshPossibleCaseMovementForCurrentPlayer()
+            jeu.displayBoard()
+            if self.current_player.get_IALevel() == 1 :
+                list = [0,1]
+                value= random.choice(list)
+            else :
+                value = int(input("tape 1 pour placer barriere sinon 0 pour déplacement:"))
+            if value == 1  and self.playerHasFence() == True and self.allPossibleBuildFence() !=[]:
+                can_build = False
+                while can_build == False :
+                    if self.current_player.get_IALevel() == 1:
+                        build = random.choice(self.allPossibleBuildFence())
+                        x_co_fence = build[0]
+                        y_co_fence = build[1]
+                        orientation = build[2]
+                        if orientation == 0 :
+                            self.fence_orientation = "vertical"
+                        else :
+                            self.fence_orientation = "horizontal"
+                        print(self.fence_orientation)
+                        self.buildFence(x_co_fence,y_co_fence)
+                        if self.fenceNotCloseAccesGoal()==False :
+                            self.deBuildFence(x_co_fence,y_co_fence)
+                        else : 
+                            can_build = True
+                    else:
+                        x_co_fence = int(input("x du pillier"))
+                        x_co_fence = int(input("y du pillier"))
+                        orientation = int(input("orientation barriere 0= vertical sinon placer en horizontal:"))
+                        if orientation == 0 :
+                            self.fence_orientation = "vertical"
+                        else :
+                            self.fence_orientation = "horizontal"
+                        if self.isPossibleFence(x_co_fence,y_co_fence) == True :
+                            self.buildFence(x_co_fence,y_co_fence)
+                        else :
+                            x_co_fence = int(input("x du pillier"))
+                            y_co_fence = int(input("y du pillier"))
+                            orientation = int(input("orientation barriere 0=vertical sinon horizontal"))
+                            if orientation == 0 :
+                                self.fence_orientation = "vertical"
+                            else :
+                                self.fence_orientation = "horizontal"
+                        if self.fenceNotCloseAccesGoal()==False :
+                            self.deBuildFence(x_co_fence,y_co_fence)
+                            print("tu bloques le chemin idiot")
+                        else : 
+                            can_build = True
+            else :
+                if value == 1  and self.playerHasFence() == False:
+                    print("ta plus de barriere chacal")
+                    if self.current_player.get_IALevel() == 1 :
+                        movement = random.choice(self.allPossibleMoveForPlayer())
+                        print(movement,self.current_player.get_player())
+                        self.move(movement[0],movement[1])
+                else : 
+                    # partie IA
+                    if self.current_player.get_IALevel() == 1 :
+                        movement = random.choice(self.allPossibleMoveForPlayer())
+                        print(movement,self.current_player.get_player())
+                        self.move(movement[0],movement[1])
+                        
+                    else :
+                        can_move = False
+                        position = self.current_player.displayPlace()
+                        while can_move == False :
+                            move = int(input("haut = 1, droite = 2, bas = 3, gauche = 4 :"))
+                            if move == 1:
+                                if self.isPossibleMove(-2,0) == True :
+                                    if self.board[position[0]-2][position[1]].get_player() !=0:
+                                        if position[0] == 2 :
+                                            print("case occupée")
+                                        else:
+                                            self.move(-4,0)
+                                            can_move = True
+                                    else:
+                                        self.move(-2,0)
+                                        can_move = True
+                            elif move == 2:
+                                if self.isPossibleMove(0,2) == True :
+                                    if self.board[position[0]][position[1]+2].get_player() !=0:
+                                        if position[1] == (self.__size-1)*2-2 :
+                                            print("case occupée")
+                                        else:
+                                            self.move(0,4)
+                                            can_move = True
+                                    else :
+                                        self.move(0,2)
+                                        can_move = True
+                            elif move == 3:
+                                if self.isPossibleMove(2,0) == True :
+                                    if self.board[position[0]+2][position[1]].get_player() !=0:
+                                        if position[0] == (self.__size-1)*2-2 :
+                                            print("case occupée")
+                                        else:
+                                            self.move(4,0)
+                                            can_move = True
+                                    else :
+                                        self.move(2,0)
+                                        can_move = True
+                            elif move == 4:
+                                if self.isPossibleMove(0,-2) == True :
+                                    if self.board[position[0]][position[1]-2].get_player() !=0:
+                                        if position[1] == 2 :
+                                                print("case occupée")
+                                        else:
+                                            self.move(0,-4)
+                                            can_move = True
+                                    else :
+                                        self.move(0,-2)
+                                        can_move = True
+            if self.victory() == True :
+                jeu.displayBoard()
+                break 
+            self.resetPossibleCaseMovement()   
+            jeu.displayBoard()
+            print()
+            self.refreshCurrentPlayer()    
+        print("EH JOUEUR", self.current_player.get_player(), " BRAVO SAL BATARD !!! ")            
+            
+
+    #partie IA
+    
     def allPossibleMoveForPlayer(self):
         list = []
         position = self.current_player.displayPlace()
