@@ -218,6 +218,8 @@ class Board:
         for fence_id in [above, below]:
             self.canvas.itemconfig(fence_id, fill="gray")
 
+
+
     def decideIALevel(self, player):
         if int(input(f"Entrez 1 pour mettre le joueur {player} en IA ")) == 1 :
             return 1
