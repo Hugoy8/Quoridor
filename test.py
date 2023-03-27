@@ -162,8 +162,6 @@ class Board:
                         elif fence.displayFence() == "F0":
                             fw, fh = self.fence_height.width(), self.fence_height.height()
                             self.fence_rects.append(self.canvas.create_rectangle(((j*20)+(j*5)+15)*2, ((i*20)+(i*5))*2, ((j*20)+(j*5)+15)*2+fw, ((i*20)+(i*5))*2+fh, fill="gray", outline="", tags=f"fence{i} {j}"))
-                            self.canvas.tag_bind(self.fence_rects[-1], "<Enter>", self.on_hover)
-                            self.canvas.tag_bind(self.fence_rects[-1], "<Leave>", self.on_leave)
                 tab.append(tab2)
             else :
                 tab2 = []
@@ -180,8 +178,6 @@ class Board:
                         elif fence.displayFence() == "F0":
                             fw, fh = self.fence_width.width(), self.fence_width.height()
                             self.fence_rects.append(self.canvas.create_rectangle(((j*20)+(j*5))*2, ((i*20)+(i*5)+15)*2, ((j*20)+(j*5))*2+fw, ((i*20)+(i*5)+15)*2+fh, fill="gray", outline="", tags=f"fence{i} {j}"))
-                            self.canvas.tag_bind(self.fence_rects[-1], "<Enter>", self.on_hover)
-                            self.canvas.tag_bind(self.fence_rects[-1], "<Leave>", self.on_leave)
                     else :
                         pillar = self.board[i][j]
                         tab2.append(pillar.displayPillar())
