@@ -68,6 +68,9 @@ class Board:
         pillar = Image.open("./assets/pillier.png")
         pillar = pillar.resize((20, 20))
         self.pillar = ImageTk.PhotoImage(pillar)
+        
+        self.width = width
+        self.height = height
 
         for i in range(self.__size*2-1):
             if i%2 == 0 :
@@ -110,6 +113,7 @@ class Board:
         self.canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
         tab =[]
         self.pillar_rects = []
+        self.fence_rects = []
         for i in range(self.__size*2-1):
             if i%2 == 0 :
                 tab2 = []
@@ -155,6 +159,11 @@ class Board:
                         tab2.append(fence.displayFence())
                         if fence.displayFence() == "F1" :
                             self.canvas.create_image(((j*20)+(j*5)+15)*2, ((i*20)+(i*5))*2, image=self.fence_height, anchor="nw")
+                        elif fence.displayFence() == "F0":
+                            fw, fh = self.fence_height.width(), self.fence_height.height()
+                            self.fence_rects.append(self.canvas.create_rectangle(((j*20)+(j*5)+15)*2, ((i*20)+(i*5))*2, ((j*20)+(j*5)+15)*2+fw, ((i*20)+(i*5))*2+fh, fill="gray", outline="", tags=f"fence{i} {j}"))
+                            self.canvas.tag_bind(self.fence_rects[-1], "<Enter>", self.on_hover)
+                            self.canvas.tag_bind(self.fence_rects[-1], "<Leave>", self.on_leave)
                 tab.append(tab2)
             else :
                 tab2 = []
@@ -167,14 +176,18 @@ class Board:
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
                         if fence.displayFence() == "F1" :
-                            self.canvas.create_image(((j*20)+(j*5))*2 ,((i*20)+(i*5)+15)*2, image=self.fence_width, anchor="nw")
+                            self.fence_rects.append(self.canvas.create_image(((j*20)+(j*5))*2 ,((i*20)+(i*5)+15)*2, image=self.fence_width, anchor="nw"))
+                        elif fence.displayFence() == "F0":
+                            fw, fh = self.fence_width.width(), self.fence_width.height()
+                            self.fence_rects.append(self.canvas.create_rectangle(((j*20)+(j*5))*2, ((i*20)+(i*5)+15)*2, ((j*20)+(j*5))*2+fw, ((i*20)+(i*5)+15)*2+fh, fill="gray", outline="", tags=f"fence{i} {j}"))
+                            self.canvas.tag_bind(self.fence_rects[-1], "<Enter>", self.on_hover)
+                            self.canvas.tag_bind(self.fence_rects[-1], "<Leave>", self.on_leave)
                     else :
                         pillar = self.board[i][j]
                         tab2.append(pillar.displayPillar())
                         if isinstance(pillar, Pillar):
                             if pillar.displayPillar() == "B1":
-                                self.pillar_rects.append(self.canvas.create_image(
-                                    ((j*20)+(j*5)+15)*2, ((i*20)+(i*5)+15)*2, image=self.pillar, anchor="nw"))
+                                self.pillar_rects.append(self.canvas.create_image(((j*20)+(j*5)+15)*2, ((i*20)+(i*5)+15)*2, image=self.pillar, anchor="nw"))
                             elif pillar.displayPillar() == "B0":
                                 w, h = self.pillar.width(), self.pillar.height()
                                 self.pillar_rects.append(self.canvas.create_rectangle(((j*20)+(j*5)+15)*2, ((i*20)+(i*5)+15)*2, ((j*20)+(j*5)+15)*2+w, ((i*20)+(i*5)+15)*2+h, fill="gray", outline="", tags=f"pillar{i} {j}"))
@@ -186,15 +199,29 @@ class Board:
         
     def on_hover(self, event):
         item_id = event.widget.find_closest(event.x, event.y)[0]
+        print(event.x//50 , event.y//50)
         index = self.pillar_rects.index(item_id)
         self.canvas.itemconfig(item_id, fill='red')
+        
+        # FENCES A DROITE ET A GAUCHE
+        above = self.canvas.find_above(item_id)
+        below = self.canvas.find_below(item_id)
+    
+        for fence_id in [above, below]:
+            self.canvas.itemconfig(fence_id, fill="red")
 
     def on_leave(self, event):
         item_id = event.widget.find_withtag(CURRENT)[0]
         if item_id in self.pillar_rects:
             index = self.pillar_rects.index(item_id)
-        self.canvas.itemconfig(item_id, fill='gray')
-        
+            self.canvas.itemconfig(item_id, fill='gray')
+            
+        above = self.canvas.find_above(item_id)
+        below = self.canvas.find_below(item_id)
+
+        for fence_id in [above, below]:
+            self.canvas.itemconfig(fence_id, fill="gray")
+
     def decideIALevel(self, player):
         if int(input(f"Entrez 1 pour mettre le joueur {player} en IA ")) == 1 :
             return 1
@@ -446,8 +473,7 @@ class Board:
                 if self.isPossibleWay(x, y+2, player) == True :
                     return True 
                         
-        
-    
+
     def seachPossibleWayForPlayer(self, player):
         self.list_case_check = []
         position = self.players[player-1].displayPlace()
