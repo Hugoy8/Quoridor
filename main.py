@@ -21,48 +21,52 @@ class Board:
         self.__nb_fence = nb_fence
         self.players = []
         self.board = []
-        self.fence_orientation = "horizontal"
-        
+        self.fence_orientation = "horizontal"    
+        self.id_possible_move = 0    
         # Création des images du plateau
         # IMAGE DES CASES
         width = 80
         height = 80
         no_player = Image.open("./assets/case.png")
-        no_player = no_player.resize((width, height), Image.ANTIALIAS)
+        no_player = no_player.resize((width, height))
         self.no_player = ImageTk.PhotoImage(no_player)
         
+        moove_possible = Image.open("./assets/moove_possible.png")
+        moove_possible = moove_possible.resize((width, height))
+        self.moove_possible = ImageTk.PhotoImage(moove_possible)
+        
         image_player_1 = Image.open("./assets/player_1.png")
-        image_player_1 = image_player_1.resize((width, height), Image.ANTIALIAS)
+        image_player_1 = image_player_1.resize((width, height))
         self.image_player_1 = ImageTk.PhotoImage(image_player_1)
         
         image_player_2 = Image.open("./assets/player_2.png")
-        image_player_2 = image_player_2.resize((width, height), Image.ANTIALIAS)
+        image_player_2 = image_player_2.resize((width, height))
         self.image_player_2 = ImageTk.PhotoImage(image_player_2)
         
         image_player_3 = Image.open("./assets/player_3.png")
-        image_player_3 = image_player_3.resize((width, height), Image.ANTIALIAS)
+        image_player_3 = image_player_3.resize((width, height))
         self.image_player_3 = ImageTk.PhotoImage(image_player_3)
         
         image_player_4 = Image.open("./assets/player_4.png")
-        image_player_4 = image_player_4.resize((width, height), Image.ANTIALIAS)
+        image_player_4 = image_player_4.resize((width, height))
         self.image_player_4 = ImageTk.PhotoImage(image_player_4)
         
         #IMAGES DES FENCES
         fence_vertical_width = 20
         fence_vertical_height = 80
         fence_height = Image.open("./assets/fence_height.png")
-        fence_height = fence_height.resize((fence_vertical_width, fence_vertical_height), Image.ANTIALIAS)
+        fence_height = fence_height.resize((fence_vertical_width, fence_vertical_height))
         self.fence_height = ImageTk.PhotoImage(fence_height)
         
         fence_horizontal_width = 80
         fence_horizontal_height = 20
         fence_width = Image.open("./assets/fence_width.png")
-        fence_width = fence_width.resize((fence_horizontal_width, fence_horizontal_height), Image.ANTIALIAS)
+        fence_width = fence_width.resize((fence_horizontal_width, fence_horizontal_height))
         self.fence_width = ImageTk.PhotoImage(fence_width)
         
         # IMAGE DES PILLIERS
         pillar = Image.open("./assets/pillier.png")
-        pillar = pillar.resize((20, 20), Image.ANTIALIAS)
+        pillar = pillar.resize((20, 20))
         self.pillar = ImageTk.PhotoImage(pillar)
 
         for i in range(self.__size*2-1):
@@ -70,7 +74,8 @@ class Board:
                 tab2 = []
                 for j in range(self.__size*2-1):
                     if j%2 == 0 : 
-                        tab2.append(Case(0))
+                        tab2.append(Case(0,0))
+                        
                     else :
                         tab2.append(Fence(0))
                 self.board.append(tab2)
@@ -83,10 +88,78 @@ class Board:
                         tab2.append(Pillar(0))
                 self.board.append(tab2)
     
+    def caseClicked(self, event):
+        item_id = event.widget.find_closest(event.x, event.y)[0]
+        tags = self.canvas.gettags(item_id)
+        if tags[0] == "move_case1":
+            print("haut")
+            move = 1
+        elif tags[0] == "move_case2":
+            print("droite")
+            move = 2
+        elif tags[0] == "move_case3":
+            print("bas")
+            move = 3
+        elif tags[0] == "move_case4":
+            print("gauche")
+            move = 4
+        position = self.current_player.displayPlace()
+        if move == 1:
+            if self.isPossibleMove(-2,0) == True :
+                if self.board[position[0]-2][position[1]].get_player() !=0:
+                    if position[0] == 2 :
+                        print("case occupée")
+                    else:
+                        self.move(-4,0)
+                        can_move = True
+                else:
+                    self.move(-2,0)
+                    can_move = True
+        elif move == 2:
+            if self.isPossibleMove(0,2) == True :
+                if self.board[position[0]][position[1]+2].get_player() !=0:
+                    if position[1] == (self.__size-1)*2-2 :
+                        print("case occupée")
+                    else:
+                        self.move(0,4)
+                        can_move = True
+                else :
+                    self.move(0,2)
+                    can_move = True
+        elif move == 3:
+            if self.isPossibleMove(2,0) == True :
+                if self.board[position[0]+2][position[1]].get_player() !=0:
+                    if position[0] == (self.__size-1)*2-2 :
+                        print("case occupée")
+                    else:
+                        self.move(4,0)
+                        can_move = True
+                else :
+                    self.move(2,0)
+                    can_move = True
+        elif move == 4:
+            if self.isPossibleMove(0,-2) == True :
+                if self.board[position[0]][position[1]-2].get_player() !=0:
+                    if position[1] == 2 :
+                            print("case occupée")
+                    else:
+                        self.move(0,-4)
+                        can_move = True
+                else :
+                    self.move(0,-2)
+                    can_move = True
+        if self.victory() == True :
+                jeu.displayBoard()
+                print("EH JOUEUR", self.current_player.get_player(), " BRAVO SAL BATARD !!! ") 
+        self.resetPossibleCaseMovement() 
+        self.refreshCurrentPlayer()
+        self.refreshPossibleCaseMovementForCurrentPlayer()
+        self.displayBoard()
+
     
     def displayBoard(self): 
-        canvas = Canvas(self.window, width=1000, height=700, bg="gray")
-        canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
+        self.canvas = Canvas(self.window, width=1000, height=700, bg="gray")
+        self.canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
         tab =[]
         for i in range(self.__size*2-1):
             if i%2 == 0 :
@@ -100,20 +173,39 @@ class Board:
                         case = self.board[i][j]
                         tab2.append(case.displayPlayer())
                         if case.displayPlayer() == "P0" :
-                            canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.no_player, anchor="nw")
+                            if case.get_possibleMove() != 0 :
+                                position = self.current_player.displayPlace()
+                                # si position de la case cliquable est en haut de la position du joueur
+                                if i < position[0]:
+                                    self.move_case = self.canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.moove_possible, anchor="nw", tags="move_case1")
+                                    self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
+                                # Si la position de la case cliquable est en bas de la position du joueur
+                                elif i > position[0]:
+                                    self.move_case = self.canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.moove_possible, anchor="nw", tags="move_case3")
+                                    self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
+                                # si la case cliquable est à droite du joueur
+                                elif j > position[1]:
+                                    self.move_case = self.canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.moove_possible, anchor="nw", tags=f"move_case2")
+                                    self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
+                                # si la case cliquable est à gauche du joueur
+                                elif j < position[1]:
+                                    self.move_case = self.canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.moove_possible, anchor="nw", tags=f"move_case4")
+                                    self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
+                            else :
+                                self.canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.no_player, anchor="nw")
                         elif case.displayPlayer() == "P1" :
-                            canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.image_player_1, anchor="nw")
+                            self.canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.image_player_1, anchor="nw")
                         elif case.displayPlayer() == "P2" :
-                            canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.image_player_2, anchor="nw")
+                            self.canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.image_player_2, anchor="nw")
                         elif case.displayPlayer() == "P3" :
-                            canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.image_player_3, anchor="nw")
+                            self.canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.image_player_3, anchor="nw")
                         elif case.displayPlayer() == "P4" :
-                            canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.image_player_4, anchor="nw")
+                            self.canvas.create_image(((j*20)+(j*5))*2, ((i*20)+(i*5))*2, image=self.image_player_4, anchor="nw")
                     else :
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
-                        if fence.displayFence() == "F0" :
-                            canvas.create_image(((j*20)+(j*5)+15)*2, ((i*20)+(i*5))*2, image=self.fence_height, anchor="nw")
+                        if fence.displayFence() == "F1" :
+                            self.canvas.create_image(((j*20)+(j*5)+15)*2, ((i*20)+(i*5))*2, image=self.fence_height, anchor="nw")
                 tab.append(tab2)
             else :
                 tab2 = []
@@ -125,13 +217,13 @@ class Board:
                     if j%2 == 0 :
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
-                        if fence.displayFence() == "F0" :
-                            canvas.create_image(((j*20)+(j*5))*2 ,((i*20)+(i*5)+15)*2, image=self.fence_width, anchor="nw")
+                        if fence.displayFence() == "F1" :
+                            self.canvas.create_image(((j*20)+(j*5))*2 ,((i*20)+(i*5)+15)*2, image=self.fence_width, anchor="nw")
                     else :
                         pillar = self.board[i][j]
                         tab2.append(pillar.displayPillar())
-                        if pillar.displayPillar() == "B0" :
-                            canvas.create_image(((j*20)+(j*5)+15)*2, ((i*20)+(i*5)+15)*2, image=self.pillar, anchor="nw")
+                        if pillar.displayPillar() == "B1" :
+                            self.canvas.create_image(((j*20)+(j*5)+15)*2, ((i*20)+(i*5)+15)*2, image=self.pillar, anchor="nw")
                 tab.append(tab2)
         for x in tab :
             print(x)
@@ -421,130 +513,28 @@ class Board:
             return False        
         return True   
     
-    def game(self) :
-        jeu.start()
-        jeu.displayBoard()
-        while self.victory() == False :
-            if self.current_player.get_IALevel() == 1 :
-                list = [0,1]
-                value= random.choice(list)
-            else :
-                value = int(input("tape 1 pour placer barriere sinon 0 pour déplacement:"))
-            if value == 1  and self.playerHasFence() == True and self.allPossibleBuildFence() !=[]:
-                can_build = False
-                while can_build == False :
-                    if self.current_player.get_IALevel() == 1:
-                        build = random.choice(self.allPossibleBuildFence())
-                        x_co_fence = build[0]
-                        y_co_fence = build[1]
-                        orientation = build[2]
-                        if orientation == 0 :
-                            self.fence_orientation = "vertical"
-                        else :
-                            self.fence_orientation = "horizontal"
-                        print(self.fence_orientation)
-                        self.buildFence(x_co_fence,y_co_fence)
-                        if self.fenceNotCloseAccesGoal()==False :
-                            self.deBuildFence(x_co_fence,y_co_fence)
-                        else : 
-                            can_build = True
-                    else:
-                        x_co_fence = int(input("x du pillier"))
-                        x_co_fence = int(input("y du pillier"))
-                        orientation = int(input("orientation barriere 0= vertical sinon placer en horizontal:"))
-                        if orientation == 0 :
-                            self.fence_orientation = "vertical"
-                        else :
-                            self.fence_orientation = "horizontal"
-                        if self.isPossibleFence(x_co_fence,y_co_fence) == True :
-                            self.buildFence(x_co_fence,y_co_fence)
-                        else :
-                            x_co_fence = int(input("x du pillier"))
-                            y_co_fence = int(input("y du pillier"))
-                            orientation = int(input("orientation barriere 0=vertical sinon horizontal"))
-                            if orientation == 0 :
-                                self.fence_orientation = "vertical"
-                            else :
-                                self.fence_orientation = "horizontal"
-                        if self.fenceNotCloseAccesGoal()==False :
-                            self.deBuildFence(x_co_fence,y_co_fence)
-                            print("tu bloques le chemin idiot")
-                        else : 
-                            can_build = True
-            else :
-                if value == 1  and self.playerHasFence() == False:
-                    print("ta plus de barriere chacal")
-                    if self.current_player.get_IALevel() == 1 :
-                        movement = random.choice(self.allPossibleMoveForPlayer())
-                        print(movement,self.current_player.get_player())
-                        self.move(movement[0],movement[1])
-                else : 
-                    # partie IA
-                    if self.current_player.get_IALevel() == 1 :
-                        movement = random.choice(self.allPossibleMoveForPlayer())
-                        print(movement,self.current_player.get_player())
-                        self.move(movement[0],movement[1])
-                        
-                    else :
-                        can_move = False
-                        position = self.current_player.displayPlace()
-                        while can_move == False :
-                            move = int(input("haut = 1, droite = 2, bas = 3, gauche = 4 :"))
-                            if move == 1:
-                                if self.isPossibleMove(-2,0) == True :
-                                    if self.board[position[0]-2][position[1]].get_player() !=0:
-                                        if position[0] == 2 :
-                                            print("case occupée")
-                                        else:
-                                            self.move(-4,0)
-                                            can_move = True
-                                    else:
-                                        self.move(-2,0)
-                                        can_move = True
-                            elif move == 2:
-                                if self.isPossibleMove(0,2) == True :
-                                    if self.board[position[0]][position[1]+2].get_player() !=0:
-                                        if position[1] == (self.__size-1)*2-2 :
-                                            print("case occupée")
-                                        else:
-                                            self.move(0,4)
-                                            can_move = True
-                                    else :
-                                        self.move(0,2)
-                                        can_move = True
-                            elif move == 3:
-                                if self.isPossibleMove(2,0) == True :
-                                    if self.board[position[0]+2][position[1]].get_player() !=0:
-                                        if position[0] == (self.__size-1)*2-2 :
-                                            print("case occupée")
-                                        else:
-                                            self.move(4,0)
-                                            can_move = True
-                                    else :
-                                        self.move(2,0)
-                                        can_move = True
-                            elif move == 4:
-                                if self.isPossibleMove(0,-2) == True :
-                                    if self.board[position[0]][position[1]-2].get_player() !=0:
-                                        if position[1] == 2 :
-                                                print("case occupée")
-                                        else:
-                                            self.move(0,-4)
-                                            can_move = True
-                                    else :
-                                        self.move(0,-2)
-                                        can_move = True
-            if self.victory() == True :
-                jeu.displayBoard()
-                break    
-            jeu.displayBoard()
-            print()
-            self.refreshCurrentPlayer()    
-        print("EH JOUEUR", self.current_player.get_player(), " BRAVO SAL BATARD !!! ")            
+    def refreshPossibleCaseMovementForCurrentPlayer(self):
+        position = self.current_player.displayPlace()
+        list_possible_move = self.allPossibleMoveForPlayer()
+        for coord in list_possible_move :
+            case = self.board[position[0]+coord[0]][position[1]+coord[1]]
+            case.set_possibleMove([coord[0],coord[1]])
             
+    def resetPossibleCaseMovement(self):
+        for i in range(self.__size*2-1):
+            if i%2 == 0 :
+                for j in range(self.__size*2-1):
+                    if j%2 == 0 :
+                        case = self.board[i][j]
+                        case.set_possibleMove(0)
+                    
 
     #partie IA
-    
+    def game(self) :
+        jeu.start()
+        self.refreshPossibleCaseMovementForCurrentPlayer()
+        jeu.displayBoard()
+        
     def allPossibleMoveForPlayer(self):
         list = []
         position = self.current_player.displayPlace()
@@ -590,7 +580,7 @@ class Board:
 # taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
 # nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
 # nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 40) :"))
-jeu = Board(5, 4, 4)
+jeu = Board(7, 2, 20)
 # print(jeu.allPossibleBuildFence())
 jeu.game()
 mainloop()
