@@ -199,6 +199,10 @@ class Board:
             jeu.displayBoard()
             self.canvas.unbind_all("<Button-1>")
             print("EH JOUEUR", self.current_player.get_player(), " BRAVO SAL BATARD !!! ") 
+            for child in self.window.winfo_children():
+                if child.winfo_exists():
+                    child.destroy()
+            self.windowVictory()
         else:
             self.resetPossibleCaseMovement() 
             self.refreshCurrentPlayer()
@@ -284,10 +288,6 @@ class Board:
             self.oritentation_button.pack(side="right")
             self.canvas.update()
             self.button_created = True
-        if self.victory() == True:
-            for child in self.window.winfo_children():
-                child.destroy()
-            self.windowVictory()
         tab =[]
         self.pillar_rects = []
         for i in range(self.__size*2-1):
