@@ -188,22 +188,18 @@ class Board:
                                 if i < position[0]:
                                     self.move_case = self.canvas.create_image(j*50, i*50, image=self.moove_possible, anchor="nw", tags="move_case1")
                                     self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
-                                    self.canvas.lower("move_case1")
                                 # Si la position de la case cliquable est en bas de la position du joueur
                                 elif i > position[0]:
                                     self.move_case = self.canvas.create_image(j*50, i*50, image=self.moove_possible, anchor="nw", tags="move_case3")
                                     self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
-                                    self.canvas.lower("move_case3")
                                 # si la case cliquable est à droite du joueur
                                 elif j > position[1]:
                                     self.move_case = self.canvas.create_image(j*50, i*50, image=self.moove_possible, anchor="nw", tags=f"move_case2")
                                     self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
-                                    self.canvas.lower("move_case2")
                                 # si la case cliquable est à gauche du joueur
                                 elif j < position[1]:
                                     self.move_case = self.canvas.create_image(j*50, i*50, image=self.moove_possible, anchor="nw", tags=f"move_case4")
                                     self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
-                                    self.canvas.lower("move_case4")
                             else :
                                 self.canvas.create_image(j*50, i*50, image=self.no_player, anchor="nw")
                         elif case.displayPlayer() == "P1" :
@@ -218,9 +214,9 @@ class Board:
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
                         if fence.displayFence() == "F1" :
-                            self.canvas.create_image(j*50+30, i*50, image=self.fence_height, anchor="nw")
+                            self.canvas.create_image(j*50+30, i*50, image=self.fence_height, anchor="nw", tags=str(i) + "_" + str(j))
                         else :
-                            self.canvas.create_image(j*50+30, i*50, image=self.fence_height_vide, anchor="nw")
+                            self.canvas.create_image(j*50+30, i*50, image=self.fence_height_vide, anchor="nw", tags=str(i) + "_" + str(j))
 
                 tab.append(tab2)
             else :
@@ -230,9 +226,9 @@ class Board:
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
                         if fence.displayFence() == "F1" :
-                            self.canvas.create_image(j*50 ,i*50+30, image=self.fence_width, anchor="nw", tags=[i,j])
+                            self.canvas.create_image(j*50 ,i*50+30, image=self.fence_width, anchor="nw", tags=str(i) + "_" + str(j))
                         else:
-                            self.canvas.create_image(j*50 ,i*50+30, image=self.fence_width_vide, anchor="nw", tags=[i,j])
+                            self.canvas.create_image(j*50 ,i*50+30, image=self.fence_width_vide, anchor="nw", tags=str(i) + "_" + str(j))
                     else :
                         pillar = self.board[i][j]
                         tab2.append(pillar.displayPillar())
@@ -247,18 +243,51 @@ class Board:
             print(x)
             
     def on_hover(self, event):
-        item_id = event.widget.find_closest(event.x, event.y)[0]
-        print("item :",item_id)
+        item_id = event.widget.find_withtag("current")[0]
         tags = self.canvas.gettags(item_id)
-        print(tags)
         if len(tags) >= 2 and item_id in self.pillar_rects:
-            self.canvas.itemconfig(item_id, image=self.pillar)
-            print("x :",tags[0],"y :",tags[1])
+            x = int(tags[0])
+            y = int(tags[1])
+            if self.isPossibleFence(x,y) == True :
+                self.canvas.itemconfig(item_id, image=self.pillar)
+                if self.fence_orientation == "vertical":
+                    fence = self.canvas.find_withtag(str(x-1) + "_" + str(y))
+                    item_id = fence[0]
+                    self.canvas.itemconfig(item_id, image=self.fence_height)
+                    fence = self.canvas.find_withtag(str(x+1) + "_" + str(y))
+                    item_id = fence[0]
+                    self.canvas.itemconfig(item_id, image=self.fence_height)
+                else :
+                    fence = self.canvas.find_withtag(str(x) + "_" + str(y-1))
+                    item_id = fence[0]
+                    self.canvas.itemconfig(item_id, image=self.fence_width)
+                    fence = self.canvas.find_withtag(str(x) + "_" + str(y+1))
+                    item_id = fence[0]
+                    self.canvas.itemconfig(item_id, image=self.fence_width)
+                
     
     def on_leave(self, event):
-        item_id = event.widget.find_withtag(CURRENT)[0]
+        item_id = event.widget.find_withtag("current")[0]
+        tags = self.canvas.gettags(item_id)
         if item_id in self.pillar_rects:
-            self.canvas.itemconfig(item_id, image=self.pillar_vide)
+            x = int(tags[0])
+            y = int(tags[1])
+            if self.isPossibleFence(x,y) == True :
+                self.canvas.itemconfig(item_id, image=self.pillar_vide)
+                if self.fence_orientation == "vertical":
+                    fence = self.canvas.find_withtag(str(x-1) + "_" + str(y))
+                    item_id = fence[0]
+                    self.canvas.itemconfig(item_id, image=self.fence_height_vide)
+                    fence = self.canvas.find_withtag(str(x+1) + "_" + str(y))
+                    item_id = fence[0]
+                    self.canvas.itemconfig(item_id, image=self.fence_height_vide)
+                else :
+                        fence = self.canvas.find_withtag(str(x) + "_" + str(y-1))
+                        item_id = fence[0]
+                        self.canvas.itemconfig(item_id, image=self.fence_width_vide)
+                        fence = self.canvas.find_withtag(str(x) + "_" + str(y+1))
+                        item_id = fence[0]
+                        self.canvas.itemconfig(item_id, image=self.fence_width_vide)
 
 
     def decideIALevel(self, player):
@@ -615,5 +644,6 @@ class Board:
 # nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 50) :"))
 jeu = Board(7, 2, 20)
 # print(jeu.allPossibleBuildFence())
+jeu.changeFenceOrientation()
 jeu.game()
 mainloop()
