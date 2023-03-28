@@ -22,7 +22,8 @@ class Board:
         self.players = []
         self.board = []
         self.fence_orientation = "horizontal"    
-        self.id_possible_move = 0    
+        self.id_possible_move = 0 
+        self.button_created = False  
         # Création des images du plateau
         # IMAGE DES CASES
         width = 80
@@ -80,7 +81,20 @@ class Board:
         pillar_vide = Image.open("./assets/pillier_vide.png")
         pillar_vide = pillar_vide.resize((20, 20))
         self.pillar_vide = ImageTk.PhotoImage(pillar_vide)
+        
+        # IMAGE DES OBJETS HOVERED
+        fence_width_hover = Image.open("./assets/fence_width_hover.png")
+        fence_width_hover = fence_width_hover.resize((fence_horizontal_width, fence_horizontal_height))
+        self.fence_width_hover = ImageTk.PhotoImage(fence_width_hover)
+        
+        fence_height_hover = Image.open("./assets/fence_height_hover.png")
+        fence_height_hover = fence_height_hover.resize((fence_vertical_width, fence_vertical_height))
+        self.fence_height_hover = ImageTk.PhotoImage(fence_height_hover)
 
+        pillar_hover = Image.open("./assets/pillier_hover.png")
+        pillar_hover = pillar_hover.resize((20, 20))
+        self.pillar_hover = ImageTk.PhotoImage(pillar_hover)
+        
         for i in range(self.__size*2-1):
             if i%2 == 0 :
                 tab2 = []
@@ -172,6 +186,10 @@ class Board:
     def displayBoard(self): 
         self.canvas = Canvas(self.window, width=1000, height=700, bg="gray")
         self.canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
+        if self.button_created == False:
+            self.oritentation_button = Button(self.window, text="Orienter les barrières", command=self.changeFenceOrientation)
+            self.oritentation_button.pack(side="right")
+            self.button_created = True
         tab =[]
         self.pillar_rects = []
         for i in range(self.__size*2-1):
@@ -248,22 +266,23 @@ class Board:
         if len(tags) >= 2 and item_id in self.pillar_rects:
             x = int(tags[0])
             y = int(tags[1])
+            self.canvas.tag_bind(item_id, "<Button-1>", lambda event, x=x, y=y: self.buildFence(x, y))
             if self.isPossibleFence(x,y) == True :
-                self.canvas.itemconfig(item_id, image=self.pillar)
+                self.canvas.itemconfig(item_id, image=self.pillar_hover)
                 if self.fence_orientation == "vertical":
                     fence = self.canvas.find_withtag(str(x-1) + "_" + str(y))
                     item_id = fence[0]
-                    self.canvas.itemconfig(item_id, image=self.fence_height)
+                    self.canvas.itemconfig(item_id, image=self.fence_height_hover)
                     fence = self.canvas.find_withtag(str(x+1) + "_" + str(y))
                     item_id = fence[0]
-                    self.canvas.itemconfig(item_id, image=self.fence_height)
+                    self.canvas.itemconfig(item_id, image=self.fence_height_hover)
                 else :
                     fence = self.canvas.find_withtag(str(x) + "_" + str(y-1))
                     item_id = fence[0]
-                    self.canvas.itemconfig(item_id, image=self.fence_width)
+                    self.canvas.itemconfig(item_id, image=self.fence_width_hover)
                     fence = self.canvas.find_withtag(str(x) + "_" + str(y+1))
                     item_id = fence[0]
-                    self.canvas.itemconfig(item_id, image=self.fence_width)
+                    self.canvas.itemconfig(item_id, image=self.fence_width_hover)
                 
     
     def on_leave(self, event):
@@ -365,6 +384,7 @@ class Board:
     
     
     def buildFence(self,x,y):
+        print("buildFence")
         pillar = self.board[x][y]
         pillar.buildPillar()
         if self.fence_orientation == "vertical":
@@ -379,6 +399,7 @@ class Board:
             fence.buildFence()
         nb_fence_current_player  = self.current_player.get_nb_fence()
         self.current_player.set_fence(nb_fence_current_player-1)
+        jeu.displayBoard()
         
     def deBuildFence(self,x,y):
         pillar = self.board[x][y]
@@ -642,7 +663,7 @@ class Board:
 # taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
 # nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
 # nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 50) :"))
-jeu = Board(7, 2, 20)
+jeu = Board(7, 2, 4)
 # print(jeu.allPossibleBuildFence())
 jeu.changeFenceOrientation()
 jeu.game()
