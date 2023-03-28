@@ -99,19 +99,19 @@ class Board:
         
         # Image de victoire
         img_win_p1 = Image.open("./assets/victory_p1.png")
-        img_win_p1 = img_win_p1.resize((600, 600))
+        img_win_p1 = img_win_p1.resize((600, 500))
         self.img_win_p1 = ImageTk.PhotoImage(img_win_p1)
         
         img_win_p2 = Image.open("./assets/victory_p2.png")
-        img_win_p2 = img_win_p2.resize((600, 600))
+        img_win_p2 = img_win_p2.resize((600, 500))
         self.img_win_p2 = ImageTk.PhotoImage(img_win_p2)
         
         img_win_p3 = Image.open("./assets/victory_p3.png")
-        img_win_p3 = img_win_p3.resize((600, 600))
+        img_win_p3 = img_win_p3.resize((600, 500))
         self.img_win_p3 = ImageTk.PhotoImage(img_win_p3)       
         
         img_win_p4 = Image.open("./assets/victory_p4.png")
-        img_win_p4 = img_win_p4.resize((600, 600))
+        img_win_p4 = img_win_p4.resize((600, 500))
         self.img_win_p4 = ImageTk.PhotoImage(img_win_p4) 
         
         
@@ -237,7 +237,7 @@ class Board:
         self.window.minsize(600, 650)
         self.center_window()
         # Affichage de l'image de fond
-        victory_canvas = Canvas(self.window, width=600, height=600, bg="green", bd=0, highlightthickness=0)
+        victory_canvas = Canvas(self.window, width=600, height=500, bg="green", bd=0, highlightthickness=0)
         if self.current_player.get_player() == 1:
             victory_canvas.create_image(0, 0, anchor="nw", image=self.img_win_p1)
         elif self.current_player.get_player() == 2:
