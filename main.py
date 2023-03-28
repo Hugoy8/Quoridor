@@ -25,7 +25,6 @@ class Board:
         self.board = []
         self.fence_orientation = "horizontal"    
         self.id_possible_move = 0 
-        self.button_created = False  
         # Création des images du plateau
         # IMAGE DES CASES
         width = 80
@@ -114,7 +113,13 @@ class Board:
         img_win_p4 = img_win_p4.resize((600, 500))
         self.img_win_p4 = ImageTk.PhotoImage(img_win_p4) 
         
-        
+        if size == 5:
+            self.canvas_game_width = 478
+            self.canvas_game_height = 478
+        elif size == 7:
+            self.canvas_game_width = 678
+            self.canvas_game_height = 678
+
         for i in range(self.__size*2-1):
             if i%2 == 0 :
                 tab2 = []
@@ -260,24 +265,9 @@ class Board:
         
 
     def displayBoard(self): 
-        self.canvas = Canvas(self.window, width=900, height=700, bg="gray")
+        self.canvas = Canvas(self.window, width=self.canvas_game_width, height=self.canvas_game_height, bg="gray")
         self.canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
-        if self.button_created == False:
-            self.oritentation_button = Button(
-            self.window, 
-            text=f"Orientation : {self.fence_orientation}", 
-            command=self.changeFenceOrientation,
-            bg="#2E9000",
-            fg="#513116",
-            font=("Arial", 16),
-            padx=20,
-            pady=10,
-            borderwidth=2,
-            relief="groove"
-            )
-            self.oritentation_button.pack(side="right")
-            self.canvas.update()
-            self.button_created = True
+        self.window.bind("<o>", self.changeFenceOrientation)
         tab =[]
         self.pillar_rects = []
         for i in range(self.__size*2-1):
@@ -440,7 +430,7 @@ class Board:
         self.current_player.move(position[0]+x,position[1]+y)
                     
     
-    def changeFenceOrientation(self):
+    def changeFenceOrientation(self, event=None):
         if self.fence_orientation == "vertical":
             self.fence_orientation = "horizontal"
         else :
@@ -752,7 +742,7 @@ class Board:
 # taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
 # nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
 # nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 50) :"))
-jeu = Board(5, 2, 4)
+jeu = Board(7, 2, 4)
 # print(jeu.allPossibleBuildFence())
 jeu.changeFenceOrientation()
 jeu.game()
