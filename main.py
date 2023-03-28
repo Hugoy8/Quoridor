@@ -236,39 +236,29 @@ class Board:
         self.window.maxsize(600, 650)
         self.window.minsize(600, 650)
         self.center_window()
-        self.window.config(background='#F0F0F0')
-        
-        
-        victory_canvas = Canvas(self.window, width=600, height=700)
-        victory_canvas.pack()
-
-        # Affichage du texte de victoire
-        victory_text = victory_canvas.create_text(0, 0, text=f"Victoire du joueur {self.current_player.get_player()} !", font=("Arial", 10), fill="red")
-        victory_text_bbox = victory_canvas.bbox(victory_text)
-        victory_text_width = victory_text_bbox[2] - victory_text_bbox[0]
-        victory_text_height = victory_text_bbox[3] - victory_text_bbox[1]
-        victory_canvas.move(victory_text, (600 - victory_text_width) / 2, (700 - victory_text_height) / 2)
-
         # Affichage de l'image de fond
+        victory_canvas = Canvas(self.window, width=600, height=600, bg="green", bd=0, highlightthickness=0)
         if self.current_player.get_player() == 1:
             victory_canvas.create_image(0, 0, anchor="nw", image=self.img_win_p1)
         elif self.current_player.get_player() == 2:
-            victory_canvas.create_image(0, 0, anchor="nw", image=self.img_win_p2)
+            victory_canvas.create_image(0, 20, anchor="nw", image=self.img_win_p2)
         elif self.current_player.get_player() == 3:
             victory_canvas.create_image(0, 0, anchor="nw", image=self.img_win_p3)
         elif self.current_player.get_player() == 4:
             victory_canvas.create_image(0, 0, anchor="nw", image=self.img_win_p4)
+        victory_canvas.pack()
 
-        button_frame = Frame(self.window, bg="white")
-        button_frame.pack()
+        # Ajout des boutons
+        button_frame = Frame(self.window, bg="green")
+        button_frame.pack(side="top", expand=True, fill="both")
 
-        quit_button = Button(button_frame, text="Quitter", font=("Arial", 14), fg="red", bd=0, highlightthickness=0, command=self.window.destroy)
-        quit_button.pack(side="right", padx=20, pady=20)
+        quit_button = Button(button_frame, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, command=self.window.destroy)
+        quit_button.pack(side=LEFT, padx=110)
 
-        replay_button = Button(button_frame, text="Rejouer", font=("Arial", 14), fg="green", bd=0, highlightthickness=0)
-        replay_button.pack(side="left", padx=20, pady=20)
-
+        replay_button = Button(button_frame, text="Rejouer", font=("Arial", 14), fg="white", bg="#78B000", bd=2, highlightthickness=0)
+        replay_button.pack(side=LEFT, padx=100)
         
+
     def displayBoard(self): 
         self.canvas = Canvas(self.window, width=900, height=700, bg="gray")
         self.canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
