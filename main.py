@@ -11,10 +11,10 @@ class Board:
     
     def __init__(self, size, nb_players, nb_fence):
         self.window = Tk()
-        self.window.geometry("1400x700")
+        self.window.geometry("1500x700")
         self.window.title("Quoridor")
-        self.window.maxsize(1400, 700)
-        self.window.minsize(1400, 700)
+        self.window.maxsize(1500, 700)
+        self.window.minsize(1500, 700)
         self.window.iconbitmap('./assets/logo.ico')
         self.__size = size
         self.__nb_players = nb_players
@@ -58,11 +58,19 @@ class Board:
         fence_height = fence_height.resize((fence_vertical_width, fence_vertical_height))
         self.fence_height = ImageTk.PhotoImage(fence_height)
         
+        fence_height_vide = Image.open("./assets/fence_height_vide.png")
+        fence_height_vide = fence_height_vide.resize((fence_vertical_width, fence_vertical_height))
+        self.fence_height_vide = ImageTk.PhotoImage(fence_height_vide)
+        
         fence_horizontal_width = 80
         fence_horizontal_height = 20
         fence_width = Image.open("./assets/fence_width.png")
         fence_width = fence_width.resize((fence_horizontal_width, fence_horizontal_height))
         self.fence_width = ImageTk.PhotoImage(fence_width)
+        
+        fence_width_vide = Image.open("./assets/fence_width_vide.png")
+        fence_width_vide = fence_width_vide.resize((fence_horizontal_width, fence_horizontal_height))
+        self.fence_width_vide = ImageTk.PhotoImage(fence_width_vide)
         
         # IMAGE DES PILLIERS
         pillar = Image.open("./assets/pillier.png")
@@ -170,10 +178,6 @@ class Board:
             if i%2 == 0 :
                 tab2 = []
                 for j in range(self.__size*2-1):
-                    x1 = i * 50
-                    y1 = j * 50
-                    x2 = x1 + 50
-                    y2 = y1 + 50
                     if j%2 == 0 :
                         case = self.board[i][j]
                         tab2.append(case.displayPlayer())
@@ -184,18 +188,22 @@ class Board:
                                 if i < position[0]:
                                     self.move_case = self.canvas.create_image(j*50, i*50, image=self.moove_possible, anchor="nw", tags="move_case1")
                                     self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
+                                    self.canvas.lower("move_case1")
                                 # Si la position de la case cliquable est en bas de la position du joueur
                                 elif i > position[0]:
                                     self.move_case = self.canvas.create_image(j*50, i*50, image=self.moove_possible, anchor="nw", tags="move_case3")
                                     self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
+                                    self.canvas.lower("move_case3")
                                 # si la case cliquable est à droite du joueur
                                 elif j > position[1]:
                                     self.move_case = self.canvas.create_image(j*50, i*50, image=self.moove_possible, anchor="nw", tags=f"move_case2")
                                     self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
+                                    self.canvas.lower("move_case2")
                                 # si la case cliquable est à gauche du joueur
                                 elif j < position[1]:
                                     self.move_case = self.canvas.create_image(j*50, i*50, image=self.moove_possible, anchor="nw", tags=f"move_case4")
                                     self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
+                                    self.canvas.lower("move_case4")
                             else :
                                 self.canvas.create_image(j*50, i*50, image=self.no_player, anchor="nw")
                         elif case.displayPlayer() == "P1" :
@@ -211,28 +219,29 @@ class Board:
                         tab2.append(fence.displayFence())
                         if fence.displayFence() == "F1" :
                             self.canvas.create_image(j*50+30, i*50, image=self.fence_height, anchor="nw")
+                        else :
+                            self.canvas.create_image(j*50+30, i*50, image=self.fence_height_vide, anchor="nw")
+
                 tab.append(tab2)
             else :
                 tab2 = []
                 for j in range(self.__size*2-1):
-                    x1 = i * 50
-                    y1 = j * 50
-                    x2 = x1 + 50
-                    y2 = y1 + 50
                     if j%2 == 0 :
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
                         if fence.displayFence() == "F1" :
-                            self.canvas.create_image(j*50 ,i*50+30, image=self.fence_width, anchor="nw")
+                            self.canvas.create_image(j*50 ,i*50+30, image=self.fence_width, anchor="nw", tags=[i,j])
+                        else:
+                            self.canvas.create_image(j*50 ,i*50+30, image=self.fence_width_vide, anchor="nw", tags=[i,j])
                     else :
                         pillar = self.board[i][j]
                         tab2.append(pillar.displayPillar())
                         if pillar.displayPillar() == "B1" :
-                            self.pillar_rects.append(self.canvas.create_image(j*50+30, i*50+30, image=self.pillar, anchor="nw", tags=f"{i} {j}"))
+                            self.pillar_rects.append(self.canvas.create_image(j*50+30, i*50+30, image=self.pillar, anchor="nw", tags=[i,j]))
                         else :
-                            self.pillar_rects.append(self.canvas.create_image(j*50+30, i*50+30, image=self.pillar_vide, anchor="nw", tags=f"{i} {j}"))
+                            self.pillar_rects.append(self.canvas.create_image(j*50+30, i*50+30, image=self.pillar_vide, anchor="nw", tags=[i,j]))
                         self.canvas.tag_bind(self.pillar_rects[-1], "<Enter>", self.on_hover)
-                        self.canvas.tag_bind(self.pillar_rects[-1], "<Enter>", self.on_leave)
+                        self.canvas.tag_bind(self.pillar_rects[-1], "<Leave>", self.on_leave)
                 tab.append(tab2)
         for x in tab :
             print(x)
@@ -241,11 +250,15 @@ class Board:
         item_id = event.widget.find_closest(event.x, event.y)[0]
         print("item :",item_id)
         tags = self.canvas.gettags(item_id)
-        if len(tags) >= 2:
+        print(tags)
+        if len(tags) >= 2 and item_id in self.pillar_rects:
+            self.canvas.itemconfig(item_id, image=self.pillar)
             print("x :",tags[0],"y :",tags[1])
     
     def on_leave(self, event):
         item_id = event.widget.find_withtag(CURRENT)[0]
+        if item_id in self.pillar_rects:
+            self.canvas.itemconfig(item_id, image=self.pillar_vide)
 
 
     def decideIALevel(self, player):
@@ -599,7 +612,7 @@ class Board:
             # Si taille plateau = 5 : max barriere = 20
 # taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
 # nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
-# nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 40) :"))
+# nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 50) :"))
 jeu = Board(7, 2, 20)
 # print(jeu.allPossibleBuildFence())
 jeu.game()
