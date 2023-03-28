@@ -175,12 +175,17 @@ class Board:
                     self.move(0,-2)
                     can_move = True
         if self.victory() == True :
-                jeu.displayBoard()
-                print("EH JOUEUR", self.current_player.get_player(), " BRAVO SAL BATARD !!! ") 
-        self.resetPossibleCaseMovement() 
-        self.refreshCurrentPlayer()
-        self.refreshPossibleCaseMovementForCurrentPlayer()
-        self.displayBoard()
+            jeu.displayBoard()
+            self.canvas.unbind_all("<Button-1>")
+            self.canvas.unbind_all("<B1-Motion>")
+            self.canvas.unbind_all("<ButtonRelease-1>")
+            print("EH JOUEUR", self.current_player.get_player(), " BRAVO SAL BATARD !!! ") 
+            alert_victory = self.canvas.create_text(500, 350, text=f"Le joueur n'{self.current_player.get_player()} à gagné !!! ", font=("Arial", 30), fill="red")
+        else:
+            self.resetPossibleCaseMovement() 
+            self.refreshCurrentPlayer()
+            self.refreshPossibleCaseMovementForCurrentPlayer()
+            self.displayBoard()
 
     
     def displayBoard(self): 
@@ -200,7 +205,7 @@ class Board:
                         case = self.board[i][j]
                         tab2.append(case.displayPlayer())
                         if case.displayPlayer() == "P0" :
-                            if case.get_possibleMove() != 0 :
+                            if case.get_possibleMove() != 0 and self.victory() == False:
                                 position = self.current_player.displayPlace()
                                 # si position de la case cliquable est en haut de la position du joueur
                                 if i < position[0]:
@@ -254,8 +259,9 @@ class Board:
                             self.pillar_rects.append(self.canvas.create_image(j*50+30, i*50+30, image=self.pillar, anchor="nw", tags=[i,j]))
                         else :
                             self.pillar_rects.append(self.canvas.create_image(j*50+30, i*50+30, image=self.pillar_vide, anchor="nw", tags=[i,j]))
-                        self.canvas.tag_bind(self.pillar_rects[-1], "<Enter>", self.on_hover)
-                        self.canvas.tag_bind(self.pillar_rects[-1], "<Leave>", self.on_leave)
+                        if self.victory() == False:
+                            self.canvas.tag_bind(self.pillar_rects[-1], "<Enter>", self.on_hover)
+                            self.canvas.tag_bind(self.pillar_rects[-1], "<Leave>", self.on_leave)
                 tab.append(tab2)
         for x in tab :
             print(x)
@@ -663,7 +669,7 @@ class Board:
 # taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
 # nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
 # nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 50) :"))
-jeu = Board(7, 2, 4)
+jeu = Board(5, 2, 4)
 # print(jeu.allPossibleBuildFence())
 jeu.changeFenceOrientation()
 jeu.game()
