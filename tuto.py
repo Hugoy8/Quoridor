@@ -1,21 +1,20 @@
 import tkinter as tk
 
-# Créer le canevas
+# Créer la fenêtre principale
 root = tk.Tk()
-canvas = tk.Canvas(root, width=300, height=200)
-canvas.pack()
 
-# Ajouter des éléments
-rectangle = canvas.create_rectangle(50, 50, 100, 100, fill='red')
-cercle = canvas.create_oval(75, 75, 125, 125, fill='blue')
+# Obtenir la largeur et la hauteur de l'écran
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+width = 500
+height = 300
+# Calculer les coordonnées x et y de la fenêtre
+x = (screen_width // 2) - (width // 2)
+y = (screen_height // 2) - (height // 2)
 
-# Trouver les éléments au-dessus du point (100, 100)
-elements = canvas.find_above(100, 100)  # Correction : ne fournir que deux arguments
-print(elements)  # Output: [2]
+# Définir la taille et la position de la fenêtre
 
-# Déplacer le cercle au-dessus du rectangle
-canvas.tag_raise(cercle, rectangle)
+root.geometry(f"{width}x{height}+{x}+{y}")
 
-# Trouver les éléments au-dessus du point (100, 100) à nouveau
-elements = canvas.find_above(100, 100)  # Correction : ne fournir que deux arguments
-print(elements)  # Output: [1, 2]
+# Afficher la fenêtre
+root.mainloop()

@@ -16,6 +16,8 @@ class Board:
         self.window.maxsize(1500, 700)
         self.window.minsize(1500, 700)
         self.window.iconbitmap('./assets/logo.ico')
+        self.window_game = True
+        self.center_window()
         self.__size = size
         self.__nb_players = nb_players
         self.__nb_fence = nb_fence
@@ -95,6 +97,24 @@ class Board:
         pillar_hover = pillar_hover.resize((20, 20))
         self.pillar_hover = ImageTk.PhotoImage(pillar_hover)
         
+        # Image de victoire
+        img_win_p1 = Image.open("./assets/victory_p1.png")
+        img_win_p1 = img_win_p1.resize((600, 600))
+        self.img_win_p1 = ImageTk.PhotoImage(img_win_p1)
+        
+        img_win_p2 = Image.open("./assets/victory_p2.png")
+        img_win_p2 = img_win_p2.resize((600, 600))
+        self.img_win_p2 = ImageTk.PhotoImage(img_win_p2)
+        
+        img_win_p3 = Image.open("./assets/victory_p3.png")
+        img_win_p3 = img_win_p3.resize((600, 600))
+        self.img_win_p3 = ImageTk.PhotoImage(img_win_p3)       
+        
+        img_win_p4 = Image.open("./assets/victory_p4.png")
+        img_win_p4 = img_win_p4.resize((600, 600))
+        self.img_win_p4 = ImageTk.PhotoImage(img_win_p4) 
+        
+        
         for i in range(self.__size*2-1):
             if i%2 == 0 :
                 tab2 = []
@@ -113,6 +133,7 @@ class Board:
                     else :
                         tab2.append(Pillar(0))
                 self.board.append(tab2)
+        
     
     def caseClicked(self, event):
         item_id = event.widget.find_closest(event.x, event.y)[0]
@@ -177,24 +198,96 @@ class Board:
         if self.victory() == True :
             jeu.displayBoard()
             self.canvas.unbind_all("<Button-1>")
-            self.canvas.unbind_all("<B1-Motion>")
-            self.canvas.unbind_all("<ButtonRelease-1>")
             print("EH JOUEUR", self.current_player.get_player(), " BRAVO SAL BATARD !!! ") 
-            alert_victory = self.canvas.create_text(500, 350, text=f"Le joueur n'{self.current_player.get_player()} à gagné !!! ", font=("Arial", 30), fill="red")
         else:
             self.resetPossibleCaseMovement() 
             self.refreshCurrentPlayer()
             self.refreshPossibleCaseMovementForCurrentPlayer()
             self.displayBoard()
 
-    
+    def center_window(self):
+        # Récupération de la résolution de l'écran
+        screen_width = self.window.winfo_screenwidth()
+        screen_height = self.window.winfo_screenheight()
+
+        # Calcul de la position x et y pour centrer la fenêtre
+        if self.window_game == True:
+            x = (screen_width - 1500) // 2
+            y = (screen_height - 700) // 2
+        else:
+            x = (screen_width - 600) // 2
+            y = (screen_height - 650) // 2
+
+        # Configuration de la fenêtre
+        if self.window_game == True:
+            self.window.geometry(f"1500x700+{x}+{y}")
+            self.window_game = False
+        else:
+            self.window.geometry(f"600x650+{x}+{y}")
+        
+        
+    def windowVictory(self):
+        self.window.geometry("600x650")
+        self.window.title("Quoridor")
+        self.window.maxsize(600, 650)
+        self.window.minsize(600, 650)
+        self.center_window()
+        self.window.config(background='#F0F0F0')
+        
+        
+        victory_canvas = Canvas(self.window, width=600, height=700)
+        victory_canvas.pack()
+
+        # Affichage du texte de victoire
+        victory_text = victory_canvas.create_text(0, 0, text=f"Victoire du joueur {self.current_player.get_player()} !", font=("Arial", 10), fill="red")
+        victory_text_bbox = victory_canvas.bbox(victory_text)
+        victory_text_width = victory_text_bbox[2] - victory_text_bbox[0]
+        victory_text_height = victory_text_bbox[3] - victory_text_bbox[1]
+        victory_canvas.move(victory_text, (600 - victory_text_width) / 2, (700 - victory_text_height) / 2)
+
+        # Affichage de l'image de fond
+        if self.current_player.get_player() == 1:
+            victory_canvas.create_image(0, 0, anchor="nw", image=self.img_win_p1)
+        elif self.current_player.get_player() == 2:
+            victory_canvas.create_image(0, 0, anchor="nw", image=self.img_win_p2)
+        elif self.current_player.get_player() == 3:
+            victory_canvas.create_image(0, 0, anchor="nw", image=self.img_win_p3)
+        elif self.current_player.get_player() == 4:
+            victory_canvas.create_image(0, 0, anchor="nw", image=self.img_win_p4)
+
+        button_frame = Frame(self.window, bg="white")
+        button_frame.pack()
+
+        quit_button = Button(button_frame, text="Quitter", font=("Arial", 14), fg="red", bd=0, highlightthickness=0, command=self.window.destroy)
+        quit_button.pack(side="right", padx=20, pady=20)
+
+        replay_button = Button(button_frame, text="Rejouer", font=("Arial", 14), fg="green", bd=0, highlightthickness=0)
+        replay_button.pack(side="left", padx=20, pady=20)
+
+        
     def displayBoard(self): 
-        self.canvas = Canvas(self.window, width=1000, height=700, bg="gray")
+        self.canvas = Canvas(self.window, width=900, height=700, bg="gray")
         self.canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
         if self.button_created == False:
-            self.oritentation_button = Button(self.window, text="Orienter les barrières", command=self.changeFenceOrientation)
+            self.oritentation_button = Button(
+            self.window, 
+            text=f"Orientation : {self.fence_orientation}", 
+            command=self.changeFenceOrientation,
+            bg="#2E9000",
+            fg="#513116",
+            font=("Arial", 16),
+            padx=20,
+            pady=10,
+            borderwidth=2,
+            relief="groove"
+            )
             self.oritentation_button.pack(side="right")
+            self.canvas.update()
             self.button_created = True
+        if self.victory() == True:
+            for child in self.window.winfo_children():
+                child.destroy()
+            self.windowVictory()
         tab =[]
         self.pillar_rects = []
         for i in range(self.__size*2-1):
