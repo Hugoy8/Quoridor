@@ -201,7 +201,7 @@ class Board:
                     self.move(0,-2)
                     can_move = True
         if self.victory() == True :
-            jeu.displayBoard()
+            self.displayBoard()
             self.canvas.unbind_all("<Button-1>")
             print("EH JOUEUR", self.current_player.get_player(), " BRAVO SAL BATARD !!! ") 
             for child in self.window.winfo_children():
@@ -345,8 +345,8 @@ class Board:
         if len(tags) >= 2 and item_id in self.pillar_rects:
             x = int(tags[0])
             y = int(tags[1])
-            self.canvas.tag_bind(item_id, "<Button-1>", lambda event, x=x, y=y: self.buildFence(x, y))
             if self.isPossibleFence(x,y) == True :
+                self.canvas.tag_bind(item_id, "<Button-1>", lambda event, x=x, y=y: self.buildFence(x, y))
                 self.canvas.itemconfig(item_id, image=self.pillar_hover)
                 if self.fence_orientation == "vertical":
                     fence = self.canvas.find_withtag(str(x-1) + "_" + str(y))
@@ -371,7 +371,9 @@ class Board:
             x = int(tags[0])
             y = int(tags[1])
             if self.isPossibleFence(x,y) == True :
-                self.canvas.itemconfig(item_id, image=self.pillar_vide)
+                pillar = self.board[x][y]
+                if pillar.get_build() != 1:
+                    self.canvas.itemconfig(item_id, image=self.pillar_vide)
                 if self.fence_orientation == "vertical":
                     fence = self.canvas.find_withtag(str(x-1) + "_" + str(y))
                     item_id = fence[0]
@@ -478,7 +480,7 @@ class Board:
             fence.buildFence()
         nb_fence_current_player  = self.current_player.get_nb_fence()
         self.current_player.set_fence(nb_fence_current_player-1)
-        jeu.displayBoard()
+        self.displayBoard()
         
     def deBuildFence(self,x,y):
         pillar = self.board[x][y]
@@ -653,7 +655,7 @@ class Board:
         
     def fenceNotCloseAccesGoal(self):
         for i in range(self.__nb_players):
-            if jeu.seachPossibleWayForPlayer(i+1) == False :
+            if self.seachPossibleWayForPlayer(i+1) == False :
                 return False
         return True
     
@@ -692,10 +694,10 @@ class Board:
                     
 
     #partie IA
-    def game(self) :
-        jeu.start()
-        self.refreshPossibleCaseMovementForCurrentPlayer()
-        jeu.displayBoard()
+    # def game(self) :
+    #     jeu.start()
+    #     self.refreshPossibleCaseMovementForCurrentPlayer()
+    #     jeu.displayBoard()
         
     def allPossibleMoveForPlayer(self):
         list = []
@@ -738,12 +740,18 @@ class Board:
                     list.append([i,j,1])
         return list
             
+            
+        
+        
+def restartGame(size, nb_players, nb_fences):
+    jeu = Board(size, nb_players , nb_fences)
+    jeu.start()
+    jeu.refreshPossibleCaseMovementForCurrentPlayer()
+    jeu.displayBoard()
             # Si taille plateau = 5 : max barriere = 20
 # taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
 # nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
 # nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 50) :"))
-jeu = Board(7, 2, 4)
 # print(jeu.allPossibleBuildFence())
-jeu.changeFenceOrientation()
-jeu.game()
+restartGame(7,2,4)
 mainloop()
