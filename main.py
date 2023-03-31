@@ -332,36 +332,59 @@ class Board:
                             self.pillar_rects.append(self.canvas.create_image(j*50+30, i*50+30, image=self.pillar, anchor="nw", tags=[i,j]))
                         else :
                             self.pillar_rects.append(self.canvas.create_image(j*50+30, i*50+30, image=self.pillar_vide, anchor="nw", tags=[i,j]))
+                        self.canvas.tag_bind(self.pillar_rects[-1], "<Button-1>", self.buildFenceOnClick)
                         if self.victory() == False:
                             self.canvas.tag_bind(self.pillar_rects[-1], "<Enter>", self.on_hover)
                             self.canvas.tag_bind(self.pillar_rects[-1], "<Leave>", self.on_leave)
+                            
                 tab.append(tab2)
         for x in tab :
             print(x)
             
+    def buildFenceOnClick(self,event):
+        if self.playerHasFence() == False :
+            print("Tu n'as plus de barrière :/")
+        else :
+            item_id = event.widget.find_withtag("current")[0], 
+            tags = self.canvas.gettags(item_id)
+            print(tags)
+            if len(tags) >= 2 :
+                x = int(tags[0])
+                y = int(tags[1])
+                print(x,y)
+                if self.isPossibleFence(x,y) == True :
+                    self.buildFence(x,y)
+                    if self.fenceNotCloseAccesGoal()==False :
+                        self.deBuildFence(x,y)
+                    else :
+                        self.resetPossibleCaseMovement() 
+                        self.refreshCurrentPlayer()
+                        self.refreshPossibleCaseMovementForCurrentPlayer()
+                        self.displayBoard()
+        
     def on_hover(self, event):
-        item_id = event.widget.find_withtag("current")[0]
-        tags = self.canvas.gettags(item_id)
-        if len(tags) >= 2 and item_id in self.pillar_rects:
-            x = int(tags[0])
-            y = int(tags[1])
-            if self.isPossibleFence(x,y) == True :
-                self.canvas.tag_bind(item_id, "<Button-1>", lambda event, x=x, y=y: self.buildFence(x, y))
-                self.canvas.itemconfig(item_id, image=self.pillar_hover)
-                if self.fence_orientation == "vertical":
-                    fence = self.canvas.find_withtag(str(x-1) + "_" + str(y))
-                    item_id = fence[0]
-                    self.canvas.itemconfig(item_id, image=self.fence_height_hover)
-                    fence = self.canvas.find_withtag(str(x+1) + "_" + str(y))
-                    item_id = fence[0]
-                    self.canvas.itemconfig(item_id, image=self.fence_height_hover)
-                else :
-                    fence = self.canvas.find_withtag(str(x) + "_" + str(y-1))
-                    item_id = fence[0]
-                    self.canvas.itemconfig(item_id, image=self.fence_width_hover)
-                    fence = self.canvas.find_withtag(str(x) + "_" + str(y+1))
-                    item_id = fence[0]
-                    self.canvas.itemconfig(item_id, image=self.fence_width_hover)
+        if self.playerHasFence() == True :
+            item_id = event.widget.find_withtag("current")[0]
+            tags = self.canvas.gettags(item_id)
+            if len(tags) >= 2 and item_id in self.pillar_rects:
+                x = int(tags[0])
+                y = int(tags[1])
+                if self.isPossibleFence(x,y) == True :
+                    self.canvas.itemconfig(item_id, image=self.pillar_hover)
+                    if self.fence_orientation == "vertical":
+                        fence = self.canvas.find_withtag(str(x-1) + "_" + str(y))
+                        item_id = fence[0]
+                        self.canvas.itemconfig(item_id, image=self.fence_height_hover)
+                        fence = self.canvas.find_withtag(str(x+1) + "_" + str(y))
+                        item_id = fence[0]
+                        self.canvas.itemconfig(item_id, image=self.fence_height_hover)
+                    else :
+                        fence = self.canvas.find_withtag(str(x) + "_" + str(y-1))
+                        item_id = fence[0]
+                        self.canvas.itemconfig(item_id, image=self.fence_width_hover)
+                        fence = self.canvas.find_withtag(str(x) + "_" + str(y+1))
+                        item_id = fence[0]
+                        self.canvas.itemconfig(item_id, image=self.fence_width_hover)
                 
     
     def on_leave(self, event):
