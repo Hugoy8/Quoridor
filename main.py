@@ -262,12 +262,21 @@ class Board:
 
         replay_button = Button(button_frame, text="Rejouer", font=("Arial", 14), fg="white", bg="#78B000", bd=2, highlightthickness=0)
         replay_button.pack(side=LEFT, padx=100)
-        
 
     def displayBoard(self): 
         self.canvas = Canvas(self.window, width=self.canvas_game_width, height=self.canvas_game_height, bg="gray")
         self.canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
-        self.window.bind("<o>", self.changeFenceOrientation)
+        Label(self.window, text=" Tour : Joueur "+str(self.current_player.get_player()), font=("Arial", 14), fg="gray").place(x=10, y=10)
+        Label(self.window, text=f"Nombre de barrières restantes : ", font=("Arial", 14) ).place(x=10, y=50)
+        for index, nbr_fence_player in enumerate(self.players):
+            print(nbr_fence_player.get_player(), nbr_fence_player.get_nb_fence())
+            a = nbr_fence_player.get_player()
+            b = nbr_fence_player.get_nb_fence()
+            if b == 0:
+                b = "Plus de "
+            Label(self.window, text=f"Joueur {a} : {b} barrières", font=("Arial", 14), fg="brown").place(x=10, y=80 + (index * 30))
+            
+        self.window.bind("<space>", self.changeFenceOrientation)
         tab =[]
         self.pillar_rects = []
         for i in range(self.__size*2-1):
