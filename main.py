@@ -231,6 +231,45 @@ class Board:
             self.refreshCurrentPlayer()
             self.refreshPossibleCaseMovementForCurrentPlayer()
             self.displayBoard()
+        while self.current_player.get_IALevel() != 0 :
+            if self.current_player.get_IALevel() == 1 :
+                list = [0,1]
+                action = random.choice(list)
+                if action == 1  and self.playerHasFence() == True and self.allPossibleBuildFence() !=[]:
+                    can_build = False
+                    while can_build == False :
+                        if self.current_player.get_IALevel() == 1:
+                            build = random.choice(self.allPossibleBuildFence())
+                            x_co_fence = build[0]
+                            y_co_fence = build[1]
+                            orientation = build[2]
+                            if orientation == 0 :
+                                self.fence_orientation = "vertical"
+                            else :
+                                self.fence_orientation = "horizontal"
+                            self.buildFence(x_co_fence,y_co_fence)
+                            if self.fenceNotCloseAccesGoal()==False :
+                                self.deBuildFence(x_co_fence,y_co_fence)
+                            else : 
+                                can_build = True
+                else :
+                    if self.current_player.get_IALevel() == 1 :
+                        movement = random.choice(self.allPossibleMoveForPlayer())
+                        self.move(movement[0],movement[1])
+            if self.victory() == True :
+                self.displayBoard()
+                self.canvas.unbind_all("<Button-1>")
+                print("EH JOUEUR", self.current_player.get_player(), " BRAVO SAL BATARD !!! ") 
+                for child in self.window.winfo_children():
+                    if child.winfo_exists():
+                        child.destroy()
+                self.windowVictory()
+                break
+            else:
+                self.resetPossibleCaseMovement() 
+                self.refreshCurrentPlayer()
+                self.refreshPossibleCaseMovementForCurrentPlayer()
+                self.displayBoard()                        
 
     def center_window(self):
         # Récupération de la résolution de l'écran
@@ -389,7 +428,46 @@ class Board:
                         self.refreshCurrentPlayer()
                         self.refreshPossibleCaseMovementForCurrentPlayer()
                         self.displayBoard()
-        
+                        while self.current_player.get_IALevel() != 0 :
+                            if self.current_player.get_IALevel() == 1 :
+                                list = [0,1]
+                                action = random.choice(list)
+                                if action == 1  and self.playerHasFence() == True and self.allPossibleBuildFence() !=[]:
+                                    can_build = False
+                                    while can_build == False :
+                                        if self.current_player.get_IALevel() == 1:
+                                            build = random.choice(self.allPossibleBuildFence())
+                                            x_co_fence = build[0]
+                                            y_co_fence = build[1]
+                                            orientation = build[2]
+                                            if orientation == 0 :
+                                                self.fence_orientation = "vertical"
+                                            else :
+                                                self.fence_orientation = "horizontal"
+                                            self.buildFence(x_co_fence,y_co_fence)
+                                            if self.fenceNotCloseAccesGoal()==False :
+                                                self.deBuildFence(x_co_fence,y_co_fence)
+                                            else : 
+                                                can_build = True
+                                else :
+                                    if self.current_player.get_IALevel() == 1 :
+                                        movement = random.choice(self.allPossibleMoveForPlayer())
+                                        self.move(movement[0],movement[1])
+                            if self.victory() == True :
+                                self.displayBoard()
+                                self.canvas.unbind_all("<Button-1>")
+                                print("EH JOUEUR", self.current_player.get_player(), " BRAVO SAL BATARD !!! ") 
+                                for child in self.window.winfo_children():
+                                    if child.winfo_exists():
+                                        child.destroy()
+                                self.windowVictory()
+                                break
+                            else:
+                                self.resetPossibleCaseMovement() 
+                                self.refreshCurrentPlayer()
+                                self.refreshPossibleCaseMovementForCurrentPlayer()
+                                self.displayBoard()         
+                        
     def on_hover(self, event):
         if self.playerHasFence() == True :
             item_id = event.widget.find_withtag("current")[0]
@@ -441,9 +519,9 @@ class Board:
 
 
     def decideIALevel(self, player):
-        # if int(input(f"Entrez 1 pour mettre le joueur {player} en IA ")) == 1 :
-        #     return 1
-        # return False
+        if int(input(f"Entrez 1 pour mettre le joueur {player} en IA ")) == 1 :
+            return 1
+        return False
         return 0
 
     
@@ -803,5 +881,5 @@ def restartGame(size, nb_players, nb_fences):
 # nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
 # nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 50) :"))
 # print(jeu.allPossibleBuildFence())
-restartGame(5,2,4)
+restartGame(7,4,8)
 mainloop()
