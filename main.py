@@ -48,14 +48,14 @@ class Board:
         elif size == 11:
             self.canvas_game_width = 878
             self.canvas_game_height = 878
-            width = 80
-            height = 80
-            fence_vertical_width = 20
-            fence_vertical_height = 80
-            fence_horizontal_width = 80
-            fence_horizontal_height = 20
-            pillar_taille = 20
-            self.widget_space = 50
+            width = 70
+            height = 70
+            fence_vertical_width = 10
+            fence_vertical_height = 73
+            fence_horizontal_width = 73
+            fence_horizontal_height = 10
+            pillar_taille = 11
+            self.widget_space = 41
             
         no_player = Image.open("./assets/case.png")
         no_player = no_player.resize((width, height))
@@ -247,7 +247,7 @@ class Board:
         self.window.minsize(600, 650)
         self.center_window()
         # Affichage de l'image de fond
-        victory_canvas = Canvas(self.window, width=600, height=500, bg="green", bd=0, highlightthickness=0)
+        victory_canvas = Canvas(self.window, width=600, height=500, bd=0, highlightthickness=0)
         if self.current_player.get_player() == 1:
             victory_canvas.create_image(0, 0, anchor="nw", image=self.img_win_p1)
         elif self.current_player.get_player() == 2:
@@ -259,7 +259,7 @@ class Board:
         victory_canvas.pack()
 
         # Ajout des boutons
-        button_frame = Frame(self.window, bg="green")
+        button_frame = Frame(self.window)
         button_frame.pack(side="top", expand=True, fill="both")
 
         quit_button = Button(button_frame, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, command=self.window.destroy)
@@ -876,8 +876,8 @@ def restartGame(size, nb_players, nb_IA, nb_fences):
 # Si taille plateau = 5 : max barriere = 20
 # taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
 # nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
-# nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 50) :"))
+# nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 40) :"))
 # print(jeu.allPossibleBuildFence())
 if __name__ == "__main__":
-    restartGame(5, 4, 3, 8)
+    restartGame(11, 4, 3, 8)
     mainloop()

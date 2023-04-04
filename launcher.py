@@ -39,49 +39,65 @@ class QuoridorLauncher:
     def toggle_checkbox_ia(self):
         if self.nbr_ia.get() == 1:
             self.ia_3.configure(state="disabled")
-            self.ia_0.configure(state="disabled")
+            self.ia_2.configure(state="disabled")
+            self.ia_1.configure(state="disabled")
         elif self.nbr_ia_2.get() == 1:
-            self.ia_1.configure(state="disabled")
             self.ia_0.configure(state="disabled")
-        elif self.nbr_ia_0.get() == 1:
-            self.ia_1.configure(state="disabled")
             self.ia_3.configure(state="disabled")
+            self.ia_1.configure(state="disabled")
+        elif self.nbr_ia_0.get() == 1:
+            self.ia_3.configure(state="disabled")
+            self.ia_2.configure(state="disabled")
+            self.ia_1.configure(state="disabled")
+        elif self.nbr_ia_3.get() == 1:
+            self.ia_0.configure(state="disabled")
+            self.ia_2.configure(state="disabled")
+            self.ia_1.configure(state="disabled")
         else:
             self.ia_1.configure(state="normal")
             self.ia_3.configure(state="normal")
             self.ia_0.configure(state="normal")
+            self.ia_2.configure(state="normal")
+            
             
     def numberIA(self):
         # Boutons de nombre d'IA
         self.nbr_ia = IntVar()
         self.nbr_ia_2 = IntVar()
         self.nbr_ia_0 = IntVar()
+        self.nbr_ia_3 = IntVar()
         self.ia_0 = Checkbutton(self.window, text="0", bg="#0D2338", fg="#FFF", variable=self.nbr_ia_0, cursor="hand2", command=self.toggle_checkbox_ia)
-        self.ia_0.place(x=450, y=520)
+        self.ia_0.place(x=440, y=520)
         self.ia_1 = Checkbutton(self.window, text="1", bg="#0D2338", fg="#FFF", variable=self.nbr_ia, cursor="hand2", command=self.toggle_checkbox_ia)
-        self.ia_1.place(x=500, y=520)
-        self.ia_3 = Checkbutton(self.window, text="3", bg="#0D2338", fg="#FFF", variable=self.nbr_ia_2, cursor="hand2", command=self.toggle_checkbox_ia)
-        self.ia_3.place(x=550, y=520)
+        self.ia_1.place(x=480, y=520)
+        self.ia_2 = Checkbutton(self.window, text="2", bg="#0D2338", fg="#FFF", variable=self.nbr_ia_2, cursor="hand2", command=self.toggle_checkbox_ia)
+        self.ia_2.place(x=520, y=520)
+        self.ia_3 = Checkbutton(self.window, text="3", bg="#0D2338", fg="#FFF", variable=self.nbr_ia_3, cursor="hand2", command=self.toggle_checkbox_ia)
+        self.ia_3.place(x=560, y=520)
     
     def get_selected_ia(self):
         selected_value = 0
         if self.nbr_ia.get() == 1:
             selected_value = 1
         elif self.nbr_ia_2.get() == 1:
+            selected_value = 2
+        elif self.nbr_ia_3.get() == 1:
             selected_value = 3
         return selected_value
         
     def update_ia_state(self):
         if self.nbr_player.get() == 1:
             self.ia_1.configure(state="normal")
-            self.ia_3.configure(state="normal")
+            self.ia_2.configure(state="disabled")
             self.ia_0.configure(state="disabled")
+            self.ia_3.configure(state="normal")
             self.p2.configure(state="disabled")
             self.p3.configure(state="disabled")
             self.p4.configure(state="disabled")
         elif self.nbr_player2.get() == 1:
             self.ia_0.configure(state="normal")
             self.ia_1.configure(state="disabled")
+            self.ia_2.configure(state="normal")
             self.ia_3.configure(state="disabled")
             self.p1.configure(state="disabled")
             self.p3.configure(state="disabled")
@@ -89,6 +105,7 @@ class QuoridorLauncher:
         elif self.nbr_player3.get() == 1:
             self.ia_1.configure(state="normal")
             self.ia_0.configure(state="disabled")
+            self.ia_2.configure(state="disabled")
             self.ia_3.configure(state="disabled")
             self.p2.configure(state="disabled")
             self.p1.configure(state="disabled")
@@ -96,6 +113,7 @@ class QuoridorLauncher:
         elif self.nbr_player4.get() == 1:
             self.ia_0.configure(state="disabled")
             self.ia_1.configure(state="disabled")
+            self.ia_2.configure(state="disabled")
             self.ia_3.configure(state="disabled")
             self.p2.configure(state="disabled")
             self.p3.configure(state="disabled")
@@ -108,6 +126,7 @@ class QuoridorLauncher:
             
             self.ia_0.configure(state="normal")
             self.ia_1.configure(state="normal")
+            self.ia_2.configure(state="normal")
             self.ia_3.configure(state="normal")
 
 
@@ -128,11 +147,11 @@ class QuoridorLauncher:
     def get_selected_player(self):
         if self.nbr_player.get() == 1:
             return 1
-        elif self.nbr_player.get() == 1:
+        elif self.nbr_player2.get() == 1:
             return 2
-        elif self.nbr_player.get() == 1:
+        elif self.nbr_player3.get() == 1:
             return 3
-        elif self.nbr_player.get() == 1:
+        elif self.nbr_player4.get() == 1:
             return 4
     
     # Nombres de barrieres par joueur
