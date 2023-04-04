@@ -9,7 +9,7 @@ from PIL import Image, ImageTk
 
 class Board:
     
-    def __init__(self, size, nb_players, nb_fence):
+    def __init__(self, size, nb_players, nb_IA, nb_fence):
         self.window = Tk()
         self.window.title("Quoridor")
         self.window.state('zoomed')
@@ -18,6 +18,7 @@ class Board:
         self.window_game = True
         self.__size = size
         self.__nb_players = nb_players
+        self.__nb_IA = nb_IA
         self.__nb_fence = nb_fence
         self.players = []
         self.board = []
@@ -161,63 +162,9 @@ class Board:
     def caseClicked(self, event):
         item_id = event.widget.find_closest(event.x, event.y)[0]
         tags = self.canvas.gettags(item_id)
-        if tags[0] == "move_case1":
-            print("haut")
-            move = 1
-        elif tags[0] == "move_case2":
-            print("droite")
-            move = 2
-        elif tags[0] == "move_case3":
-            print("bas")
-            move = 3
-        elif tags[0] == "move_case4":
-            print("gauche")
-            move = 4
-        position = self.current_player.displayPlace()
-        if move == 1:
-            if self.isPossibleMove(-2,0) == True :
-                if self.board[position[0]-2][position[1]].get_player() !=0:
-                    if position[0] == 2 :
-                        print("case occupée")
-                    else:
-                        self.move(-4,0)
-                        can_move = True
-                else:
-                    self.move(-2,0)
-                    can_move = True
-        elif move == 2:
-            if self.isPossibleMove(0,2) == True :
-                if self.board[position[0]][position[1]+2].get_player() !=0:
-                    if position[1] == (self.__size-1)*2-2 :
-                        print("case occupée")
-                    else:
-                        self.move(0,4)
-                        can_move = True
-                else :
-                    self.move(0,2)
-                    can_move = True
-        elif move == 3:
-            if self.isPossibleMove(2,0) == True :
-                if self.board[position[0]+2][position[1]].get_player() !=0:
-                    if position[0] == (self.__size-1)*2-2 :
-                        print("case occupée")
-                    else:
-                        self.move(4,0)
-                        can_move = True
-                else :
-                    self.move(2,0)
-                    can_move = True
-        elif move == 4:
-            if self.isPossibleMove(0,-2) == True :
-                if self.board[position[0]][position[1]-2].get_player() !=0:
-                    if position[1] == 2 :
-                            print("case occupée")
-                    else:
-                        self.move(0,-4)
-                        can_move = True
-                else :
-                    self.move(0,-2)
-                    can_move = True
+        x = int(tags[0])
+        y = int(tags[1])
+        self.move(x,y)
         if self.victory() == True :
             self.displayBoard()
             self.canvas.unbind_all("<Button-1>")
@@ -347,22 +294,8 @@ class Board:
                         if case.displayPlayer() == "P0" :
                             if case.get_possibleMove() != 0 and self.victory() == False:
                                 position = self.current_player.displayPlace()
-                                # si position de la case cliquable est en haut de la position du joueur
-                                if i < position[0]:
-                                    self.move_case = self.canvas.create_image(j*self.widget_space, i*self.widget_space, image=self.moove_possible, anchor="nw", tags="move_case1")
-                                    self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
-                                # Si la position de la case cliquable est en bas de la position du joueur
-                                elif i > position[0]:
-                                    self.move_case = self.canvas.create_image(j*self.widget_space, i*self.widget_space, image=self.moove_possible, anchor="nw", tags="move_case3")
-                                    self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
-                                # si la case cliquable est à droite du joueur
-                                elif j > position[1]:
-                                    self.move_case = self.canvas.create_image(j*self.widget_space, i*self.widget_space, image=self.moove_possible, anchor="nw", tags=f"move_case2")
-                                    self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
-                                # si la case cliquable est à gauche du joueur
-                                elif j < position[1]:
-                                    self.move_case = self.canvas.create_image(j*self.widget_space, i*self.widget_space, image=self.moove_possible, anchor="nw", tags=f"move_case4")
-                                    self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
+                                self.move_case = self.canvas.create_image(j*self.widget_space, i*self.widget_space, image=self.moove_possible, anchor="nw", tags=case.get_possibleMove())
+                                self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
                             else :
                                 self.canvas.create_image(j*self.widget_space, i*self.widget_space, image=self.no_player, anchor="nw")
                         elif case.displayPlayer() == "P1" :
@@ -519,29 +452,33 @@ class Board:
 
 
     def decideIALevel(self, player):
-        if int(input(f"Entrez 1 pour mettre le joueur {player} en IA ")) == 1 :
+        if player > self.__nb_players - self.__nb_IA:
             return 1
         return False
-        return 0
 
-    
-    
+
     def start(self):
+        print(self.__nb_players + self.__nb_IA)
         nb_fence_each_player = int(self.__nb_fence / self.__nb_players)
         case = self.board[0][self.__size-1]
         case.set_player(1)
         self.players.append(Player(0,self.__size-1,1,nb_fence_each_player,self.decideIALevel(1)))
+        print(self.decideIALevel(1))
         case = self.board[-1][self.__size-1]
         case.set_player(2)
         self.players.append(Player((self.__size-1)*2,self.__size-1,2,nb_fence_each_player,self.decideIALevel(2)))
+        print(self.decideIALevel(2))
         if self.__nb_players == 4 :
             case = self.board[self.__size-1][0]
             case.set_player(3)
             self.players.append(Player(self.__size-1,0,3,nb_fence_each_player,self.decideIALevel(3)))
+            print(self.decideIALevel(3))
             case = self.board[self.__size-1][-1]
             case.set_player(4)
             self.players.append(Player(self.__size-1,(self.__size-1)*2,4,nb_fence_each_player,self.decideIALevel(4)))
+            print(self.decideIALevel(4))
         self.current_player = self.players[0]
+        
     
     
     def refreshCurrentPlayer(self) :
@@ -826,36 +763,90 @@ class Board:
     #     jeu.start()
     #     self.refreshPossibleCaseMovementForCurrentPlayer()
     #     jeu.displayBoard()
+    def isPossibleMoveOnLeftSizePlayer(self,position,x,y):
+        if x != 0 :
+            if position[0] != 0 :
+                if self.board[position[0]+int(x*1.5)][position[1]].get_build() != 0 or self.board[position[0]+x*2][position[1]].get_player() !=0 :
+                    if self.board[position[0]+x][position[1]-1].get_build() == 0 and self.board[position[0]+x][position[1]-2].get_player() ==0 :
+                        return True
+                
+        else :
+            if position[1] != 0 :
+                if self.board[position[0]][position[1]+int(y*1.5)].get_build() != 0 or self.board[position[0]][position[1]+y*2].get_player() !=0 :
+                        if self.board[position[0]-1][position[1]+y].get_build() == 0 and self.board[position[0]-2][position[1]+y].get_player() ==0 :
+                            return True
+        return False
+    
+    def isPossibleMoveOnRightSizePlayer(self,position,x,y):
+        if x != 0 :
+            if position[0] != (self.__size-1)*2 :
+                if self.board[position[0]+int(x*1.5)][position[1]].get_build() != 0 or self.board[position[0]+x*2][position[1]].get_player() !=0 :
+                    if self.board[position[0]+x][position[1]+1].get_build() == 0 and self.board[position[0]+x][position[1]+2].get_player() ==0 :
+                        return True
+                
+        else :
+            if position[1] != (self.__size-1)*2 :
+                if self.board[position[0]][position[1]+int(y*1.5)].get_build() != 0 or self.board[position[0]][position[1]+y*2].get_player() !=0 :
+                        if self.board[position[0]+1][position[1]+y].get_build() == 0 and self.board[position[0]+2][position[1]+y].get_player() ==0 :
+                            return True
+        return False
+
+            
         
+            
     def allPossibleMoveForPlayer(self):
         list = []
         position = self.current_player.displayPlace()
         if self.isPossibleMove(-2,0) == True :
             if self.board[position[0]-2][position[1]].get_player() !=0:
                 if position[0] != 2 :
-                    if self.board[position[0]-3][position[1]].get_build() !=0:
+                    if self.board[position[0]-3][position[1]].get_build() == 0 and self.board[position[0]-4][position[1]].get_player() == 0:
                         list.append([-4,0])
+                    if self.isPossibleMoveOnLeftSizePlayer(position,-2,0) == True :
+                        list.append([-2,-2])
+                    if self.isPossibleMoveOnRightSizePlayer(position,-2,0) == True :
+                        list.append([-2,2])
+                    print(self.isPossibleMoveOnLeftSizePlayer(position,-2,0))
+                    print(self.isPossibleMoveOnRightSizePlayer(position,-2,0))
             else:
                 list.append([-2,0])
         if self.isPossibleMove(2,0) == True :
             if self.board[position[0]+2][position[1]].get_player() !=0:
                 if position[0] != (self.__size-1)*2-2 :
-                    if self.board[position[0]+3][position[1]].get_build() !=0:
+                    if self.board[position[0]+3][position[1]].get_build() ==0:
                         list.append([4,0])
+                    if self.isPossibleMoveOnLeftSizePlayer(position,2,0) == True :
+                        list.append([2,-2])
+                    if self.isPossibleMoveOnRightSizePlayer(position,2,0) == True :
+                        list.append([2,2])
+                    print(self.isPossibleMoveOnLeftSizePlayer(position,2,0))
+                    print(self.isPossibleMoveOnRightSizePlayer(position,2,0))
             else:
                 list.append([2,0])
         if self.isPossibleMove(0,-2) == True :
             if self.board[position[0]][position[1]-2].get_player() !=0:
                 if position[1] != 2 :
-                    if self.board[position[0]][position[1]-3].get_build() !=0:
+                    if self.board[position[0]][position[1]-3].get_build() ==0:
                         list.append([0,-4])
+                    if self.isPossibleMoveOnLeftSizePlayer(position,0,-2) == True :
+                        list.append([-2,-2])
+                    if self.isPossibleMoveOnRightSizePlayer(position,0,-2) == True :
+                        list.append([2,-2])
+                    print(self.isPossibleMoveOnLeftSizePlayer(position,0,-2))
+                    print(self.isPossibleMoveOnRightSizePlayer(position,0,-2))
             else:
                 list.append([0,-2])
         if self.isPossibleMove(0,2) == True :
             if self.board[position[0]][position[1]+2].get_player() !=0:
                 if position[1] != (self.__size-1)*2-2 :
-                    if self.board[position[0]][position[1]+3].get_build() !=0:
+                    if self.board[position[0]][position[1]+3].get_build() ==0:
                         list.append([0,4])
+                    if self.isPossibleMoveOnLeftSizePlayer(position,0,2) == True :
+                        list.append([-2,2])
+                    if self.isPossibleMoveOnRightSizePlayer(position,0,2) == True :
+                        list.append([2,2])
+                    print(self.isPossibleMoveOnLeftSizePlayer(position,0,2))
+                    print(self.isPossibleMoveOnRightSizePlayer(position,0,2))
             else:
                 list.append([0,2])
         return list
@@ -875,15 +866,18 @@ class Board:
             
         
         
-def restartGame(size, nb_players, nb_fences):
-    jeu = Board(size, nb_players , nb_fences)
+def restartGame(size, nb_players, nb_IA, nb_fences):
+    jeu = Board(size, nb_players , nb_IA, nb_fences)
     jeu.start()
     jeu.refreshPossibleCaseMovementForCurrentPlayer()
     jeu.displayBoard()
-            # Si taille plateau = 5 : max barriere = 20
+
+
+# Si taille plateau = 5 : max barriere = 20
 # taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
 # nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
 # nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 50) :"))
 # print(jeu.allPossibleBuildFence())
-restartGame(7,4,8)
-mainloop()
+if __name__ == "__main__":
+    restartGame(5, 4, 3, 8)
+    mainloop()
