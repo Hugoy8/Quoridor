@@ -15,6 +15,7 @@ class Board:
         self.window.state('zoomed')
         self.window.minsize(1500, 800)
         self.window.iconbitmap('./assets/logo.ico')
+        self.window.configure(bg="#F0B169")
         self.window_game = True
         self.__size = size
         self.__nb_players = nb_players
@@ -269,17 +270,40 @@ class Board:
         replay_button.pack(side=LEFT, padx=100)
 
     def displayBoard(self): 
-        self.canvas = Canvas(self.window, width=self.canvas_game_width, height=self.canvas_game_height, bg="gray")
+        player_colors = {
+            1: "red",
+            2: "green",
+            3: "blue",
+            4: "#C137BC"
+        }
+        self.canvas = Canvas(self.window, width=self.canvas_game_width, height=self.canvas_game_height, bg="#F0B169", bd=0, highlightthickness=0)
         self.canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
-        Label(self.window, text=" Tour : Joueur "+str(self.current_player.get_player()), font=("Arial", 14), fg="gray").place(x=10, y=10)
-        Label(self.window, text=f"Nombre de barrières restantes : ", font=("Arial", 14) ).place(x=10, y=50)
+        current_player_number = self.current_player.get_player()
+        current_player_color = player_colors.get(current_player_number, "gray")
+        info_frame = Frame(self.window)
+        info_frame.place(x=10, y=10)
+
+        current_player_number = self.current_player.get_player()
+        current_player_color = player_colors.get(current_player_number, "gray")
+        Label(info_frame, text=" Tour : Joueur " + str(current_player_number), font=("Arial", 14), foreground=current_player_color).grid(row=0, column=0, padx=(0, 10))
+        Label(info_frame, text=f"Nombre de barrières restantes : ", font=("Arial", 14)).grid(row=1, column=0, padx=(0, 10))
+
+        barrier_icon = PhotoImage(file="./assets/fence_nbr.png") 
+        barrier_icon = barrier_icon.subsample(4, 4)  
         for index, nbr_fence_player in enumerate(self.players):
-            print(nbr_fence_player.get_player(), nbr_fence_player.get_nb_fence())
             a = nbr_fence_player.get_player()
             b = nbr_fence_player.get_nb_fence()
             if b == 0:
                 b = "Plus de "
-            Label(self.window, text=f"Joueur {a} : {b} barrières", font=("Arial", 14), fg="brown").place(x=10, y=80 + (index * 30))
+            player_color = player_colors.get(a, "red")
+            # Affichez le nombre de barrières sans couleur
+            Label(info_frame, text=f"Joueur {a} : {b}", font=("Arial", 14), foreground=player_color).grid(row=index + 2, column=0, padx=(0, 5), pady=(5, 0))
+
+            # Affichez l'icône de barrière à côté du nombre de barrières
+            barrier_label = Label(info_frame, image=barrier_icon)
+            barrier_label.image = barrier_icon  # Conservez une référence à l'image pour éviter qu'elle ne soit supprimée par le garbage collector
+            barrier_label.grid(row=index + 2, column=1, padx=(0, 10), pady=(5, 0))
+
             
         self.window.bind("<space>", self.changeFenceOrientation)
         tab =[]
@@ -879,5 +903,5 @@ def restartGame(size, nb_players, nb_IA, nb_fences):
 # nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 40) :"))
 # print(jeu.allPossibleBuildFence())
 if __name__ == "__main__":
-    restartGame(11, 4, 3, 8)
+    restartGame(9, 4, 0, 8)
     mainloop()
