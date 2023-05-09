@@ -2,7 +2,17 @@ import socket
 import threading
 import pickle
 import time
+from main import*
+import tkinter as tk
 
+
+def MainThread(callback):
+    root = tk.Tk()
+    root.withdraw()
+    root.after(0, callback)
+    root.mainloop()
+    
+    
 class Server:
     def __init__(self, host, port, typeGame):
         if typeGame == 2 or typeGame == 4:
@@ -16,9 +26,12 @@ class Server:
             self.players = [1, 'Server_1']
             # Variable qui stocke le joueur en train de jouer (Un nombre qui correspond à l'index de la liste de joueurs).
             self.playerPlayed = 1
+            # Liste qui stocke les sockets des clients sur le serveur dans l'ordre de leur connection.
+            self.socketClients = []
         else:
             print('Nombre de joueur de la partie non valide')
             exit()
+
         
     def server_config(self):
         # Variable du socket du client.
@@ -44,11 +57,19 @@ class Server:
             except socket.error:
                 print("[-] Erreur pendant le lancement du serveur.")
                 exit()
-            print(self.typeGame)
+            
             (socket_client, (ip, self.port)) = socket_server.accept()
+            
+            if self.typeGame == 4:
+                self.socketClients.append(socket_client)
+                print(self.socketClients)
+            
             treading_server = ClientThread(ip, self.port, socket_client, self.typeGame, self.players, self.playerPlayed)
             treading_server.start()
-
+            self.players[0] += 1
+        
+        threading_graphique = Graphique(5, 2, 0, 8)
+        threading_graphique.start()
 
 class ClientThread(threading.Thread):
     def __init__(self, host, port, socket_client, typeGame, playersList, playerPlayed):
@@ -109,7 +130,9 @@ class ClientThread(threading.Thread):
                 ['P0', 'F0', 'P0', 'F0', 'P2', 'F0', 'P0', 'F0', 'P0']])
             
             dataPositionX = input('\nEntrez les nouvelles coordonnées X de votre pion : ')
+            print("testX")
             dataPositionY = input('\nEntrez les nouvelles coordonnées Y de votre pion : ')
+            print("testY")
             
             array_test[int(dataPositionY)][int(dataPositionX)] = 'P1'
             
@@ -146,53 +169,54 @@ class ClientThread(threading.Thread):
                     exit()
                 
         else:
-            while True:
-                if self.playerPlayedThread == 1:
-                    print('\nEn attente du joueur 4')
-                    dataRecvArray = self.socket_client.recv(4096)
-                    dataRecvClient = pickle.loads(dataRecvArray)
-                    print("\nC'est à votre tour !")
-                    print('\nVoici le tableau reçu par les autres joueurs : ')
+            pass
+            # while True:
+            #     if self.playerPlayedThread == 1:
+            #         print('\nEn attente du joueur 4')
+            #         dataRecvArray = self.socket_client.recv(4096)
+            #         dataRecvClient = pickle.loads(dataRecvArray)
+            #         print("\nC'est à votre tour !")
+            #         print('\nVoici le tableau reçu par les autres joueurs : ')
                     
-                    for j in range(len(dataRecvClient)):
-                        print(dataRecvClient[j])
+            #         for j in range(len(dataRecvClient)):
+            #             print(dataRecvClient[j])
                         
-                    dataPositionX = input('\nEntrez les nouvelles coordonnées X de votre pion : ')
-                    dataPositionY = input('\nEntrez les nouvelles coordonnées Y de votre pion : ')
+            #         dataPositionX = input('\nEntrez les nouvelles coordonnées X de votre pion : ')
+            #         dataPositionY = input('\nEntrez les nouvelles coordonnées Y de votre pion : ')
 
-                    dataRecvClient[dataPositionY][dataPositionX] = ('P'+self.playerPlayedThread)
-                    dataSendArray = pickle.dumps(dataRecvClient)
+            #         dataRecvClient[dataPositionY][dataPositionX] = ('P'+self.playerPlayedThread)
+            #         dataSendArray = pickle.dumps(dataRecvClient)
                     
-                    try:
-                        self.socket_client.send(dataSendArray)
-                    except socket.error:
-                        print("Erreur d'envoie du tableau ...")
-                        exit()
+            #         try:
+            #             self.socket_client.send(dataSendArray)
+            #         except socket.error:
+            #             print("Erreur d'envoie du tableau ...")
+            #             exit()
                     
-                    if self.playerPlayedThread == 2:
-                        self.playerPlayedThread = 1
-                    else:
-                        if self.playerPlayedThread == 4:
-                            self.playerPlayedThread = 1
-                        else:
-                            self.playerPlayedThread += 1
-                else:
-                    print('\nEn attente du joueur ', self.playerPlayedThread)
-                    dataRecvArray = self.socket_client.recv(4096)
-                    dataRecvClient = pickle.loads(dataRecvArray)
-                    print("\nC'est au tour du joueur ", self.playerPlayedThread)
-                    print('\nVoici le tableau du joueur ', self.playerPlayedThread, ' : ')
+            #         if self.playerPlayedThread == 2:
+            #             self.playerPlayedThread = 1
+            #         else:
+            #             if self.playerPlayedThread == 4:
+            #                 self.playerPlayedThread = 1
+            #             else:
+            #                 self.playerPlayedThread += 1
+            #     else:
+            #         print('\nEn attente du joueur ', self.playerPlayedThread)
+            #         dataRecvArray = self.socket_client.recv(4096)
+            #         dataRecvClient = pickle.loads(dataRecvArray)
+            #         print("\nC'est au tour du joueur ", self.playerPlayedThread)
+            #         print('\nVoici le tableau du joueur ', self.playerPlayedThread, ' : ')
                     
-                    for j in range(len(dataRecvClient)):
-                        print(dataRecvClient[j])
+            #         for j in range(len(dataRecvClient)):
+            #             print(dataRecvClient[j])
                     
-                    if self.playerPlayedThread == 2:
-                        self.playerPlayedThread = 1
-                    else:
-                        if self.playerPlayedThread == 4:
-                            self.playerPlayedThread = 1
-                        else:
-                            self.playerPlayedThread += 1
+            #         if self.playerPlayedThread == 2:
+            #             self.playerPlayedThread = 1
+            #         else:
+            #             if self.playerPlayedThread == 4:
+            #                 self.playerPlayedThread = 1
+            #             else:
+            #                 self.playerPlayedThread += 1
 
 
 class Client:
@@ -213,6 +237,7 @@ class Client:
             client.connect((self.host, self.port))
         except socket.error:
             print("\nErreur de connexion au serveur "+str(self.host)+":"+str(self.port))
+            print("\n\nTentaive de reconnection ...\n")
             Client(self.host, self.port).client_config()
         
         print("\nConnexion reussie au serveur "+str(self.host)+":"+str(self.port))
@@ -255,56 +280,76 @@ class Client:
                                 
             client.close()
         else:
-            while True:
-                if self.Infos[2] == self.Infos[1][0]:
-                    print('\nEn attente du joueur')
-                    dataRecvArray = client.recv(4096)
-                    array_test = pickle.loads(dataRecvArray)
-                    print("\nC'est à votre tour !")
-                    print('\nVoici le tableau reçu par les autres joueurs : ')
+            pass
+            # while True:
+            #     if self.Infos[2] == self.Infos[1][0]:
+            #         print('\nEn attente du joueur')
+            #         dataRecvArray = client.recv(4096)
+            #         array_test = pickle.loads(dataRecvArray)
+            #         print("\nC'est à votre tour !")
+            #         print('\nVoici le tableau reçu par les autres joueurs : ')
                     
-                    for j in range(len(array_test)):
-                        print(array_test[j])
+            #         for j in range(len(array_test)):
+            #             print(array_test[j])
                         
-                    dataPositionX = input('\nEntrez les nouvelles coordonnées X de votre pion : ')
-                    dataPositionY = input('\nEntrez les nouvelles coordonnées Y de votre pion : ')
+            #         dataPositionX = input('\nEntrez les nouvelles coordonnées X de votre pion : ')
+            #         dataPositionY = input('\nEntrez les nouvelles coordonnées Y de votre pion : ')
                     
-                    array_test[int(dataPositionY)][int(dataPositionX)] = ('P'+str(self.Infos[2]))
-                    dataSendArray = pickle.dumps(array_test)
+            #         array_test[int(dataPositionY)][int(dataPositionX)] = ('P'+str(self.Infos[2]))
+            #         dataSendArray = pickle.dumps(array_test)
                     
-                    try:
-                        client.send(dataSendArray)
-                    except socket.error:
-                        print("Erreur d'envoie du tableau ...")
-                        exit()
+            #         try:
+            #             client.send(dataSendArray)
+            #         except socket.error:
+            #             print("Erreur d'envoie du tableau ...")
+            #             exit()
                         
-                    if self.Infos[2] == 2:
-                        self.Infos[2] = 1
-                    else:
-                        if self.Infos[2] == 4:
-                            self.Infos[2] = 1
-                        else:
-                            self.Infos[2] += 1
+            #         if self.Infos[2] == 2:
+            #             self.Infos[2] = 1
+            #         else:
+            #             if self.Infos[2] == 4:
+            #                 self.Infos[2] = 1
+            #             else:
+            #                 self.Infos[2] += 1
                     
-                else:
-                    print('En attente du joueur ', self.Infos[2])
-                    dataRecvArray = client.recv(4096)
-                    array_test = pickle.loads(dataRecvArray)
-                    print("\nC'est au tour du joueur ", self.Infos[2])
-                    print('\nVoici le tableau du joueur ', self.Infos[2], ' : ')
+            #     else:
+            #         print('En attente du joueur ', self.Infos[2])
+            #         dataRecvArray = client.recv(4096)
+            #         array_test = pickle.loads(dataRecvArray)
+            #         print("\nC'est au tour du joueur ", self.Infos[2])
+            #         print('\nVoici le tableau du joueur ', self.Infos[2], ' : ')
                     
-                    for j in range(len(array_test)):
-                        print(array_test[j])
+            #         for j in range(len(array_test)):
+            #             print(array_test[j])
                         
-                    if self.Infos[2] == 2:
-                        self.Infos[2] = 1
-                    else:
-                        if self.Infos[2] == 4:
-                            self.Infos[2] = 1
-                        else:
-                            self.Infos[2] += 1
-            client.close()
+            #         if self.Infos[2] == 2:
+            #             self.Infos[2] = 1
+            #         else:
+            #             if self.Infos[2] == 4:
+            #                 self.Infos[2] = 1
+            #             else:
+            #                 self.Infos[2] += 1
+            # client.close()
 
+
+class Graphique(threading.Thread):
+    def __init__(self, size, nb_players, nb_IA, nb_fences):
+        threading.Thread.__init__(self)
+        # Variable de la taille du plateau de jeu.
+        self.size = size
+        # Variable du nombre de joueurs.
+        self.nb_players = nb_players
+        # Variable du nombre d'IA.
+        self.nb_IA = nb_IA
+        # Variable du nombre de barrières au total.
+        self.nb_fences = nb_fences
+        
+        MainThread(self.runGraphique())
+    
+    def runGraphique(self):
+        restartGame(self.size, self.nb_players, self.nb_IA, self.nb_fences)
+        mainloop()
+        print("TestGraphiqueEnd")
 
 def joinSession(ip, port):
     Instance = Client(ip, port)
@@ -313,5 +358,4 @@ def joinSession(ip, port):
 def startSession(port, nbr_player):
     Server("", port, nbr_player).server_config()
 
-
-# 10.128.173.164
+# Server("", 8000, 2).server_config()

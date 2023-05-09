@@ -2,6 +2,7 @@ from tkinter import *
 from PIL import Image, ImageTk
 from main import restartGame
 from network import *
+import platform
 
 class QuoridorLauncher:
     def __init__(self):
@@ -270,13 +271,19 @@ class QuoridorLauncher:
     def joinGameNewtork(self):
         ip = self.entry1.get()
         port = int(self.entry2.get())
-        self.window.destroy()
+        if platform.system() == "Windows":
+            self.window.destroy()
+        else:
+            self.window.quit()
         joinSession(ip, port)
         
     def startGame(self):
         port = int(self.entry_port.get())
         nbr_player = int(self.nbr_player_network.get())
-        self.window.destroy()
+        if platform.system() == "Windows":
+            self.window.destroy()
+        else:
+            self.window.quit()
         startSession(port, nbr_player)
 
     def entriesNetwork(self):
