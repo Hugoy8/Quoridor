@@ -183,8 +183,13 @@ class QuoridorLauncher:
             nbr_fences = self.get_nbr_fence()
             nb_ia = self.get_selected_ia()
             nb_player = self.get_selected_player() + self.get_selected_ia()
-            print(nb_player, nb_ia)
             self.window.destroy()
+            if not (nbr_fences % 4 == 0 and 4 <= nbr_fences <= 40):
+                nbr_fences = 20
+            if grid_size not in (5, 7, 9, 11):
+                grid_size = 9
+            if grid_size == 5 and nbr_fences > 20:
+                nbr_fences = 20
             restartGame(grid_size, nb_player, nb_ia, nbr_fences)
 
         start = Button(self.window, text="START", command=start_game, bg="#0D2338", fg="#FFF", font=("Arial", 15), width=10, cursor="hand2",  activebackground="#035388",  activeforeground="white")
@@ -196,7 +201,6 @@ class QuoridorLauncher:
                 child.destroy()
                 
     def choiceMode(self):
-        # Charger l'image et la redimensionner
         image_path = "./assets/fond_menu.png"
         img = Image.open(image_path)
         img = img.resize((95, 255))
@@ -221,17 +225,16 @@ class QuoridorLauncher:
         img3 = img3.resize((65, 65))
         host = ImageTk.PhotoImage(img3)
 
-        # Créer un bouton avec l'image et un gestionnaire d'événements
         solo = Button(menu_label, image=solo_mode, command=self.modeToSolo, cursor="hand2", highlightthickness=0, bd=0, bg="#035388", activebackground="#035388")
-        solo.image = solo_mode  # Conserver une référence à l'image pour éviter qu'elle ne soit supprimée par le ramasse-miettes
+        solo.image = solo_mode  
         solo.place(x=8, y=10)
 
         rejoindre_mode = Button(menu_label, image=rejoindre, command=self.modeToSelectGame, cursor="hand2", highlightthickness=0, bd=0, bg="#035388", activebackground="#035388")
-        rejoindre_mode.image = rejoindre  # Conserver une référence à l'image pour éviter qu'elle ne soit supprimée par le ramasse-miettes
+        rejoindre_mode.image = rejoindre
         rejoindre_mode.place(x=16, y=90)
 
         host_mode = Button(menu_label, image=host, command=self.modeToCreateGame, cursor="hand2", highlightthickness=0, bd=0, bg="#035388", activebackground="#035388")
-        host_mode.image = host  # Conserver une référence à l'image pour éviter qu'elle ne soit supprimée par le ramasse-miettes
+        host_mode.image = host 
         host_mode.place(x=16, y=170)
         
     def modeToSolo(self):

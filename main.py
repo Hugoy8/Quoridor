@@ -6,7 +6,6 @@ from player import*
 import random
 from PIL import Image, ImageTk
 
-
 class Board:
     
     def __init__(self, size, nb_players, nb_IA, nb_fence):
@@ -57,6 +56,7 @@ class Board:
             fence_horizontal_height = 10
             pillar_taille = 11
             self.widget_space = 41
+            
             
         no_player = Image.open("./assets/case.png")
         no_player = no_player.resize((width, height))
@@ -169,7 +169,6 @@ class Board:
         if self.victory() == True :
             self.displayBoard()
             self.canvas.unbind_all("<Button-1>")
-            print("EH JOUEUR", self.current_player.get_player(), " BRAVO SAL BATARD !!! ") 
             for child in self.window.winfo_children():
                 if child.winfo_exists():
                     child.destroy()
@@ -207,7 +206,6 @@ class Board:
             if self.victory() == True :
                 self.displayBoard()
                 self.canvas.unbind_all("<Button-1>")
-                print("EH JOUEUR", self.current_player.get_player(), " BRAVO SAL BATARD !!! ") 
                 for child in self.window.winfo_children():
                     if child.winfo_exists():
                         child.destroy()
@@ -224,17 +222,15 @@ class Board:
         screen_width = self.window.winfo_screenwidth()
         screen_height = self.window.winfo_screenheight()
 
-        # Calcul de la position x et y pour centrer la fenêtre
         if self.window_game == True:
             x = (screen_width - 1500) // 2
-            y = (screen_height - 700) // 2
+            y = (screen_height - 800) // 2
         else:
             x = (screen_width - 600) // 2
             y = (screen_height - 650) // 2
 
-        # Configuration de la fenêtre
         if self.window_game == True:
-            self.window.geometry(f"1500x700+{x}+{y}")
+            self.window.geometry(f"1500x800+{x}+{y}")
             self.window_game = False
         else:
             self.window.geometry(f"600x650+{x}+{y}")
@@ -287,6 +283,7 @@ class Board:
         current_player_color = player_colors.get(current_player_number, "gray")
         Label(info_frame, text=" Tour : Joueur " + str(current_player_number), font=("Arial", 14), foreground=current_player_color).grid(row=0, column=0, padx=(0, 10))
         Label(info_frame, text=f"Nombre de barrières restantes : ", font=("Arial", 14)).grid(row=1, column=0, padx=(0, 10))
+        Label(info_frame, text=f"<Espace> pour l'orientation de la barrière", font=("Arial", 14)).grid(row=6, column=0, padx=(0, 5))
 
         barrier_icon = PhotoImage(file="./assets/fence_nbr.png") 
         barrier_icon = barrier_icon.subsample(4, 4)  
@@ -294,14 +291,13 @@ class Board:
             a = nbr_fence_player.get_player()
             b = nbr_fence_player.get_nb_fence()
             if b == 0:
-                b = "Plus de "
+                b = "0 barrières"
             player_color = player_colors.get(a, "red")
-            # Affichez le nombre de barrières sans couleur
             Label(info_frame, text=f"Joueur {a} : {b}", font=("Arial", 14), foreground=player_color).grid(row=index + 2, column=0, padx=(0, 5), pady=(5, 0))
 
             # Affichez l'icône de barrière à côté du nombre de barrières
             barrier_label = Label(info_frame, image=barrier_icon)
-            barrier_label.image = barrier_icon  # Conservez une référence à l'image pour éviter qu'elle ne soit supprimée par le garbage collector
+            barrier_label.image = barrier_icon 
             barrier_label.grid(row=index + 2, column=1, padx=(0, 10), pady=(5, 0))
 
             
@@ -362,20 +358,16 @@ class Board:
                             self.canvas.tag_bind(self.pillar_rects[-1], "<Leave>", self.on_leave)
                             
                 tab.append(tab2)
-        for x in tab :
-            print(x)
             
     def buildFenceOnClick(self,event):
         if self.playerHasFence() == False :
-            print("Tu n'as plus de barrière :/")
+            print(" ")
         else :
             item_id = event.widget.find_withtag("current")[0], 
             tags = self.canvas.gettags(item_id)
-            print(tags)
             if len(tags) >= 2 :
                 x = int(tags[0])
                 y = int(tags[1])
-                print(x,y)
                 if self.isPossibleFence(x,y) == True :
                     self.buildFence(x,y)
                     if self.fenceNotCloseAccesGoal()==False :
@@ -413,7 +405,6 @@ class Board:
                             if self.victory() == True :
                                 self.displayBoard()
                                 self.canvas.unbind_all("<Button-1>")
-                                print("EH JOUEUR", self.current_player.get_player(), " BRAVO SAL BATARD !!! ") 
                                 for child in self.window.winfo_children():
                                     if child.winfo_exists():
                                         child.destroy()
@@ -482,25 +473,20 @@ class Board:
 
 
     def start(self):
-        print(self.__nb_players + self.__nb_IA)
         nb_fence_each_player = int(self.__nb_fence / self.__nb_players)
         case = self.board[0][self.__size-1]
         case.set_player(1)
         self.players.append(Player(0,self.__size-1,1,nb_fence_each_player,self.decideIALevel(1)))
-        print(self.decideIALevel(1))
         case = self.board[-1][self.__size-1]
         case.set_player(2)
         self.players.append(Player((self.__size-1)*2,self.__size-1,2,nb_fence_each_player,self.decideIALevel(2)))
-        print(self.decideIALevel(2))
         if self.__nb_players == 4 :
             case = self.board[self.__size-1][0]
             case.set_player(3)
             self.players.append(Player(self.__size-1,0,3,nb_fence_each_player,self.decideIALevel(3)))
-            print(self.decideIALevel(3))
             case = self.board[self.__size-1][-1]
             case.set_player(4)
             self.players.append(Player(self.__size-1,(self.__size-1)*2,4,nb_fence_each_player,self.decideIALevel(4)))
-            print(self.decideIALevel(4))
         self.current_player = self.players[0]
         
     
@@ -554,7 +540,6 @@ class Board:
     
     
     def buildFence(self,x,y):
-        print("buildFence")
         pillar = self.board[x][y]
         pillar.buildPillar()
         if self.fence_orientation == "vertical":
@@ -830,8 +815,6 @@ class Board:
                         list.append([-2,-2])
                     if self.isPossibleMoveOnRightSizePlayer(position,-2,0) == True :
                         list.append([-2,2])
-                    print(self.isPossibleMoveOnLeftSizePlayer(position,-2,0))
-                    print(self.isPossibleMoveOnRightSizePlayer(position,-2,0))
             else:
                 list.append([-2,0])
         if self.isPossibleMove(2,0) == True :
@@ -843,8 +826,6 @@ class Board:
                         list.append([2,-2])
                     if self.isPossibleMoveOnRightSizePlayer(position,2,0) == True :
                         list.append([2,2])
-                    print(self.isPossibleMoveOnLeftSizePlayer(position,2,0))
-                    print(self.isPossibleMoveOnRightSizePlayer(position,2,0))
             else:
                 list.append([2,0])
         if self.isPossibleMove(0,-2) == True :
@@ -856,8 +837,6 @@ class Board:
                         list.append([-2,-2])
                     if self.isPossibleMoveOnRightSizePlayer(position,0,-2) == True :
                         list.append([2,-2])
-                    print(self.isPossibleMoveOnLeftSizePlayer(position,0,-2))
-                    print(self.isPossibleMoveOnRightSizePlayer(position,0,-2))
             else:
                 list.append([0,-2])
         if self.isPossibleMove(0,2) == True :
@@ -869,8 +848,6 @@ class Board:
                         list.append([-2,2])
                     if self.isPossibleMoveOnRightSizePlayer(position,0,2) == True :
                         list.append([2,2])
-                    print(self.isPossibleMoveOnLeftSizePlayer(position,0,2))
-                    print(self.isPossibleMoveOnRightSizePlayer(position,0,2))
             else:
                 list.append([0,2])
         return list
@@ -887,9 +864,6 @@ class Board:
                     list.append([i,j,1])
         return list
             
-            
-        
-        
 def restartGame(size, nb_players, nb_IA, nb_fences):
     jeu = Board(size, nb_players , nb_IA, nb_fences)
     jeu.start()
@@ -897,11 +871,6 @@ def restartGame(size, nb_players, nb_IA, nb_fences):
     jeu.displayBoard()
 
 
-# Si taille plateau = 5 : max barriere = 20
-# taille = int(input("Choisi la taille de la grille fdp (5, 7, 9 ou 11) :"))
-# nb_joueur = int(input("Choisi le nombre de joueur enculé (2 ou 4) :"))
-# nb_barriere = int(input("Choisi le nombre de barrière batard (multiple de 4 entre 4 et 40) :"))
-# print(jeu.allPossibleBuildFence())
 if __name__ == "__main__":
-    restartGame(9, 4, 0, 8)
+    restartGame(5, 2, 0, 8)
     mainloop()
