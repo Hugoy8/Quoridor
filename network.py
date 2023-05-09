@@ -44,7 +44,7 @@ class Server:
             except socket.error:
                 print("[-] Erreur pendant le lancement du serveur.")
                 exit()
-            
+            print(self.typeGame)
             (socket_client, (ip, self.port)) = socket_server.accept()
             treading_server = ClientThread(ip, self.port, socket_client, self.typeGame, self.players, self.playerPlayed)
             treading_server.start()
@@ -306,8 +306,12 @@ class Client:
             client.close()
 
 
-Instance = Client("10.128.173.160", 8000)
-Instance.client_config()
+def joinSession(ip, port):
+    Instance = Client(ip, port)
+    Instance.client_config()
+
+def startSession(port, nbr_player):
+    Server("", port, nbr_player).server_config()
 
 
-# Server("", 8000, 2).server_config()
+# 10.128.173.164

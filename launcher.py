@@ -1,6 +1,7 @@
 from tkinter import *
 from PIL import Image, ImageTk
 from main import restartGame
+from network import *
 
 class QuoridorLauncher:
     def __init__(self):
@@ -260,11 +261,34 @@ class QuoridorLauncher:
         self.entry3 = Entry(self.window, width=20)
         self.entry3.place(x=665, y=508)
         
-        start = Button(self.window, text="Rejoindre la partie", bg="#2BB0ED", fg="#FFF", font=("Arial", 13), width=20, cursor="hand2", activebackground="#035388",  activeforeground="white")
+        start = Button(self.window, text="Rejoindre la partie", bg="#2BB0ED", fg="#FFF", font=("Arial", 13), width=20, cursor="hand2", activebackground="#035388",  activeforeground="white", command=self.joinGameNewtork)
         start.place(x=290, y=563)
         
         reset_button = Button(self.window, text="Réinitialiser", font=("Arial", 13),  cursor="hand2", fg="#FFF",  bg="#486581", command=self.resetEntries, width=10, activebackground="#486581",  activeforeground="white")
         reset_button.place(x=500, y=563)
+    
+    def joinGameNewtork(self):
+        ip = self.entry1.get()
+        port = int(self.entry2.get())
+        self.window.destroy()
+        joinSession(ip, port)
+        
+    def startGame(self):
+        port = int(self.entry_port.get())
+        nbr_player = int(self.nbr_player_network.get())
+        self.window.destroy()
+        startSession(port, nbr_player)
+
+    def entriesNetwork(self):
+        self.nbr_player_network = Entry(self.window, width=20)
+        self.nbr_player_network.place(x=296, y=508)
+        
+        self.entry_port = Entry(self.window, width=20)
+        self.entry_port.place(x=1201, y=508)
+
+    def startButtonNetwork(self):
+        start = Button(self.window, text="Créer une partie", bg="#2BB0ED", fg="#FFF", font=("Arial", 13), width=20, cursor="hand2", activebackground="#035388",  activeforeground="white", command=self.startGame)
+        start.place(x=290, y=563)
 
     def resetEntries(self):
         self.entry1.delete(0, END)
@@ -285,6 +309,8 @@ class QuoridorLauncher:
         self.background()
         self.center_window()
         self.choiceMode()
+        self.entriesNetwork()
+        self.startButtonNetwork()
                 
     def center_window(self):
         # Récupération de la résolution de l'écran
