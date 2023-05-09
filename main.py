@@ -300,7 +300,7 @@ class Board:
             barrier_label.image = barrier_icon 
             barrier_label.grid(row=index + 2, column=1, padx=(0, 10), pady=(5, 0))
 
-            
+        
         self.window.bind("<space>", self.changeFenceOrientation)
         tab =[]
         self.pillar_rects = []
@@ -508,6 +508,7 @@ class Board:
                     
     
     def changeFenceOrientation(self, event=None):
+        self.displayBoard()
         if self.fence_orientation == "vertical":
             self.fence_orientation = "horizontal"
         else :
