@@ -15,6 +15,10 @@ class Board:
         self.window.minsize(1500, 800)
         self.window.iconbitmap('./assets/logo.ico')
         self.window.configure(bg="#F0B169")
+        # Récupération de la résolution de l'écran
+        screen_width = self.window.winfo_screenwidth()
+        screen_height = self.window.winfo_screenheight()
+        print("Résolution de l'écran : " + str(screen_width) + "x" + str(screen_height))
         self.window_game = True
         self.__size = size
         self.__nb_players = nb_players
@@ -301,7 +305,7 @@ class Board:
             barrier_label.grid(row=index + 2, column=1, padx=(0, 10), pady=(5, 0))
 
         
-        self.window.bind("<space>", self.changeFenceOrientation)
+        self.window.bind("<Button-3>", self.changeFenceOrientation)
         tab =[]
         self.pillar_rects = []
         for i in range(self.__size*2-1):
@@ -873,5 +877,5 @@ def restartGame(size, nb_players, nb_IA, nb_fences):
 
 
 if __name__ == "__main__":
-    restartGame(5, 2, 0, 8)
+    restartGame(9, 2, 0, 8)
     mainloop()
