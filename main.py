@@ -895,5 +895,5 @@ def restartGame(size, nb_players, nb_IA, nb_fences, select_map):
 
 
 if __name__ == "__main__":
-    restartGame(7, 4, 0, 8, 3)
+    restartGame(7, 4, 0, 8, 2)
     mainloop()

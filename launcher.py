@@ -1,4 +1,6 @@
 from tkinter import *
+import tkinter as tk
+from tkinter import ttk
 from PIL import Image, ImageTk
 from main import restartGame
 from network import *
@@ -13,6 +15,11 @@ class QuoridorLauncher:
         self.window.iconbitmap('./assets/logo.ico')
         self.statut = 0
         self.modeToSolo()
+        self.selectPlayer = 2
+        self.selectIA = 0
+        self.selectSize = 5
+        self.selectFence = 4
+        self.selectMap = 1
 
     def background(self):
         # Image de fond
@@ -31,167 +38,91 @@ class QuoridorLauncher:
         
         
         self.text = Label(self.window, text="Taille du tableau : ", font=("Arial", 10), bg="#0D2338", fg="#FFF")
-        self.text.place(x=290, y=570)
+        self.text.place(x=290, y=545)
         self.text = Label(self.window, text="Nombre de barrière : ", font=("Arial", 10), bg="#0D2338", fg="#FFF")
-        self.text.place(x=530, y=570)
+        self.text.place(x=450, y=545)
+        self.text = Label(self.window, text="Choix de la map : ", font=("Arial", 10), bg="#0D2338", fg="#FFF")
+        self.text.place(x=620, y=545)
     
-        
-        # Nombre d'IA
-    def toggle_checkbox_ia(self):
-        if self.nbr_ia.get() == 1:
-            self.ia_3.configure(state="disabled")
-            self.ia_2.configure(state="disabled")
-            self.ia_1.configure(state="disabled")
-        elif self.nbr_ia_2.get() == 1:
-            self.ia_0.configure(state="disabled")
-            self.ia_3.configure(state="disabled")
-            self.ia_1.configure(state="disabled")
-        elif self.nbr_ia_0.get() == 1:
-            self.ia_3.configure(state="disabled")
-            self.ia_2.configure(state="disabled")
-            self.ia_1.configure(state="disabled")
-        elif self.nbr_ia_3.get() == 1:
-            self.ia_0.configure(state="disabled")
-            self.ia_2.configure(state="disabled")
-            self.ia_1.configure(state="disabled")
-        else:
-            self.ia_1.configure(state="normal")
-            self.ia_3.configure(state="normal")
-            self.ia_0.configure(state="normal")
-            self.ia_2.configure(state="normal")
-            
-            
     def numberIA(self):
-        # Boutons de nombre d'IA
-        self.nbr_ia = IntVar()
-        self.nbr_ia_2 = IntVar()
-        self.nbr_ia_0 = IntVar()
-        self.nbr_ia_3 = IntVar()
-        self.ia_0 = Checkbutton(self.window, text="0", bg="#0D2338", fg="#FFF", variable=self.nbr_ia_0, cursor="hand2", command=self.toggle_checkbox_ia)
-        self.ia_0.place(x=440, y=520)
-        self.ia_1 = Checkbutton(self.window, text="1", bg="#0D2338", fg="#FFF", variable=self.nbr_ia, cursor="hand2", command=self.toggle_checkbox_ia)
-        self.ia_1.place(x=480, y=520)
-        self.ia_2 = Checkbutton(self.window, text="2", bg="#0D2338", fg="#FFF", variable=self.nbr_ia_2, cursor="hand2", command=self.toggle_checkbox_ia)
-        self.ia_2.place(x=520, y=520)
-        self.ia_3 = Checkbutton(self.window, text="3", bg="#0D2338", fg="#FFF", variable=self.nbr_ia_3, cursor="hand2", command=self.toggle_checkbox_ia)
-        self.ia_3.place(x=560, y=520)
-    
-    def get_selected_ia(self):
-        selected_value = 0
-        if self.nbr_ia.get() == 1:
-            selected_value = 1
-        elif self.nbr_ia_2.get() == 1:
-            selected_value = 2
-        elif self.nbr_ia_3.get() == 1:
-            selected_value = 3
-        return selected_value
-        
-    def update_ia_state(self):
-        if self.nbr_player.get() == 1:
-            self.ia_1.configure(state="normal")
-            self.ia_2.configure(state="disabled")
-            self.ia_0.configure(state="disabled")
-            self.ia_3.configure(state="normal")
-            self.p2.configure(state="disabled")
-            self.p3.configure(state="disabled")
-            self.p4.configure(state="disabled")
-        elif self.nbr_player2.get() == 1:
-            self.ia_0.configure(state="normal")
-            self.ia_1.configure(state="disabled")
-            self.ia_2.configure(state="normal")
-            self.ia_3.configure(state="disabled")
-            self.p1.configure(state="disabled")
-            self.p3.configure(state="disabled")
-            self.p4.configure(state="disabled")
-        elif self.nbr_player3.get() == 1:
-            self.ia_1.configure(state="normal")
-            self.ia_0.configure(state="disabled")
-            self.ia_2.configure(state="disabled")
-            self.ia_3.configure(state="disabled")
-            self.p2.configure(state="disabled")
-            self.p1.configure(state="disabled")
-            self.p4.configure(state="disabled")
-        elif self.nbr_player4.get() == 1:
-            self.ia_0.configure(state="disabled")
-            self.ia_1.configure(state="disabled")
-            self.ia_2.configure(state="disabled")
-            self.ia_3.configure(state="disabled")
-            self.p2.configure(state="disabled")
-            self.p3.configure(state="disabled")
-            self.p1.configure(state="disabled")
-        else:  
-            self.p1.configure(state="normal")
-            self.p2.configure(state="normal")
-            self.p3.configure(state="normal")
-            self.p4.configure(state="normal")
+        def action(event):
+            self.selectIA = int(listIA.get())
+            print("IA : ", self.selectIA)
             
-            self.ia_0.configure(state="normal")
-            self.ia_1.configure(state="normal")
-            self.ia_2.configure(state="normal")
-            self.ia_3.configure(state="normal")
-
+        listIAs=[0, 1, 2, 3]
+        listIA = ttk.Combobox(self.window, values=listIAs, state="readonly")
+        listIA.current(0)
+        listIA.place(x=440, y=520)
+        listIA.bind("<<ComboboxSelected>>", action)
 
     def numberPlayer(self):
-        self.nbr_player = IntVar()
-        self.nbr_player2 = IntVar()
-        self.nbr_player3 = IntVar()
-        self.nbr_player4 = IntVar()
-        self.p1 = Checkbutton(self.window, text="1", bg="#0D2338", fg="#FFF", variable=self.nbr_player, cursor="hand2", command=self.update_ia_state)
-        self.p1.place(x=290, y=520)
-        self.p2 = Checkbutton(self.window, text="2", bg="#0D2338", fg="#FFF", variable=self.nbr_player2, cursor="hand2", command=self.update_ia_state)
-        self.p2.place(x=320, y=520)
-        self.p3 = Checkbutton(self.window, text="3", bg="#0D2338", fg="#FFF", variable=self.nbr_player3, cursor="hand2", command=self.update_ia_state)
-        self.p3.place(x=350, y=520)
-        self.p4 = Checkbutton(self.window, text="4", bg="#0D2338", fg="#FFF", variable=self.nbr_player4, cursor="hand2", command=self.update_ia_state)
-        self.p4.place(x=380, y=520)
+        def action(event):
+            self.selectPlayer = int(listPlayer.get())
+            print("Player : ", self.selectPlayer)
+
+        listPlayers=[1, 2, 3, 4]
+        listPlayer = ttk.Combobox(self.window, values=listPlayers, state="readonly")
+        listPlayer.current(1)
+        listPlayer.place(x=280, y=520)
+        listPlayer.bind("<<ComboboxSelected>>", action)
         
-    def get_selected_player(self):
-        if self.nbr_player.get() == 1:
-            return 1
-        elif self.nbr_player2.get() == 1:
-            return 2
-        elif self.nbr_player3.get() == 1:
-            return 3
-        elif self.nbr_player4.get() == 1:
-            return 4
-    
-    # Nombres de barrieres par joueur
-    def validate_integer(value_if_allowed):
-        if value_if_allowed == "":
-            return True
-        try:
-            int(value_if_allowed)
-            return True
-        except ValueError:
-            return False
+    def sizeBoard(self):
+        def action(event):
+            self.selectSize = int(listSize.get())
+            print("Board : ", self.selectSize)
+
+        listSizes=[5, 7, 9, 11]
+        listSize = ttk.Combobox(self.window, values=listSizes, state="readonly")
+        listSize.current(0)
+        listSize.place(x=280, y=570)
+        listSize.bind("<<ComboboxSelected>>", action)
         
     def numberFence(self):
-        self.entry_grid_size = Entry(self.window, width=10)
-        self.entry_grid_size.place(x=400, y=570)
-        
-        self.entry_nbr_fence = Entry(self.window, width=10)
-        self.entry_nbr_fence.place(x=655, y=570)
-        
-    def get_grid_size(self):
-        return int(self.entry_grid_size.get())
+        def action(event):
+            self.selectFence = int(listFence.get())
+            print("Fence : ", self.selectFence)
 
-    def get_nbr_fence(self):
-        return int(self.entry_nbr_fence.get())
+        listFences = []
+        for i in range(4, 41):
+            if i % 4 == 0:
+                listFences.append(i)
 
+        listFence = ttk.Combobox(self.window, values=listFences, state="readonly")
+        listFence.current(0)
+        listFence.place(x=440, y=570)
+        listFence.bind("<<ComboboxSelected>>", action)
+
+    def choiceMap(self):
+        def action(event):
+            selected_value = listMap.get()
+            print("Value : ", selected_value)
+            try:
+                if selected_value == "Jungle":
+                    self.selectMap = 1
+                elif selected_value == "Space":
+                    self.selectMap = 2
+                elif selected_value == "Hell":
+                    self.selectMap = 3
+            except ValueError:
+                print(f"Error: '{selected_value}' is not a valid map")
+
+        listMaps=["Jungle", "Space", "Hell"]
+        listMap = ttk.Combobox(self.window, values=listMaps, state="readonly")
+        listMap.current(0)
+        listMap.place(x=610, y=570)
+        listMap.bind("<<ComboboxSelected>>", action)
+        
     def buttonStart(self):
         def start_game():
-            grid_size = self.get_grid_size()
-            nbr_fences = self.get_nbr_fence()
-            nb_ia = self.get_selected_ia()
-            nb_player = self.get_selected_player() + self.get_selected_ia()
+            grid_size = self.selectSize
+            nbr_fences = self.selectFence
+            nb_ia = self.selectIA
+            nb_player = self.selectPlayer + self.selectIA
+            map = self.selectMap
             self.window.destroy()
-            if not (nbr_fences % 4 == 0 and 4 <= nbr_fences <= 40):
-                nbr_fences = 20
-            if grid_size not in (5, 7, 9, 11):
-                grid_size = 9
             if grid_size == 5 and nbr_fences > 20:
                 nbr_fences = 20
-            restartGame(grid_size, nb_player, nb_ia, nbr_fences, 2)
+            restartGame(grid_size, nb_player, nb_ia, nbr_fences, map)
 
         start = Button(self.window, text="START", command=start_game, bg="#0D2338", fg="#FFF", font=("Arial", 15), width=10, cursor="hand2",  activebackground="#035388",  activeforeground="white")
         start.place(x=775, y=550)
@@ -248,6 +179,8 @@ class QuoridorLauncher:
         self.addText()
         self.numberFence()
         self.numberPlayer()
+        self.sizeBoard()
+        self.choiceMap()
         self.buttonStart()
         
         
