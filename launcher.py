@@ -191,7 +191,7 @@ class QuoridorLauncher:
                 grid_size = 9
             if grid_size == 5 and nbr_fences > 20:
                 nbr_fences = 20
-            restartGame(grid_size, nb_player, nb_ia, nbr_fences)
+            restartGame(grid_size, nb_player, nb_ia, nbr_fences, 2)
 
         start = Button(self.window, text="START", command=start_game, bg="#0D2338", fg="#FFF", font=("Arial", 15), width=10, cursor="hand2",  activebackground="#035388",  activeforeground="white")
         start.place(x=775, y=550)

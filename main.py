@@ -8,17 +8,13 @@ from PIL import Image, ImageTk
 
 class Board:
     
-    def __init__(self, size, nb_players, nb_IA, nb_fence):
+    def __init__(self, size, nb_players, nb_IA, nb_fence, select_map):
         self.window = Tk()
         self.window.title("Quoridor")
         self.window.state('zoomed')
-        self.window.minsize(1500, 800)
+        self.window.minsize(self.window.winfo_screenwidth(), self.window.winfo_screenheight())
         self.window.iconbitmap('./assets/logo.ico')
         self.window.configure(bg="#F0B169")
-        # Récupération de la résolution de l'écran
-        screen_width = self.window.winfo_screenwidth()
-        screen_height = self.window.winfo_screenheight()
-        print("Résolution de l'écran : " + str(screen_width) + "x" + str(screen_height))
         self.window_game = True
         self.__size = size
         self.__nb_players = nb_players
@@ -50,7 +46,7 @@ class Board:
             self.canvas_game_width = 878
             self.canvas_game_height = 878
         elif size == 11:
-            self.canvas_game_width = 878
+            self.canvas_game_width = 890
             self.canvas_game_height = 878
             width = 70
             height = 70
@@ -60,85 +56,97 @@ class Board:
             fence_horizontal_height = 10
             pillar_taille = 11
             self.widget_space = 41
+        
+        if select_map == 1:
+            self.map = "jungle"
+        elif select_map == 2:
+            self.map = "space"
+        elif select_map == 3:
+            self.map = "hell"
             
+        self.bg_image = Image.open(f"./assets/{self.map}/background.png")
+        self.bg_image = self.bg_image.resize((self.window.winfo_screenwidth(), self.window.winfo_screenheight()))
+        self.bg_photo = ImageTk.PhotoImage(self.bg_image)
+        self.bg_label = Label(self.window, image=self.bg_photo)
+        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
             
-        no_player = Image.open("./assets/case.png")
+        no_player = Image.open(f"./assets/{self.map}/case.png")
         no_player = no_player.resize((width, height))
         self.no_player = ImageTk.PhotoImage(no_player)
         
-        moove_possible = Image.open("./assets/moove_possible.png")
+        moove_possible = Image.open(f"./assets/{self.map}/moove_possible.png")
         moove_possible = moove_possible.resize((width, height))
         self.moove_possible = ImageTk.PhotoImage(moove_possible)
         
-        image_player_1 = Image.open("./assets/player_1.png")
+        image_player_1 = Image.open(f"./assets/{self.map}/player_1.png")
         image_player_1 = image_player_1.resize((width, height))
         self.image_player_1 = ImageTk.PhotoImage(image_player_1)
         
-        image_player_2 = Image.open("./assets/player_2.png")
+        image_player_2 = Image.open(f"./assets/{self.map}/player_2.png")
         image_player_2 = image_player_2.resize((width, height))
         self.image_player_2 = ImageTk.PhotoImage(image_player_2)
         
-        image_player_3 = Image.open("./assets/player_3.png")
+        image_player_3 = Image.open(f"./assets/{self.map}/player_3.png")
         image_player_3 = image_player_3.resize((width, height))
         self.image_player_3 = ImageTk.PhotoImage(image_player_3)
         
-        image_player_4 = Image.open("./assets/player_4.png")
+        image_player_4 = Image.open(f"./assets/{self.map}/player_4.png")
         image_player_4 = image_player_4.resize((width, height))
         self.image_player_4 = ImageTk.PhotoImage(image_player_4)
         
         #IMAGES DES FENCES
-        fence_height = Image.open("./assets/fence_height.png")
+        fence_height = Image.open(f"./assets/{self.map}/fence_height.png")
         fence_height = fence_height.resize((fence_vertical_width, fence_vertical_height))
         self.fence_height = ImageTk.PhotoImage(fence_height)
         
-        fence_height_vide = Image.open("./assets/fence_height_vide.png")
+        fence_height_vide = Image.open(f"./assets/{self.map}/fence_height_vide.png")
         fence_height_vide = fence_height_vide.resize((fence_vertical_width, fence_vertical_height))
         self.fence_height_vide = ImageTk.PhotoImage(fence_height_vide)
         
-        fence_width = Image.open("./assets/fence_width.png")
+        fence_width = Image.open(f"./assets/{self.map}/fence_width.png")
         fence_width = fence_width.resize((fence_horizontal_width, fence_horizontal_height))
         self.fence_width = ImageTk.PhotoImage(fence_width)
         
-        fence_width_vide = Image.open("./assets/fence_width_vide.png")
+        fence_width_vide = Image.open(f"./assets/{self.map}/fence_width_vide.png")
         fence_width_vide = fence_width_vide.resize((fence_horizontal_width, fence_horizontal_height))
         self.fence_width_vide = ImageTk.PhotoImage(fence_width_vide)
         
         # IMAGE DES PILLIERS
-        pillar = Image.open("./assets/pillier.png")
+        pillar = Image.open(f"./assets/{self.map}/pillier.png")
         pillar = pillar.resize((pillar_taille, pillar_taille))
         self.pillar = ImageTk.PhotoImage(pillar)
         
-        pillar_vide = Image.open("./assets/pillier_vide.png")
+        pillar_vide = Image.open(f"./assets/{self.map}/pillier_vide.png")
         pillar_vide = pillar_vide.resize((pillar_taille, pillar_taille))
         self.pillar_vide = ImageTk.PhotoImage(pillar_vide)
         
         # IMAGE DES OBJETS HOVERED
-        fence_width_hover = Image.open("./assets/fence_width_hover.png")
+        fence_width_hover = Image.open(f"./assets/{self.map}/fence_width_hover.png")
         fence_width_hover = fence_width_hover.resize((fence_horizontal_width, fence_horizontal_height))
         self.fence_width_hover = ImageTk.PhotoImage(fence_width_hover)
         
-        fence_height_hover = Image.open("./assets/fence_height_hover.png")
+        fence_height_hover = Image.open(f"./assets/{self.map}/fence_height_hover.png")
         fence_height_hover = fence_height_hover.resize((fence_vertical_width, fence_vertical_height))
         self.fence_height_hover = ImageTk.PhotoImage(fence_height_hover)
 
-        pillar_hover = Image.open("./assets/pillier_hover.png")
+        pillar_hover = Image.open(f"./assets/{self.map}/pillier_hover.png")
         pillar_hover = pillar_hover.resize((pillar_taille, pillar_taille))
         self.pillar_hover = ImageTk.PhotoImage(pillar_hover)
         
         # Image de victoire
-        img_win_p1 = Image.open("./assets/victory_p1.png")
+        img_win_p1 = Image.open("./assets/jungle/victory_p1.png")
         img_win_p1 = img_win_p1.resize((600, 500))
         self.img_win_p1 = ImageTk.PhotoImage(img_win_p1)
         
-        img_win_p2 = Image.open("./assets/victory_p2.png")
+        img_win_p2 = Image.open("./assets/jungle/victory_p2.png")
         img_win_p2 = img_win_p2.resize((600, 500))
         self.img_win_p2 = ImageTk.PhotoImage(img_win_p2)
         
-        img_win_p3 = Image.open("./assets/victory_p3.png")
+        img_win_p3 = Image.open("./assets/jungle/victory_p3.png")
         img_win_p3 = img_win_p3.resize((600, 500))
         self.img_win_p3 = ImageTk.PhotoImage(img_win_p3)       
         
-        img_win_p4 = Image.open("./assets/victory_p4.png")
+        img_win_p4 = Image.open("./assets/jungle/victory_p4.png")
         img_win_p4 = img_win_p4.resize((600, 500))
         self.img_win_p4 = ImageTk.PhotoImage(img_win_p4) 
         
@@ -278,32 +286,42 @@ class Board:
         }
         self.canvas = Canvas(self.window, width=self.canvas_game_width, height=self.canvas_game_height, bg="#F0B169", bd=0, highlightthickness=0)
         self.canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
+        
+        # Widget d'informations
         current_player_number = self.current_player.get_player()
         current_player_color = player_colors.get(current_player_number, "gray")
-        info_frame = Frame(self.window)
-        info_frame.place(x=10, y=10)
+        if self.map == "jungle":
+            color_frame_info = "#FFC593"
+            color_font = "black"
+        elif self.map == "space":
+            color_frame_info = "#371761"
+            color_font = "white"
+        elif self.map == "hell":
+            color_frame_info = "#AF3500"
+            color_font = "black"
+        info_frame = Frame(self.window, bg=color_frame_info, bd=30)
+        info_frame.place(x=self.window.winfo_screenheight()-self.window.winfo_screenheight()+50, y=self.window.winfo_screenheight()/2, anchor="sw")
 
         current_player_number = self.current_player.get_player()
         current_player_color = player_colors.get(current_player_number, "gray")
-        Label(info_frame, text=" Tour : Joueur " + str(current_player_number), font=("Arial", 14), foreground=current_player_color).grid(row=0, column=0, padx=(0, 10))
-        Label(info_frame, text=f"Nombre de barrières restantes : ", font=("Arial", 14)).grid(row=1, column=0, padx=(0, 10))
-        Label(info_frame, text=f"<Espace> pour l'orientation de la barrière", font=("Arial", 14)).grid(row=6, column=0, padx=(0, 5))
+        Label(info_frame, text="Tour : ", font=("Arial", 14), bg=color_frame_info, fg=color_font).grid(row=0, column=0, padx=(0, 0))
+        Label(info_frame, text="Joueur " + str(current_player_number), font=("Arial", 14), foreground=current_player_color, bg=color_frame_info).grid(row=0, column=1, padx=(0, 10))
 
-        barrier_icon = PhotoImage(file="./assets/fence_nbr.png") 
-        barrier_icon = barrier_icon.subsample(4, 4)  
+        barrier_icon = PhotoImage(file=f"./assets/{self.map}/fence_nbr.png") 
+        barrier_icon = barrier_icon.subsample(3, 3)  
+
         for index, nbr_fence_player in enumerate(self.players):
             a = nbr_fence_player.get_player()
             b = nbr_fence_player.get_nb_fence()
             if b == 0:
-                b = "0 barrières"
+                b = "0"
             player_color = player_colors.get(a, "red")
-            Label(info_frame, text=f"Joueur {a} : {b}", font=("Arial", 14), foreground=player_color).grid(row=index + 2, column=0, padx=(0, 5), pady=(5, 0))
+            Label(info_frame, text=f"Joueur {a} : {b}", font=("Arial", 14), foreground=player_color, bg=color_frame_info).grid(row=index + 2, column=0, padx=(0, 5), pady=(5, 0))
 
             # Affichez l'icône de barrière à côté du nombre de barrières
-            barrier_label = Label(info_frame, image=barrier_icon)
+            barrier_label = Label(info_frame, image=barrier_icon, bg=color_frame_info)
             barrier_label.image = barrier_icon 
-            barrier_label.grid(row=index + 2, column=1, padx=(0, 10), pady=(5, 0))
-
+            barrier_label.grid(row=index + 2, column=1, padx=(0, 5), pady=(5, 0))
         
         self.window.bind("<Button-3>", self.changeFenceOrientation)
         tab =[]
@@ -869,13 +887,13 @@ class Board:
                     list.append([i,j,1])
         return list
             
-def restartGame(size, nb_players, nb_IA, nb_fences):
-    jeu = Board(size, nb_players , nb_IA, nb_fences)
+def restartGame(size, nb_players, nb_IA, nb_fences, select_map):
+    jeu = Board(size, nb_players , nb_IA, nb_fences, select_map)
     jeu.start()
     jeu.refreshPossibleCaseMovementForCurrentPlayer()
     jeu.displayBoard()
 
 
 if __name__ == "__main__":
-    restartGame(9, 2, 0, 8)
+    restartGame(7, 4, 0, 8, 3)
     mainloop()
