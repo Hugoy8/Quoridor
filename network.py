@@ -14,7 +14,7 @@ def MainThread(callback):
     
     
 class Server:
-    def __init__(self, host, port, typeGame, size, nb_players , nb_IA, nb_fences):
+    def __init__(self, host, port, typeGame, size, nb_players , nb_IA, nb_fences, mapID):
         if typeGame == 2 or typeGame == 4:
             # Variable de l'adresse ip de connexion.
             self.host = host
@@ -34,7 +34,7 @@ class Server:
             self.socketServer = ""
             
             # Variable qui stocke la class du jeu.
-            self.board = Board(size, nb_players , nb_IA, nb_fences)
+            self.board = Board(size, nb_players , nb_IA, nb_fences, mapID)
             
         else:
             print('Nombre de joueur de la partie non valide')
@@ -262,7 +262,7 @@ class ClientThread(threading.Thread):
 
 
 class ClientConfig:
-    def __init__(self, host, port, size, nb_players, nb_IA, nb_fences):
+    def __init__(self, host, port, size, nb_players, nb_IA, nb_fences, mapID):
         # Variable de l'adresse ip de connexion.
         self.host = host
         # Variable du port de connexion.
@@ -273,7 +273,7 @@ class ClientConfig:
         self.Infos = []
         
         # Variable qui stocke la class du jeu.
-        self.board = Board(size, nb_players , nb_IA, nb_fences)
+        self.board = Board(size, nb_players , nb_IA, nb_fences, mapID)
         
         self.client_config(host, port, size, nb_players, nb_IA, nb_fences)
     
@@ -432,14 +432,13 @@ class Graphique(threading.Thread):
         
 
 def joinSession(ip, port):
-    Instance = Client(ip, port)
-    Instance.client_config()
+    ClientConfig("127.0.0.1", 8000, 5, 2, 0, 8, 1)
 
 
-def startSession(port, nbr_player, size, nb_players, nb_IA, nb_fences):
-    Server("127.0.0.1", port, nbr_player, size, nb_players , nb_IA, nb_fences).server_config(size, nb_players, nb_IA, nb_fences)
+def startSession(port, nbr_player, size, nb_players, nb_IA, nb_fences, mapID):
+    Server("127.0.0.1", port, nbr_player, size, nb_players , nb_IA, nb_fences, mapID).server_config(size, nb_players, nb_IA, nb_fences, mapID)
     
 
-#startSession(8000, 2, 5, 2, 0, 8)
+startSession(8000, 2, 5, 2, 0, 8, 1)
 
-ClientConfig("127.0.0.1", 8000, 5, 2, 0, 8)
+ClientConfig("127.0.0.1", 8000, 5, 2, 0, 8, 1)
