@@ -436,9 +436,9 @@ def joinSession(ip, port):
 
 
 def startSession(port, nbr_player, size, nb_players, nb_IA, nb_fences, mapID):
-    Server("127.0.0.1", port, nbr_player, size, nb_players , nb_IA, nb_fences, mapID).server_config(size, nb_players, nb_IA, nb_fences, mapID)
+    Server("127.0.0.1", port, nbr_player, size, nb_players , nb_IA, nb_fences, mapID).server_config(size, nb_players, nb_IA, nb_fences)
     
 
-startSession(8000, 2, 5, 2, 0, 8, 1)
+#startSession(8000, 2, 5, 2, 0, 8, 1)
 
 ClientConfig("127.0.0.1", 8000, 5, 2, 0, 8, 1)
