@@ -210,7 +210,12 @@ class QuoridorLauncher:
         port = int(self.entry_port.get())
         nbr_player = int(self.nbr_player_network.get())
         self.window.destroy()
-        startSession(port, nbr_player, 5, 2, 0, 8, 2)
+        grid_size = self.selectSize
+        nbr_fences = self.selectFence
+        map = self.selectMap
+        if grid_size == 5 and nbr_fences > 20:
+            nbr_fences = 20
+        startSession(port, nbr_player, grid_size, nbr_player, 0, nbr_fences, map)
 
     def entriesNetwork(self) -> None:
         self.nbr_player_network = Entry(self.window, width=20)
@@ -244,6 +249,9 @@ class QuoridorLauncher:
         self.choiceMode()
         self.entriesNetwork()
         self.startButtonNetwork()
+        self.sizeBoard()
+        self.choiceMap()
+        self.numberFence()
                 
     def center_window(self) -> None:
         # Récupération de la résolution de l'écran

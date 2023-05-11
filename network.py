@@ -268,7 +268,7 @@ class ClientThread(threading.Thread):
         
         try:
             self.socket_client.send(dataSendtable)
-            time.sleep(1)
+            time.sleep(0.1)
         except socket.error:
             print("Erreur d'envoie du tableau ...")
             print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
@@ -424,6 +424,6 @@ def startSession(port : int, nbr_player : int, size : int, nb_players : int, nb_
     Server("", port, nbr_player).server_config(size, nb_players, nb_IA, nb_fences, mapID)
     
 
-# startSession(8000, 2, 5, 2, 0, 8, 1)
+startSession(8000, 2, 5, 2, 0, 8, 1)
 
-ClientConfig("10.128.173.188", 8000, 5, 2, 0, 8, 2)
+# ClientConfig("10.128.173.188", 8000, 5, 2, 0, 8, 2)

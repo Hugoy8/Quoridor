@@ -7,6 +7,7 @@ from pillar import*
 from player import*
 import random
 from PIL import Image, ImageTk
+import time
 
 class Board:
     def __init__(self, size : int, nb_players : int, nb_IA : int, nb_fence : int, select_map : int, Network : bool, InstanceNetwork : object, typeNetwork : str) -> None:
@@ -916,6 +917,7 @@ def SendBoardClient(x : int, y : int, client : socket) -> None:
     
     try:
         client.send(dataSendArray)
+        time.sleep(0.1)
     except socket.error:
         print("Erreur d'envoie du tableau ...")
         exit()
