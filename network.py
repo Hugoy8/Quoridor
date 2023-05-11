@@ -63,8 +63,10 @@ class Server:
             try:
                 self.socketServer.listen(10)
                 print("Le serveur est démarée et sur écoute ...")
+                self.statusServer = True
             except socket.error:
                 print("[-] Erreur pendant le lancement du serveur.")
+                self.statusServer = False
                 exit()
             
             (socket_client, (ip, self.port)) = self.socketServer.accept()
@@ -73,7 +75,7 @@ class Server:
                 self.socketClients.append(socket_client)
                 print(self.socketClients)
             
-            treading_server = ClientThread(ip, self.port, socket_client, self.typeGame, self.players, self.playerPlayed, self.socketServer)
+            treading_server = ServerThread(ip, self.port, socket_client, self.typeGame, self.players, self.playerPlayed, self.socketServer, self.statusServer)
             
             # Variable qui stocke la class du jeu.
             Network = True
@@ -85,8 +87,8 @@ class Server:
         threading_graphique = Graphique(self.board, "server")
         threading_graphique.start()
 
-class ClientThread(threading.Thread):
-    def __init__(self, host : str, port : int, socket_client : socket, typeGame : str, playersList : list, playerPlayed : int, socketServer : socket) -> None:
+class ServerThread(threading.Thread):
+    def __init__(self, host : str, port : int, socket_client : socket, typeGame : str, playersList : list, playerPlayed : int, socketServer : socket, statusServer : bool) -> None:
         threading.Thread.__init__(self)
         # Variable de l'adresse ip de connexion.
         self.host = host
@@ -106,13 +108,15 @@ class ClientThread(threading.Thread):
         
         # Varaible du socket du serveur.
         self.socketServer = socketServer
+        # Variable booléenne qui sauvegarde l'état du serveur.
+        self.statusServer = statusServer
         
         # Variable qui stocke la class de jeu.
         self.board = None
         
         print("[+] Nouveau thread crée pour le client sur "+str(self.host)+":"+str(self.port))
         
-    def startThread(self, boardInfos : object) -> None:
+    def startThread(self, boardInfos : Board) -> None:
         self.board = boardInfos
         self.start()
         
@@ -140,126 +144,29 @@ class ClientThread(threading.Thread):
                 print("Erreur d'envoie des informations d'enregistrement ...")
                 print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
                 self.socket_client.close()
-                self.serverStop()
+                self.serverStopCrash()
                     
             
             if self.typeGameThread == 2:
-                # Envoie du tableau de base avec le changement côté serveur à tous les joueurs (Le premier coup du premier joueur de la partie, soit le serveur)
-
-                # dataPositionX = input('\nAvancer de combien de case en X : ')
-                # dataPositionY = input('\nAvancer de combien de case en Y : ')
-                
-                # self.board.move(int(dataPositionX),int(dataPositionY))
-                # self.board.resetPossibleCaseMovement() 
-                # self.board.refreshCurrentPlayer()
-                # self.board.refreshPossibleCaseMovementForCurrentPlayer()
-                # self.board.displayBoard()
-
-                
-                
-                # DataMove = (
-                #     [int(dataPositionX), int(dataPositionY)])
-                # dataSendtable = pickle.dumps(DataMove)
-                
-                # try:
-                #     self.socket_client.send(dataSendtable)
-                #     time.sleep(1)
-                # except socket.error:
-                #     print("Erreur d'envoie du tableau ...")
-                #     print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
-                #     self.socket_client.close()
-                #     self.serverStop()
-                
-                
-                while True:
-                    print('\nEn attente du joueur 2')
+                # Boucle de jeu
+                while self.statusServer == True:
+                    # Réception des informations du client.
                     dataRecvArray = self.socket_client.recv(4096)
                     dataRecvClient = pickle.loads(dataRecvArray)
-                    print("\nC'est à votre tour !")
-                    print('\nVoici le tableau reçu du second joueur : ')
                     
-                    print(dataRecvClient)
-                        
+                    # Affichage graphique des changements du client.
                     self.board.move(int(dataRecvClient[0]),int(dataRecvClient[1]))
                     self.board.resetPossibleCaseMovement() 
                     self.board.refreshCurrentPlayer()
                     self.board.refreshPossibleCaseMovementForCurrentPlayer()
-                    self.board.displayBoard()
-                    
-                    # dataPositionX = input('\nAvancer de combien de case en X : ')
-                    # dataPositionY = input('\nAvancer de combien de case en Y : ')
-                    
-                    # self.board.move(int(dataPositionX),int(dataPositionY))
-                    # self.board.resetPossibleCaseMovement() 
-                    # self.board.refreshCurrentPlayer()
-                    # self.board.refreshPossibleCaseMovementForCurrentPlayer()
-                    # self.board.displayBoard()
-                    
-                    # DataMove = (
-                    #     [int(dataPositionX), int(dataPositionY)])
-                    # dataSendArray = pickle.dumps(DataMove)
-                    
-                    # try:
-                    #     self.socket_client.send(dataSendArray)
-                    # except socket.error:
-                    #     print("Erreur d'envoie du tableau ...")
-                    #     print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
-                    #     self.socket_client.close()
-                    #     self.serverStop()
-                    
+                    self.board.displayBoard(False)
             else:
                 pass
-                # while True:
-                #     if self.playerPlayedThread == 1:
-                #         print('\nEn attente du joueur 4')
-                #         dataRecvArray = self.socket_client.recv(4096)
-                #         dataRecvClient = pickle.loads(dataRecvArray)
-                #         print("\nC'est à votre tour !")
-                #         print('\nVoici le tableau reçu par les autres joueurs : ')
-                        
-                #         for j in range(len(dataRecvClient)):
-                #             print(dataRecvClient[j])
-                            
-                #         dataPositionX = input('\nEntrez les nouvelles coordonnées X de votre pion : ')
-                #         dataPositionY = input('\nEntrez les nouvelles coordonnées Y de votre pion : ')
-
-                #         dataRecvClient[dataPositionY][dataPositionX] = ('P'+self.playerPlayedThread)
-                #         dataSendArray = pickle.dumps(dataRecvClient)
-                        
-                #         try:
-                #             self.socket_client.send(dataSendArray)
-                #         except socket.error:
-                #             print("Erreur d'envoie du tableau ...")
-                #             exit()
-                        
-                #         if self.playerPlayedThread == 2:
-                #             self.playerPlayedThread = 1
-                #         else:
-                #             if self.playerPlayedThread == 4:
-                #                 self.playerPlayedThread = 1
-                #             else:
-                #                 self.playerPlayedThread += 1
-                #     else:
-                #         print('\nEn attente du joueur ', self.playerPlayedThread)
-                #         dataRecvArray = self.socket_client.recv(4096)
-                #         dataRecvClient = pickle.loads(dataRecvArray)
-                #         print("\nC'est au tour du joueur ", self.playerPlayedThread)
-                #         print('\nVoici le tableau du joueur ', self.playerPlayedThread, ' : ')
-                        
-                #         for j in range(len(dataRecvClient)):
-                #             print(dataRecvClient[j])
-                        
-                #         if self.playerPlayedThread == 2:
-                #             self.playerPlayedThread = 1
-                #         else:
-                #             if self.playerPlayedThread == 4:
-                #                 self.playerPlayedThread = 1
-                #             else:
-                #                 self.playerPlayedThread += 1
+                # Zone 4 joueurs.
         except:
             print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
             self.socket_client.close()
-            self.serverStop()
+            self.serverStopCrash()
         
     def SendBoard(self, x : int, y : int) -> None:
         DataMove = (
@@ -273,9 +180,17 @@ class ClientThread(threading.Thread):
             print("Erreur d'envoie du tableau ...")
             print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
             self.socket_client.close()
-            self.serverStop()
+            self.serverStopCrash()
     
+    def serverStopCrash(self) -> None:
+        print("Arrêt du serveur Crash...")
+        self.board.displayBoard(True)
+        self.socketServer.close()
+        exit()
+        
     def serverStop(self) -> None:
+        # Deconnexion des clients et arrêt du serveur.
+        self.statusServer = False
         print("Arrêt du serveur ...")
         self.socketServer.close()
         exit()
@@ -322,7 +237,7 @@ class ClientConfig:
         
 
 class Client(threading.Thread):
-    def __init__(self, client : socket, boardInfos : object) -> None:
+    def __init__(self, client : socket, boardInfos : Board) -> None:
         threading.Thread.__init__(self, group=None, target=self.runClient, args=(client,))
         
         # Variable qui stocke la class de jeu.
@@ -333,78 +248,30 @@ class Client(threading.Thread):
         dataRecvInfos = client.recv(4096)
         self.Infos = pickle.loads(dataRecvInfos)
         print('\nVoici les informations d\'enregistrement reçu par le serveur : ', self.Infos)
-        
+
         if self.Infos[0] == 2:
-            while True:
-                print('\nEn attente du joueur 1')
+            # Boucle de jeu
+            while not self.board.victory():
+                # Réception des informations du serveur.
                 dataRecvArray = client.recv(4096)
                 dataRecvServer = pickle.loads(dataRecvArray)
-                print("\nC'est à votre tour !")
-                print('\nVoici le tableau reçu par le premier joueur : ')
                 
-                print(dataRecvServer)
-                
+                # Affichage graphique des changements du serveur.
                 self.board.move(int(dataRecvServer[0]),int(dataRecvServer[1]))
                 self.board.resetPossibleCaseMovement() 
                 self.board.refreshCurrentPlayer()
                 self.board.refreshPossibleCaseMovementForCurrentPlayer()
-                self.board.displayBoard()
-                
+                self.board.displayBoard(False)
+            
+            # Deconnexion du client du serveur.
             client.close()
+            exit()
         else:
             pass
-            # while True:
-            #     if self.Infos[2] == self.Infos[1][0]:
-            #         print('\nEn attente du joueur')
-            #         dataRecvArray = client.recv(4096)
-            #         array_test = pickle.loads(dataRecvArray)
-            #         print("\nC'est à votre tour !")
-            #         print('\nVoici le tableau reçu par les autres joueurs : ')
-                    
-            #         for j in range(len(array_test)):
-            #             print(array_test[j])
-                        
-            #         dataPositionX = input('\nEntrez les nouvelles coordonnées X de votre pion : ')
-            #         dataPositionY = input('\nEntrez les nouvelles coordonnées Y de votre pion : ')
-                    
-            #         array_test[int(dataPositionY)][int(dataPositionX)] = ('P'+str(self.Infos[2]))
-            #         dataSendArray = pickle.dumps(array_test)
-                    
-            #         try:
-            #             client.send(dataSendArray)
-            #         except socket.error:
-            #             print("Erreur d'envoie du tableau ...")
-            #             exit()
-                        
-            #         if self.Infos[2] == 2:
-            #             self.Infos[2] = 1
-            #         else:
-            #             if self.Infos[2] == 4:
-            #                 self.Infos[2] = 1
-            #             else:
-            #                 self.Infos[2] += 1
-                    
-            #     else:
-            #         print('En attente du joueur ', self.Infos[2])
-            #         dataRecvArray = client.recv(4096)
-            #         array_test = pickle.loads(dataRecvArray)
-            #         print("\nC'est au tour du joueur ", self.Infos[2])
-            #         print('\nVoici le tableau du joueur ', self.Infos[2], ' : ')
-                    
-            #         for j in range(len(array_test)):
-            #             print(array_test[j])
-                        
-            #         if self.Infos[2] == 2:
-            #             self.Infos[2] = 1
-            #         else:
-            #             if self.Infos[2] == 4:
-            #                 self.Infos[2] = 1
-            #             else:
-            #                 self.Infos[2] += 1
-            # client.close()
+            # Zone 4 joueurs.
 
 class Graphique(threading.Thread):
-    def __init__(self, boardInfo : object, playerUser : str) -> None:
+    def __init__(self, boardInfo : Board, playerUser : str) -> None:
         threading.Thread.__init__(self)
         #Variable qui stocke la class de jeu.
         self.board = boardInfo
@@ -414,7 +281,6 @@ class Graphique(threading.Thread):
         MainThread(self.runGraphique())
     
     def runGraphique(self) -> None:
-        print(self.board)
         self.board.start()
         if self.playerUser == "server":
             self.board.refreshPossibleCaseMovementForCurrentPlayer()
@@ -422,7 +288,7 @@ class Graphique(threading.Thread):
             pass
         else:
             self.board.refreshPossibleCaseMovementForCurrentPlayer()
-        self.board.displayBoard()
+        self.board.displayBoard(False)
         mainloop()
         
 
@@ -433,7 +299,7 @@ def joinSession(ip : str, port : int) -> None:
 def startSession(port : int, nbr_player : int, size : int, nb_players : int, nb_IA : int, nb_fences : int, mapID : int) -> None:
     Server("", port, nbr_player).server_config(size, nb_players, nb_IA, nb_fences, mapID)
     
-
-# startSession(8000, 2, 5, 2, 0, 8, 2)
+    
+#startSession(8000, 2, 5, 2, 0, 8, 2)
 
 # ClientConfig("192.168.1.191", 8000, 5, 2, 0, 8, 2)
