@@ -146,29 +146,29 @@ class ClientThread(threading.Thread):
             if self.typeGameThread == 2:
                 # Envoie du tableau de base avec le changement côté serveur à tous les joueurs (Le premier coup du premier joueur de la partie, soit le serveur)
 
-                dataPositionX = input('\nAvancer de combien de case en X : ')
-                dataPositionY = input('\nAvancer de combien de case en Y : ')
+                # dataPositionX = input('\nAvancer de combien de case en X : ')
+                # dataPositionY = input('\nAvancer de combien de case en Y : ')
                 
-                self.board.move(int(dataPositionX),int(dataPositionY))
-                self.board.resetPossibleCaseMovement() 
-                self.board.refreshCurrentPlayer()
-                self.board.refreshPossibleCaseMovementForCurrentPlayer()
-                self.board.displayBoard()
+                # self.board.move(int(dataPositionX),int(dataPositionY))
+                # self.board.resetPossibleCaseMovement() 
+                # self.board.refreshCurrentPlayer()
+                # self.board.refreshPossibleCaseMovementForCurrentPlayer()
+                # self.board.displayBoard()
 
                 
                 
-                DataMove = (
-                    [int(dataPositionX), int(dataPositionY)])
-                dataSendtable = pickle.dumps(DataMove)
+                # DataMove = (
+                #     [int(dataPositionX), int(dataPositionY)])
+                # dataSendtable = pickle.dumps(DataMove)
                 
-                try:
-                    self.socket_client.send(dataSendtable)
-                    time.sleep(1)
-                except socket.error:
-                    print("Erreur d'envoie du tableau ...")
-                    print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
-                    self.socket_client.close()
-                    self.serverStop()
+                # try:
+                #     self.socket_client.send(dataSendtable)
+                #     time.sleep(1)
+                # except socket.error:
+                #     print("Erreur d'envoie du tableau ...")
+                #     print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
+                #     self.socket_client.close()
+                #     self.serverStop()
                 
                 
                 while True:
@@ -186,26 +186,26 @@ class ClientThread(threading.Thread):
                     self.board.refreshPossibleCaseMovementForCurrentPlayer()
                     self.board.displayBoard()
                     
-                    dataPositionX = input('\nAvancer de combien de case en X : ')
-                    dataPositionY = input('\nAvancer de combien de case en Y : ')
+                    # dataPositionX = input('\nAvancer de combien de case en X : ')
+                    # dataPositionY = input('\nAvancer de combien de case en Y : ')
                     
-                    self.board.move(int(dataPositionX),int(dataPositionY))
-                    self.board.resetPossibleCaseMovement() 
-                    self.board.refreshCurrentPlayer()
-                    self.board.refreshPossibleCaseMovementForCurrentPlayer()
-                    self.board.displayBoard()
+                    # self.board.move(int(dataPositionX),int(dataPositionY))
+                    # self.board.resetPossibleCaseMovement() 
+                    # self.board.refreshCurrentPlayer()
+                    # self.board.refreshPossibleCaseMovementForCurrentPlayer()
+                    # self.board.displayBoard()
                     
-                    DataMove = (
-                        [int(dataPositionX), int(dataPositionY)])
-                    dataSendArray = pickle.dumps(DataMove)
+                    # DataMove = (
+                    #     [int(dataPositionX), int(dataPositionY)])
+                    # dataSendArray = pickle.dumps(DataMove)
                     
-                    try:
-                        self.socket_client.send(dataSendArray)
-                    except socket.error:
-                        print("Erreur d'envoie du tableau ...")
-                        print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
-                        self.socket_client.close()
-                        self.serverStop()
+                    # try:
+                    #     self.socket_client.send(dataSendArray)
+                    # except socket.error:
+                    #     print("Erreur d'envoie du tableau ...")
+                    #     print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
+                    #     self.socket_client.close()
+                    #     self.serverStop()
                     
             else:
                 pass
@@ -262,7 +262,18 @@ class ClientThread(threading.Thread):
             self.serverStop()
         
     def SendBoard(self, x : int, y : int) -> None:
-        print(x, y)
+        DataMove = (
+            [int(x), int(y)])
+        dataSendtable = pickle.dumps(DataMove)
+        
+        try:
+            self.socket_client.send(dataSendtable)
+            time.sleep(1)
+        except socket.error:
+            print("Erreur d'envoie du tableau ...")
+            print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
+            self.socket_client.close()
+            self.serverStop()
     
     def serverStop(self) -> None:
         print("Arrêt du serveur ...")
@@ -335,35 +346,7 @@ class Client(threading.Thread):
                 self.board.refreshCurrentPlayer()
                 self.board.refreshPossibleCaseMovementForCurrentPlayer()
                 self.board.displayBoard()
-                    
-                    
-                dataPositionX = input('\nAvancer de combien de case en X : ')
-                dataPositionY = input('\nAvancer de combien de case en Y : ')
                 
-                self.board.move(int(dataPositionX),int(dataPositionY))
-                self.board.resetPossibleCaseMovement() 
-                self.board.refreshCurrentPlayer()
-                self.board.refreshPossibleCaseMovementForCurrentPlayer()
-                self.board.displayBoard()
-                
-                DataMove = (
-                    [int(dataPositionX), int(dataPositionY)])
-                dataSendArray = pickle.dumps(DataMove)
-                
-                try:
-                    client.send(dataSendArray)
-                except socket.error:
-                    print("Erreur d'envoie du tableau ...")
-                    exit()
-                    
-                if self.Infos[2] == 2:
-                    self.Infos[2] = 1
-                else:
-                    if self.Infos[2] == 4:
-                        self.Infos[2] = 1
-                    else:
-                        self.Infos[2] += 1
-                                
             client.close()
         else:
             pass
@@ -433,10 +416,6 @@ class Graphique(threading.Thread):
         mainloop()
         
 
-def SendBoardClient(x : int, y : int, client : socket) -> None:
-        print(x, y)
-        print(client)
-
 def joinSession(ip : str, port : int) -> None:
     ClientConfig(ip, port, 5, 2, 0, 8, 1)
 
@@ -447,4 +426,4 @@ def startSession(port : int, nbr_player : int, size : int, nb_players : int, nb_
 
 # startSession(8000, 2, 5, 2, 0, 8, 1)
 
-# ClientConfig("10.128.173.188", 8000, 5, 2, 0, 8, 2)
+ClientConfig("10.128.173.188", 8000, 5, 2, 0, 8, 2)

@@ -1,4 +1,6 @@
 from tkinter import*
+import socket
+import pickle
 from case import *
 from fence import*
 from pillar import*
@@ -36,7 +38,7 @@ class Board:
         self.board = []
         self.fence_orientation = "horizontal"    
         self.id_possible_move = 0 
-        # Création des images du plateau
+        # CrÃ©ation des images du plateau
         
         # IMAGE DES CASES
         width = 80
@@ -191,12 +193,11 @@ class Board:
         y = int(tags[1])
         
         if self.networkStatus == True:
-            if self.typeNetwork == "server":
+            if self.typeNetwork == "instance":
                 self.InstanceNetwork.SendBoard(x, y)
             elif self.typeNetwork == "socket":
-                from network import SendBoardClient
                 SendBoardClient(x, y, self.InstanceNetwork)
-                
+
         self.move(x,y)
         if self.victory() == True :
             self.displayBoard()
@@ -250,7 +251,7 @@ class Board:
                 self.displayBoard()                        
 
     def center_window(self) -> None:
-        # Récupération de la résolution de l'écran
+        # RÃ©cupÃ©ration de la rÃ©solution de l'Ã©cran
         screen_width = self.window.winfo_screenwidth()
         screen_height = self.window.winfo_screenheight()
 
@@ -341,7 +342,7 @@ class Board:
             player_color = player_colors.get(a, "red")
             Label(info_frame, text=f"Joueur {a} : {b}", font=("Arial", 14), foreground=player_color, bg=color_frame_info).grid(row=index + 2, column=0, padx=(0, 5), pady=(5, 0))
 
-            # Affichez l'icône de barrière à côté du nombre de barrières
+            # Affichez l'icÃ´ne de barriÃ¨re Ã  cÃ´tÃ© du nombre de barriÃ¨res
             barrier_label = Label(info_frame, image=barrier_icon, bg=color_frame_info)
             barrier_label.image = barrier_icon 
             barrier_label.grid(row=index + 2, column=1, padx=(0, 5), pady=(5, 0))
@@ -907,7 +908,19 @@ class Board:
                 if self.isPossibleFence(i, j) == True :
                     list.append([i,j,1])
         return list
-            
+
+def SendBoardClient(x : int, y : int, client : socket) -> None:
+    DataMove = (
+        [int(x), int(y)])
+    dataSendArray = pickle.dumps(DataMove)
+    
+    try:
+        client.send(dataSendArray)
+    except socket.error:
+        print("Erreur d'envoie du tableau ...")
+        exit()
+
+
 def restartGame(size : int, nb_players : int, nb_IA : int, nb_fences : int, select_map : int) -> None:
     jeu = Board(size, nb_players , nb_IA, nb_fences, select_map, False, "", "")
     jeu.start()
