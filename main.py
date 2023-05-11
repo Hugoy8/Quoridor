@@ -10,7 +10,7 @@ from PIL import Image, ImageTk
 import time
 
 class Board:
-    def __init__(self, size : int, nb_players : int, nb_IA : int, nb_fence : int, select_map : int, Network : bool, InstanceNetwork : object, typeNetwork : str) -> None:
+    def __init__(self, size : int, nb_players : int, nb_IA : int, nb_fence : int, select_map : int, Network : bool, InstanceNetwork : object, typeNetwork : str, playerUser : int) -> None:
         if Network == True:
             # Variable bool qui autorise le multijoueur.
             self.networkStatus = True
@@ -20,6 +20,9 @@ class Board:
             
             # Variable qui enregistre si l'instance est en est une ou un socket.
             self.typeNetwork = typeNetwork
+
+            # Variable qui enregistre le numéro de l'utilisateur sur le pc.
+            self.playerUser = playerUser
         else:
             # Variable bool qui autorise le multijoueur.
             self.networkStatus = False
@@ -210,7 +213,15 @@ class Board:
         else:
             self.resetPossibleCaseMovement() 
             self.refreshCurrentPlayer()
-            self.refreshPossibleCaseMovementForCurrentPlayer()
+
+            if self.networkStatus == True:
+                if self.current_player.get_player() == self.playerUser:
+                    self.refreshPossibleCaseMovementForCurrentPlayer()
+                else:
+                    pass
+            else:
+                self.refreshPossibleCaseMovementForCurrentPlayer()
+
             self.displayBoard()
         while self.current_player.get_IALevel() != 0 :
             if self.current_player.get_IALevel() == 1 :

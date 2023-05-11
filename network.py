@@ -77,7 +77,7 @@ class Server:
             
             # Variable qui stocke la class du jeu.
             Network = True
-            self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, treading_server, "instance")
+            self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, treading_server, "instance", 1)
 
             treading_server.startThread(self.board)
             self.players[0] += 1
@@ -309,8 +309,11 @@ class ClientConfig:
             
         # Variable qui stocke la class du jeu.
         Network = True
-        self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, client, "socket")
-        
+        if nb_players == 2:
+            self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, client, "socket", 2)
+        elif nb_players == 4:
+            pass
+
         threading_client = Client(client, self.board)
         threading_client.start()
         
