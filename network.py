@@ -82,7 +82,7 @@ class Server:
             treading_server.startThread(self.board)
             self.players[0] += 1
         
-        threading_graphique = Graphique(self.board)
+        threading_graphique = Graphique(self.board, "server")
         threading_graphique.start()
 
 class ClientThread(threading.Thread):
@@ -317,7 +317,7 @@ class ClientConfig:
         threading_client = Client(client, self.board)
         threading_client.start()
         
-        threading_graphique = Graphique(self.board)
+        threading_graphique = Graphique(self.board, "client")
         threading_graphique.start()
         
 
@@ -404,17 +404,24 @@ class Client(threading.Thread):
             # client.close()
 
 class Graphique(threading.Thread):
-    def __init__(self, boardInfo : object) -> None:
+    def __init__(self, boardInfo : object, playerUser : str) -> None:
         threading.Thread.__init__(self)
         #Variable qui stocke la class de jeu.
         self.board = boardInfo
+        # Variable qui contient le numéro de l'utilisateur.
+        self.playerUser = playerUser
         
         MainThread(self.runGraphique())
     
     def runGraphique(self) -> None:
         print(self.board)
         self.board.start()
-        self.board.refreshPossibleCaseMovementForCurrentPlayer()
+        if self.playerUser == "server":
+            self.board.refreshPossibleCaseMovementForCurrentPlayer()
+        elif self.playerUser == "client":
+            pass
+        else:
+            self.board.refreshPossibleCaseMovementForCurrentPlayer()
         self.board.displayBoard()
         mainloop()
         
@@ -427,6 +434,6 @@ def startSession(port : int, nbr_player : int, size : int, nb_players : int, nb_
     Server("", port, nbr_player).server_config(size, nb_players, nb_IA, nb_fences, mapID)
     
 
-startSession(8000, 2, 5, 2, 0, 8, 1)
+# startSession(8000, 2, 5, 2, 0, 8, 1)
 
 # ClientConfig("10.128.173.188", 8000, 5, 2, 0, 8, 2)

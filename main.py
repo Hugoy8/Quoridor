@@ -935,7 +935,7 @@ def SendBoardClient(x : int, y : int, client : socket) -> None:
 
 
 def restartGame(size : int, nb_players : int, nb_IA : int, nb_fences : int, select_map : int) -> None:
-    jeu = Board(size, nb_players , nb_IA, nb_fences, select_map, False, "", "")
+    jeu = Board(size, nb_players , nb_IA, nb_fences, select_map, False, "", "", 0)
     jeu.start()
     jeu.refreshPossibleCaseMovementForCurrentPlayer()
     jeu.displayBoard()
