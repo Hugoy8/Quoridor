@@ -2,11 +2,12 @@ import socket
 import threading
 import pickle
 import time
-from main import*
+from tkinter import *
 import tkinter as tk
+from main import Board
 
 
-def MainThread(callback):
+def MainThread(callback : tk) -> None:
     root = tk.Tk()
     root.withdraw()
     root.after(0, callback)
@@ -14,7 +15,7 @@ def MainThread(callback):
     
     
 class Server:
-    def __init__(self, host, port, typeGame, size, nb_players , nb_IA, nb_fences, mapID):
+    def __init__(self, host : str, port : int, typeGame : str) -> None:
         if typeGame == 2 or typeGame == 4:
             # Variable de l'adresse ip de connexion.
             self.host = host
@@ -33,18 +34,15 @@ class Server:
             # Variable du socket du serveur.
             self.socketServer = ""
             
-            # Variable qui stocke la class du jeu.
-            self.board = Board(size, nb_players , nb_IA, nb_fences, mapID)
-            
         else:
             print('Nombre de joueur de la partie non valide')
             exit()
         
-    def server_config(self, size, nb_players , nb_IA, nb_fences):
+    def server_config(self, size : int, nb_players : int, nb_IA : int, nb_fences : int, mapID : int) -> None:
         # Variable du socket du client.
         self.socketServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socketServer.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        
+            
         if self.host == "":
             # Recupération de l'ip du pc qui souhaite héberger un serveur.
             ip = ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][0])
@@ -75,15 +73,20 @@ class Server:
                 self.socketClients.append(socket_client)
                 print(self.socketClients)
             
-            treading_server = ClientThread(ip, self.port, socket_client, self.typeGame, self.players, self.playerPlayed, self.socketServer, self.board)
-            treading_server.start()
+            treading_server = ClientThread(ip, self.port, socket_client, self.typeGame, self.players, self.playerPlayed, self.socketServer)
+            
+            # Variable qui stocke la class du jeu.
+            Network = True
+            self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, treading_server, "instance")
+
+            treading_server.startThread(self.board)
             self.players[0] += 1
         
-        threading_graphique = Graphique(size, nb_players, nb_IA, nb_fences, self.board)
+        threading_graphique = Graphique(self.board)
         threading_graphique.start()
 
 class ClientThread(threading.Thread):
-    def __init__(self, host, port, socket_client, typeGame, playersList, playerPlayed, socketServer, boardInfos):
+    def __init__(self, host : str, port : int, socket_client : socket, typeGame : str, playersList : list, playerPlayed : int, socketServer : socket) -> None:
         threading.Thread.__init__(self)
         # Variable de l'adresse ip de connexion.
         self.host = host
@@ -105,11 +108,15 @@ class ClientThread(threading.Thread):
         self.socketServer = socketServer
         
         # Variable qui stocke la class de jeu.
-        self.board = boardInfos
+        self.board = None
         
         print("[+] Nouveau thread crée pour le client sur "+str(self.host)+":"+str(self.port))
         
-    def run(self): 
+    def startThread(self, boardInfos : object) -> None:
+        self.board = boardInfos
+        self.start()
+        
+    def run(self) -> None: 
         
         print("Connexion du client %s:%s" % (self.host, self.port))
         
@@ -250,19 +257,21 @@ class ClientThread(threading.Thread):
                 #             else:
                 #                 self.playerPlayedThread += 1
         except:
-            pass
-            # print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
-            # self.socket_client.close()
-            # self.serverStop()
+            print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
+            self.socket_client.close()
+            self.serverStop()
         
-    def serverStop(self):
+    def SendBoard(self, x : int, y : int) -> None:
+        print(x, y)
+    
+    def serverStop(self) -> None:
         print("Arrêt du serveur ...")
         self.socketServer.close()
         exit()
 
 
 class ClientConfig:
-    def __init__(self, host, port, size, nb_players, nb_IA, nb_fences, mapID):
+    def __init__(self, host : str, port : int, size : int, nb_players : int, nb_IA : int, nb_fences : int, mapID : int) -> None:
         # Variable de l'adresse ip de connexion.
         self.host = host
         # Variable du port de connexion.
@@ -272,14 +281,12 @@ class ClientConfig:
         # Liste qui contient toutes les informations d'enregistrement reçu par le serveur.
         self.Infos = []
         
-        # Variable qui stocke la class du jeu.
-        self.board = Board(size, nb_players , nb_IA, nb_fences, mapID)
-        
-        self.client_config(host, port, size, nb_players, nb_IA, nb_fences)
+        self.client_config(size, nb_players, nb_IA, nb_fences, mapID)
     
-    def client_config(self, ip, port, size, nb_players, nb_IA, nb_fences):
+    def client_config(self, size : int, nb_players : int, nb_IA : int, nb_fences : int, mapID : int) -> None:
         # Variable du socket du client.
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        
         try:
             client.connect((self.host, self.port))
         except socket.error:
@@ -288,22 +295,26 @@ class ClientConfig:
             ClientConfig(self.host, self.port).client_config()
         
         print("\nConnexion reussie au serveur "+str(self.host)+":"+str(self.port))
+            
+        # Variable qui stocke la class du jeu.
+        Network = True
+        self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, client, "socket")
         
         threading_client = Client(client, self.board)
         threading_client.start()
         
-        threading_graphique = Graphique(size, nb_players, nb_IA, nb_fences, self.board)
+        threading_graphique = Graphique(self.board)
         threading_graphique.start()
-
+        
 
 class Client(threading.Thread):
-    def __init__(self, client, boardInfos):
+    def __init__(self, client : socket, boardInfos : object) -> None:
         threading.Thread.__init__(self, group=None, target=self.runClient, args=(client,))
         
         # Variable qui stocke la class de jeu.
         self.board = boardInfos
         
-    def runClient(self, client):
+    def runClient(self, client : socket) -> None:
         # Réception des informations d'enregistrement côté serveur.
         dataRecvInfos = client.recv(4096)
         self.Infos = pickle.loads(dataRecvInfos)
@@ -405,40 +416,35 @@ class Client(threading.Thread):
             #             else:
             #                 self.Infos[2] += 1
             # client.close()
-            
 
 class Graphique(threading.Thread):
-    def __init__(self, size, nb_players, nb_IA, nb_fences, boardInfo):
+    def __init__(self, boardInfo : object) -> None:
         threading.Thread.__init__(self)
-        # Variable de la taille du plateau de jeu.
-        self.size = size
-        # Variable du nombre de joueurs.
-        self.nb_players = nb_players
-        # Variable du nombre d'IA.
-        self.nb_IA = nb_IA
-        # Variable du nombre de barrières au total.
-        self.nb_fences = nb_fences
-        
         #Variable qui stocke la class de jeu.
         self.board = boardInfo
         
         MainThread(self.runGraphique())
     
-    def runGraphique(self):
+    def runGraphique(self) -> None:
+        print(self.board)
         self.board.start()
         self.board.refreshPossibleCaseMovementForCurrentPlayer()
         self.board.displayBoard()
         mainloop()
         
 
-def joinSession(ip, port):
-    ClientConfig("127.0.0.1", 8000, 5, 2, 0, 8, 1)
+def SendBoardClient(x : int, y : int, client : socket) -> None:
+        print(x, y)
+        print(client)
+
+def joinSession(ip : str, port : int) -> None:
+    ClientConfig(ip, port, 5, 2, 0, 8, 1)
 
 
-def startSession(port, nbr_player, size, nb_players, nb_IA, nb_fences, mapID):
-    Server("127.0.0.1", port, nbr_player, size, nb_players , nb_IA, nb_fences, mapID).server_config(size, nb_players, nb_IA, nb_fences)
+def startSession(port : int, nbr_player : int, size : int, nb_players : int, nb_IA : int, nb_fences : int, mapID : int) -> None:
+    Server("", port, nbr_player, size, nb_players , nb_IA, nb_fences).server_config(size, nb_players, nb_IA, nb_fences, mapID)
     
 
 #startSession(8000, 2, 5, 2, 0, 8, 1)
 
-ClientConfig("127.0.0.1", 8000, 5, 2, 0, 8, 1)
+ClientConfig("10.128.173.188", 8000, 5, 2, 0, 8, 2)

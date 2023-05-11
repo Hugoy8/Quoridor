@@ -3,10 +3,10 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 from main import restartGame
-from network import *
+from network import joinSession, startSession
 
 class QuoridorLauncher:
-    def __init__(self):
+    def __init__(self) -> None:
         self.window = Tk()
         self.window.geometry("1400x700")
         self.window.title("Quoridor")
@@ -21,7 +21,7 @@ class QuoridorLauncher:
         self.selectFence = 4
         self.selectMap = 1
 
-    def background(self):
+    def background(self) -> None:
         # Image de fond
         self.bg_image = Image.open(f"./assets/launcher{self.statut}.png")
         self.bg_image = self.bg_image.resize((self.window.winfo_screenwidth()-300, self.window.winfo_screenheight()-200))
@@ -29,7 +29,7 @@ class QuoridorLauncher:
         self.bg_label = Label(self.window, image=self.bg_photo)
         self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
     
-    def addText(self):
+    def addText(self) -> None:
         # Ajout du texte
         self.text = Label(self.window, text="Nombre de joueurs", font=("Arial", 10), bg="#0D2338", fg="#FFF")
         self.text.place(x=290, y=490)
@@ -44,8 +44,8 @@ class QuoridorLauncher:
         self.text = Label(self.window, text="Choix de la map : ", font=("Arial", 10), bg="#0D2338", fg="#FFF")
         self.text.place(x=620, y=545)
     
-    def numberIA(self):
-        def action(event):
+    def numberIA(self) -> None:
+        def action(event) -> None:
             self.selectIA = int(listIA.get())
             print("IA : ", self.selectIA)
             
@@ -55,8 +55,8 @@ class QuoridorLauncher:
         listIA.place(x=440, y=520)
         listIA.bind("<<ComboboxSelected>>", action)
 
-    def numberPlayer(self):
-        def action(event):
+    def numberPlayer(self) -> None:
+        def action(event) -> None:
             self.selectPlayer = int(listPlayer.get())
             print("Player : ", self.selectPlayer)
 
@@ -66,8 +66,8 @@ class QuoridorLauncher:
         listPlayer.place(x=280, y=520)
         listPlayer.bind("<<ComboboxSelected>>", action)
         
-    def sizeBoard(self):
-        def action(event):
+    def sizeBoard(self) -> None:
+        def action(event) -> None:
             self.selectSize = int(listSize.get())
             print("Board : ", self.selectSize)
 
@@ -77,8 +77,8 @@ class QuoridorLauncher:
         listSize.place(x=280, y=570)
         listSize.bind("<<ComboboxSelected>>", action)
         
-    def numberFence(self):
-        def action(event):
+    def numberFence(self) -> None:
+        def action(event) -> None:
             self.selectFence = int(listFence.get())
             print("Fence : ", self.selectFence)
 
@@ -92,8 +92,8 @@ class QuoridorLauncher:
         listFence.place(x=440, y=570)
         listFence.bind("<<ComboboxSelected>>", action)
 
-    def choiceMap(self):
-        def action(event):
+    def choiceMap(self) -> None:
+        def action(event) -> None:
             selected_value = listMap.get()
             print("Value : ", selected_value)
             try:
@@ -112,8 +112,8 @@ class QuoridorLauncher:
         listMap.place(x=610, y=570)
         listMap.bind("<<ComboboxSelected>>", action)
         
-    def buttonStart(self):
-        def start_game():
+    def buttonStart(self) -> None:
+        def start_game() -> None:
             grid_size = self.selectSize
             nbr_fences = self.selectFence
             nb_ia = self.selectIA
@@ -127,12 +127,12 @@ class QuoridorLauncher:
         start = Button(self.window, text="START", command=start_game, bg="#0D2338", fg="#FFF", font=("Arial", 15), width=10, cursor="hand2",  activebackground="#035388",  activeforeground="white")
         start.place(x=775, y=550)
         
-    def changeMode(self):
+    def changeMode(self) -> None:
         for child in self.window.winfo_children():
             if child.winfo_exists():
                 child.destroy()
                 
-    def choiceMode(self):
+    def choiceMode(self) -> None:
         image_path = "./assets/fond_menu.png"
         img = Image.open(image_path)
         img = img.resize((95, 255))
@@ -169,7 +169,7 @@ class QuoridorLauncher:
         host_mode.image = host 
         host_mode.place(x=16, y=170)
         
-    def modeToSolo(self):
+    def modeToSolo(self) -> None:
         self.changeMode()
         self.statut = 0
         self.background()
@@ -184,7 +184,7 @@ class QuoridorLauncher:
         self.buttonStart()
         
         
-    def create_entries(self):
+    def create_entries(self) -> None:
         self.entry1 = Entry(self.window, width=20)
         self.entry1.place(x=296, y=508)
 
@@ -200,35 +200,35 @@ class QuoridorLauncher:
         reset_button = Button(self.window, text="Réinitialiser", font=("Arial", 13),  cursor="hand2", fg="#FFF",  bg="#486581", command=self.resetEntries, width=10, activebackground="#486581",  activeforeground="white")
         reset_button.place(x=500, y=563)
     
-    def joinGameNewtork(self):
+    def joinGameNewtork(self) -> None:
         ip = self.entry1.get()
         port = int(self.entry2.get())
         self.window.destroy()
         joinSession(ip, port)
         
-    def startGame(self):
+    def startGame(self) -> None:
         port = int(self.entry_port.get())
         nbr_player = int(self.nbr_player_network.get())
         self.window.destroy()
         startSession(port, nbr_player, 5, 2, 0, 8)
 
-    def entriesNetwork(self):
+    def entriesNetwork(self) -> None:
         self.nbr_player_network = Entry(self.window, width=20)
         self.nbr_player_network.place(x=296, y=508)
         
         self.entry_port = Entry(self.window, width=20)
         self.entry_port.place(x=1201, y=508)
 
-    def startButtonNetwork(self):
+    def startButtonNetwork(self) -> None:
         start = Button(self.window, text="Créer une partie", bg="#2BB0ED", fg="#FFF", font=("Arial", 13), width=20, cursor="hand2", activebackground="#035388",  activeforeground="white", command=self.startGame)
         start.place(x=290, y=563)
 
-    def resetEntries(self):
+    def resetEntries(self) -> None:
         self.entry1.delete(0, END)
         self.entry2.delete(0, END)
         self.entry3.delete(0, END)
 
-    def modeToSelectGame(self):
+    def modeToSelectGame(self) -> None:
         self.changeMode()
         self.statut = 1
         self.background()
@@ -236,7 +236,7 @@ class QuoridorLauncher:
         self.choiceMode()
         self.create_entries()
         
-    def modeToCreateGame(self):
+    def modeToCreateGame(self) -> None:
         self.changeMode()
         self.statut = 2
         self.background()
@@ -245,7 +245,7 @@ class QuoridorLauncher:
         self.entriesNetwork()
         self.startButtonNetwork()
                 
-    def center_window(self):
+    def center_window(self) -> None:
         # Récupération de la résolution de l'écran
         screen_width = self.window.winfo_screenwidth()
         screen_height = self.window.winfo_screenheight()

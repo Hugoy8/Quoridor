@@ -5,10 +5,24 @@ from pillar import*
 from player import*
 import random
 from PIL import Image, ImageTk
+from network import Server, SendBoardClient
 
 class Board:
     
-    def __init__(self, size, nb_players, nb_IA, nb_fence, select_map):
+    def __init__(self, size : int, nb_players : int, nb_IA : int, nb_fence : int, select_map : int, Network : bool, InstanceNetwork : object, typeNetwork : str) -> None:
+        if Network == True:
+            # Variable bool qui autorise le multijoueur.
+            self.networkStatus = True
+            
+            # Variable qui contient l'instance de la class en ligne.
+            self.InstanceNetwork = InstanceNetwork
+            
+            # Variable qui enregistre si l'instance est en est une ou un socket.
+            self.typeNetwork = typeNetwork
+        else:
+            # Variable bool qui autorise le multijoueur.
+            self.networkStatus = False
+            
         self.window = Tk()
         self.window.title("Quoridor")
         self.window.state('zoomed')
@@ -172,11 +186,18 @@ class Board:
                 self.board.append(tab2)
         
     
-    def caseClicked(self, event):
+    def caseClicked(self, event : int) -> None:
         item_id = event.widget.find_closest(event.x, event.y)[0]
         tags = self.canvas.gettags(item_id)
         x = int(tags[0])
         y = int(tags[1])
+        
+        if self.networkStatus == True:
+            if self.typeNetwork == "server":
+                self.InstanceNetwork.SendBoard(x, y)
+            elif self.typeNetwork == "socket":
+                SendBoardClient(x, y, self.InstanceNetwork)
+                
         self.move(x,y)
         if self.victory() == True :
             self.displayBoard()
@@ -229,7 +250,7 @@ class Board:
                 self.refreshPossibleCaseMovementForCurrentPlayer()
                 self.displayBoard()                        
 
-    def center_window(self):
+    def center_window(self) -> None:
         # Récupération de la résolution de l'écran
         screen_width = self.window.winfo_screenwidth()
         screen_height = self.window.winfo_screenheight()
@@ -248,7 +269,7 @@ class Board:
             self.window.geometry(f"600x650+{x}+{y}")
         
         
-    def windowVictory(self):
+    def windowVictory(self) -> None:
         self.window.state('normal')
         self.window.geometry("600x650")
         self.window.title("Quoridor")
@@ -271,13 +292,18 @@ class Board:
         button_frame = Frame(self.window)
         button_frame.pack(side="top", expand=True, fill="both")
 
-        quit_button = Button(button_frame, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, command=self.window.destroy)
+        quit_button = Button(button_frame, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, command=rejouer)
         quit_button.pack(side=LEFT, padx=110)
 
+        def rejouer() -> None:
+            self.windows.destroy()
+            from launcher import QuoridorLauncher
+            QuoridorLauncher()
+        
         replay_button = Button(button_frame, text="Rejouer", font=("Arial", 14), fg="white", bg="#78B000", bd=2, highlightthickness=0)
         replay_button.pack(side=LEFT, padx=100)
 
-    def displayBoard(self): 
+    def displayBoard(self) -> None: 
         player_colors = {
             1: "red",
             2: "green",
@@ -488,13 +514,13 @@ class Board:
                         self.canvas.itemconfig(item_id, image=self.fence_width_vide)
 
 
-    def decideIALevel(self, player):
+    def decideIALevel(self, player : int) -> bool:
         if player > self.__nb_players - self.__nb_IA:
             return 1
         return False
 
 
-    def start(self):
+    def start(self) -> None:
         nb_fence_each_player = int(self.__nb_fence / self.__nb_players)
         case = self.board[0][self.__size-1]
         case.set_player(1)
@@ -513,14 +539,14 @@ class Board:
         
     
     
-    def refreshCurrentPlayer(self) :
+    def refreshCurrentPlayer(self) -> None:
         if self.current_player.get_player() == self.__nb_players :
             self.current_player = self.players[0]
         else :
             self.current_player = self.players[self.current_player.get_player()]
     
             
-    def move(self,x,y) :
+    def move(self, x : int, y : int) -> None:
         position = self.current_player.displayPlace()
         case = self.board[position[0]][position[1]]
         case.set_player(0)
@@ -529,7 +555,7 @@ class Board:
         self.current_player.move(position[0]+x,position[1]+y)
                     
     
-    def changeFenceOrientation(self, event=None):
+    def changeFenceOrientation(self, event=None) -> None:
         self.displayBoard()
         if self.fence_orientation == "vertical":
             self.fence_orientation = "horizontal"
@@ -538,13 +564,13 @@ class Board:
         
     
     
-    def playerHasFence(self):
+    def playerHasFence(self) -> bool:
         nb_fence_current_player  = self.current_player.get_nb_fence()
         if nb_fence_current_player <= 0 :
             return False
         return True
     
-    def isPossibleFence(self,x,y):
+    def isPossibleFence(self, x : int, y : int) -> bool:
         if self.fence_orientation == "vertical":
             fence = self.board[x-1][y]
             if fence.get_build() == 1:
@@ -562,7 +588,7 @@ class Board:
         return True
     
     
-    def buildFence(self,x,y):
+    def buildFence(self, x : int, y : int) -> None:
         pillar = self.board[x][y]
         pillar.buildPillar()
         if self.fence_orientation == "vertical":
@@ -579,7 +605,7 @@ class Board:
         self.current_player.set_fence(nb_fence_current_player-1)
         self.displayBoard()
         
-    def deBuildFence(self,x,y):
+    def deBuildFence(self, x : int, y : int) -> None:
         pillar = self.board[x][y]
         pillar.set_build(0)
         if self.fence_orientation == "vertical":
@@ -595,7 +621,7 @@ class Board:
         nb_fence_current_player  = self.current_player.get_nb_fence()
         self.current_player.set_fence(nb_fence_current_player+1)
     
-    def victory(self):
+    def victory(self) -> bool:
         position = self.current_player.displayPlace()
         if self.current_player.get_player() == 1 :
             if position[0] == (self.__size-1)*2 :
@@ -612,19 +638,19 @@ class Board:
         return False
         
     
-    def alreadyChecked(self, x, y):
+    def alreadyChecked(self, x : int, y : int) -> bool:
         for i in self.list_case_check:
                     if i[0] == x and i[1] == y:
                         return True
         return False
     
-    def thereIsFence(self, x, y):
+    def thereIsFence(self, x : int, y : int) -> bool:
         fence = self.board[x][y]
         if fence.get_build() == 1:
             return True
         return False
         
-    def isPossibleWay(self, x, y, player):
+    def isPossibleWay(self, x : int, y : int, player : str) -> bool:
         self.list_case_check.append([x, y])
         if x == (self.__size-1)*2 and player == 1:
             return True
@@ -743,20 +769,20 @@ class Board:
                         
         
     
-    def seachPossibleWayForPlayer(self, player):
+    def seachPossibleWayForPlayer(self, player : str) -> bool:
         self.list_case_check = []
         position = self.players[player-1].displayPlace()
         if self.isPossibleWay(position[0], position[1], player) !=True :
             return False
         return True
         
-    def fenceNotCloseAccesGoal(self):
+    def fenceNotCloseAccesGoal(self) -> bool:
         for i in range(self.__nb_players):
             if self.seachPossibleWayForPlayer(i+1) == False :
                 return False
         return True
     
-    def isPossibleMove(self, x, y):
+    def isPossibleMove(self, x : int, y : int) -> bool:
         position = self.current_player.displayPlace()
         if position[0]==0:
             if x ==-2:
@@ -774,14 +800,14 @@ class Board:
             return False        
         return True   
     
-    def refreshPossibleCaseMovementForCurrentPlayer(self):
+    def refreshPossibleCaseMovementForCurrentPlayer(self) -> None:
         position = self.current_player.displayPlace()
         list_possible_move = self.allPossibleMoveForPlayer()
         for coord in list_possible_move :
             case = self.board[position[0]+coord[0]][position[1]+coord[1]]
             case.set_possibleMove([coord[0],coord[1]])
             
-    def resetPossibleCaseMovement(self):
+    def resetPossibleCaseMovement(self) -> None:
         for i in range(self.__size*2-1):
             if i%2 == 0 :
                 for j in range(self.__size*2-1):
@@ -795,7 +821,7 @@ class Board:
     #     jeu.start()
     #     self.refreshPossibleCaseMovementForCurrentPlayer()
     #     jeu.displayBoard()
-    def isPossibleMoveOnLeftSizePlayer(self,position,x,y):
+    def isPossibleMoveOnLeftSizePlayer(self, position : list, x : int, y : int) -> bool:
         if x != 0 :
             if position[0] != 0 :
                 if self.board[position[0]+int(x*1.5)][position[1]].get_build() != 0 or self.board[position[0]+x*2][position[1]].get_player() !=0 :
@@ -809,7 +835,7 @@ class Board:
                             return True
         return False
     
-    def isPossibleMoveOnRightSizePlayer(self,position,x,y):
+    def isPossibleMoveOnRightSizePlayer(self,position : list, x : int, y : int) -> bool:
         if x != 0 :
             if position[0] != (self.__size-1)*2 :
                 if self.board[position[0]+int(x*1.5)][position[1]].get_build() != 0 or self.board[position[0]+x*2][position[1]].get_player() !=0 :
@@ -824,9 +850,7 @@ class Board:
         return False
 
             
-        
-            
-    def allPossibleMoveForPlayer(self):
+    def allPossibleMoveForPlayer(self) -> list:
         list = []
         position = self.current_player.displayPlace()
         if self.isPossibleMove(-2,0) == True :
@@ -875,7 +899,7 @@ class Board:
                 list.append([0,2])
         return list
     
-    def allPossibleBuildFence(self):
+    def allPossibleBuildFence(self) -> list:
         list = [] 
         for i in range(1,self.__size*2-1,2):
             for j in range(1,self.__size*2-1,2):
@@ -887,8 +911,8 @@ class Board:
                     list.append([i,j,1])
         return list
             
-def restartGame(size, nb_players, nb_IA, nb_fences, select_map):
-    jeu = Board(size, nb_players , nb_IA, nb_fences, select_map)
+def restartGame(size : int, nb_players : int, nb_IA : int, nb_fences : int, select_map : int) -> None:
+    jeu = Board(size, nb_players , nb_IA, nb_fences, select_map, False, "")
     jeu.start()
     jeu.refreshPossibleCaseMovementForCurrentPlayer()
     jeu.displayBoard()
