@@ -5,10 +5,8 @@ from pillar import*
 from player import*
 import random
 from PIL import Image, ImageTk
-from network import Server, SendBoardClient
 
 class Board:
-    
     def __init__(self, size : int, nb_players : int, nb_IA : int, nb_fence : int, select_map : int, Network : bool, InstanceNetwork : object, typeNetwork : str) -> None:
         if Network == True:
             # Variable bool qui autorise le multijoueur.
@@ -196,6 +194,7 @@ class Board:
             if self.typeNetwork == "server":
                 self.InstanceNetwork.SendBoard(x, y)
             elif self.typeNetwork == "socket":
+                from network import SendBoardClient
                 SendBoardClient(x, y, self.InstanceNetwork)
                 
         self.move(x,y)
@@ -292,15 +291,13 @@ class Board:
         button_frame = Frame(self.window)
         button_frame.pack(side="top", expand=True, fill="both")
 
-        quit_button = Button(button_frame, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, command=rejouer)
+        quit_button = Button(button_frame, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, command=self.window.destroy)
         quit_button.pack(side=LEFT, padx=110)
-
-        def rejouer() -> None:
-            self.windows.destroy()
+        def rejouer():
+            self.window.destroy()
             from launcher import QuoridorLauncher
             QuoridorLauncher()
-        
-        replay_button = Button(button_frame, text="Rejouer", font=("Arial", 14), fg="white", bg="#78B000", bd=2, highlightthickness=0)
+        replay_button = Button(button_frame, text="Rejouer", font=("Arial", 14), fg="white", bg="#78B000", bd=2, highlightthickness=0, command=rejouer)
         replay_button.pack(side=LEFT, padx=100)
 
     def displayBoard(self) -> None: 
@@ -912,7 +909,7 @@ class Board:
         return list
             
 def restartGame(size : int, nb_players : int, nb_IA : int, nb_fences : int, select_map : int) -> None:
-    jeu = Board(size, nb_players , nb_IA, nb_fences, select_map, False, "")
+    jeu = Board(size, nb_players , nb_IA, nb_fences, select_map, False, "", "")
     jeu.start()
     jeu.refreshPossibleCaseMovementForCurrentPlayer()
     jeu.displayBoard()

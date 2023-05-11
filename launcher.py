@@ -210,7 +210,7 @@ class QuoridorLauncher:
         port = int(self.entry_port.get())
         nbr_player = int(self.nbr_player_network.get())
         self.window.destroy()
-        startSession(port, nbr_player, 5, 2, 0, 8)
+        startSession(port, nbr_player, 5, 2, 0, 8, 2)
 
     def entriesNetwork(self) -> None:
         self.nbr_player_network = Entry(self.window, width=20)
