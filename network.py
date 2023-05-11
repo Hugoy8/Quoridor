@@ -155,11 +155,29 @@ class ServerThread(threading.Thread):
                     dataRecvClient = pickle.loads(dataRecvArray)
                     
                     # Affichage graphique des changements du client.
-                    self.board.move(int(dataRecvClient[0]),int(dataRecvClient[1]))
-                    self.board.resetPossibleCaseMovement() 
-                    self.board.refreshCurrentPlayer()
-                    self.board.refreshPossibleCaseMovementForCurrentPlayer()
-                    self.board.displayBoard(False)
+                    print(dataRecvClient)
+                    if dataRecvClient[2] == 0:
+                        print("Move")
+                        self.board.move(int(dataRecvClient[0]),int(dataRecvClient[1]))
+                        self.board.resetPossibleCaseMovement() 
+                        self.board.refreshCurrentPlayer()
+                        self.board.refreshPossibleCaseMovementForCurrentPlayer()
+                        self.board.displayBoard(False)
+                        
+                    elif dataRecvClient[2] == 1:
+                        print("Fence")
+                        self.board.buildFence(int(dataRecvClient[0]),int(dataRecvClient[1]))
+                        if self.board.fenceNotCloseAccesGoal() == False :
+                            self.board.deBuildFence(int(dataRecvClient[0]),int(dataRecvClient[1]))
+                        else :
+                            self.board.resetPossibleCaseMovement() 
+                            self.board.refreshCurrentPlayer()
+                            self.board.refreshPossibleCaseMovementForCurrentPlayer()
+                            self.board.displayBoard(False)
+                    else:
+                        print("Erreur de type de click")
+                        
+
             else:
                 pass
                 # Zone 4 joueurs.
@@ -168,9 +186,12 @@ class ServerThread(threading.Thread):
             self.socket_client.close()
             self.serverStopCrash()
         
-    def SendBoard(self, x : int, y : int) -> None:
+    def SendBoard(self, x : int, y : int, typeClick : int) -> None:
+        # typeClick = 0 (caseClicked)
+        # typeClick = 1 (fenceClicked)
+        
         DataMove = (
-            [int(x), int(y)])
+            [int(x), int(y), int(typeClick)])
         dataSendtable = pickle.dumps(DataMove)
         
         try:
@@ -257,11 +278,24 @@ class Client(threading.Thread):
                 dataRecvServer = pickle.loads(dataRecvArray)
                 
                 # Affichage graphique des changements du serveur.
-                self.board.move(int(dataRecvServer[0]),int(dataRecvServer[1]))
-                self.board.resetPossibleCaseMovement() 
-                self.board.refreshCurrentPlayer()
-                self.board.refreshPossibleCaseMovementForCurrentPlayer()
-                self.board.displayBoard(False)
+                if dataRecvServer[2] == 0:
+                    self.board.move(int(dataRecvServer[0]),int(dataRecvServer[1]))
+                    self.board.resetPossibleCaseMovement() 
+                    self.board.refreshCurrentPlayer()
+                    self.board.refreshPossibleCaseMovementForCurrentPlayer()
+                    self.board.displayBoard(False)
+                    
+                elif dataRecvServer[2] == 1:
+                    self.board.buildFence(int(dataRecvServer[0]),int(dataRecvServer[1]))
+                    if self.board.fenceNotCloseAccesGoal() == False :
+                        self.board.deBuildFence(int(dataRecvServer[0]),int(dataRecvServer[1]))
+                    else :
+                        self.board.resetPossibleCaseMovement() 
+                        self.board.refreshCurrentPlayer()
+                        self.board.refreshPossibleCaseMovementForCurrentPlayer()
+                        self.board.displayBoard(False)
+                else:
+                    print("Erreur de type de click")
             
             # Deconnexion du client du serveur.
             client.close()
@@ -300,6 +334,6 @@ def startSession(port : int, nbr_player : int, size : int, nb_players : int, nb_
     Server("", port, nbr_player).server_config(size, nb_players, nb_IA, nb_fences, mapID)
     
     
-#startSession(8000, 2, 5, 2, 0, 8, 2)
+startSession(8000, 2, 5, 2, 0, 8, 2)
 
-# ClientConfig("192.168.1.191", 8000, 5, 2, 0, 8, 2)
+# ClientConfig("192.168.7.63", 8000, 5, 2, 0, 8, 2)

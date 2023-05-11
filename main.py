@@ -198,9 +198,9 @@ class Board:
         
         if self.networkStatus == True:
             if self.typeNetwork == "instance":
-                self.InstanceNetwork.SendBoard(x, y)
+                self.InstanceNetwork.SendBoard(x, y, 0)
             elif self.typeNetwork == "socket":
-                SendBoardClient(x, y, self.InstanceNetwork)
+                SendBoardClient(x, y, 0, self.InstanceNetwork)
 
         self.move(x,y)
         if self.victory() == True :
@@ -432,6 +432,13 @@ class Board:
             if len(tags) >= 2 :
                 x = int(tags[0])
                 y = int(tags[1])
+                
+                if self.networkStatus == True:
+                    if self.typeNetwork == "instance":
+                        self.InstanceNetwork.SendBoard(x, y, 1)
+                    elif self.typeNetwork == "socket":
+                        SendBoardClient(x, y, 1, self.InstanceNetwork)
+                
                 if self.isPossibleFence(x,y) == True :
                     self.buildFence(x,y)
                     if self.fenceNotCloseAccesGoal()==False :
@@ -439,7 +446,15 @@ class Board:
                     else :
                         self.resetPossibleCaseMovement() 
                         self.refreshCurrentPlayer()
-                        self.refreshPossibleCaseMovementForCurrentPlayer()
+                        
+                        if self.networkStatus == True:
+                            if self.current_player.get_player() == self.playerUser:
+                                self.refreshPossibleCaseMovementForCurrentPlayer()
+                            else:
+                                pass
+                        else:
+                            self.refreshPossibleCaseMovementForCurrentPlayer()
+                            
                         self.displayBoard(False)
                         while self.current_player.get_IALevel() != 0 :
                             if self.current_player.get_IALevel() == 1 :
@@ -927,9 +942,12 @@ class Board:
                     list.append([i,j,1])
         return list
 
-def SendBoardClient(x : int, y : int, client : socket) -> None:
+def SendBoardClient(x : int, y : int, typeClick : int, client : socket) -> None:
+    # typeClick = 0 (caseClicked)
+    # typeClick = 1 (fenceClicked)
+        
     DataMove = (
-        [int(x), int(y)])
+        [int(x), int(y), int(typeClick)])
     dataSendArray = pickle.dumps(DataMove)
     
     try:
