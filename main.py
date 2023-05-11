@@ -204,7 +204,7 @@ class Board:
 
         self.move(x,y)
         if self.victory() == True :
-            self.displayBoard()
+            self.displayBoard(False)
             self.canvas.unbind_all("<Button-1>")
             for child in self.window.winfo_children():
                 if child.winfo_exists():
@@ -222,7 +222,7 @@ class Board:
             else:
                 self.refreshPossibleCaseMovementForCurrentPlayer()
 
-            self.displayBoard()
+            self.displayBoard(False)
         while self.current_player.get_IALevel() != 0 :
             if self.current_player.get_IALevel() == 1 :
                 list = [0,1]
@@ -249,7 +249,7 @@ class Board:
                         movement = random.choice(self.allPossibleMoveForPlayer())
                         self.move(movement[0],movement[1])
             if self.victory() == True :
-                self.displayBoard()
+                self.displayBoard(False)
                 self.canvas.unbind_all("<Button-1>")
                 for child in self.window.winfo_children():
                     if child.winfo_exists():
@@ -260,7 +260,7 @@ class Board:
                 self.resetPossibleCaseMovement() 
                 self.refreshCurrentPlayer()
                 self.refreshPossibleCaseMovementForCurrentPlayer()
-                self.displayBoard()                        
+                self.displayBoard(False)                        
 
     def center_window(self) -> None:
         # RÃ©cupÃ©ration de la rÃ©solution de l'Ã©cran
@@ -313,7 +313,7 @@ class Board:
         replay_button = Button(button_frame, text="Rejouer", font=("Arial", 14), fg="white", bg="#78B000", bd=2, highlightthickness=0, command=rejouer)
         replay_button.pack(side=LEFT, padx=100)
 
-    def displayBoard(self) -> None: 
+    def displayBoard(self, leave: bool) -> None: 
         player_colors = {
             1: "red",
             2: "green",
@@ -358,6 +358,12 @@ class Board:
             barrier_label = Label(info_frame, image=barrier_icon, bg=color_frame_info)
             barrier_label.image = barrier_icon 
             barrier_label.grid(row=index + 2, column=1, padx=(0, 5), pady=(5, 0))
+        
+        if leave == True:
+            #PopUp de leave d'un joueur
+            canvas_leave = Canvas(self.window, width=self.window.winfo_screenwidth()-200, height=100, bg='#AD1A1A', bd=0, highlightthickness=0)
+            canvas_leave.place(relx=0.5, rely=0.1, anchor=CENTER)
+            canvas_leave.create_text((self.window.winfo_screenwidth()/2)-100, (canvas_leave.winfo_height()+canvas_leave.winfo_height() + 100)/ 2, text="Un joueur a quitté la partie !", fill='white', font=('Arial', 20))
         
         self.window.bind("<Button-3>", self.changeFenceOrientation)
         tab =[]
@@ -434,7 +440,7 @@ class Board:
                         self.resetPossibleCaseMovement() 
                         self.refreshCurrentPlayer()
                         self.refreshPossibleCaseMovementForCurrentPlayer()
-                        self.displayBoard()
+                        self.displayBoard(False)
                         while self.current_player.get_IALevel() != 0 :
                             if self.current_player.get_IALevel() == 1 :
                                 list = [0,1]
@@ -461,7 +467,7 @@ class Board:
                                         movement = random.choice(self.allPossibleMoveForPlayer())
                                         self.move(movement[0],movement[1])
                             if self.victory() == True :
-                                self.displayBoard()
+                                self.displayBoard(False)
                                 self.canvas.unbind_all("<Button-1>")
                                 for child in self.window.winfo_children():
                                     if child.winfo_exists():
@@ -472,7 +478,7 @@ class Board:
                                 self.resetPossibleCaseMovement() 
                                 self.refreshCurrentPlayer()
                                 self.refreshPossibleCaseMovementForCurrentPlayer()
-                                self.displayBoard()         
+                                self.displayBoard(False)         
                         
     def on_hover(self, event):
         if self.playerHasFence() == True :
@@ -566,7 +572,7 @@ class Board:
                     
     
     def changeFenceOrientation(self, event=None) -> None:
-        self.displayBoard()
+        self.displayBoard(False)
         if self.fence_orientation == "vertical":
             self.fence_orientation = "horizontal"
         else :
@@ -613,7 +619,7 @@ class Board:
             fence.buildFence()
         nb_fence_current_player  = self.current_player.get_nb_fence()
         self.current_player.set_fence(nb_fence_current_player-1)
-        self.displayBoard()
+        self.displayBoard(False)
         
     def deBuildFence(self, x : int, y : int) -> None:
         pillar = self.board[x][y]
@@ -830,7 +836,7 @@ class Board:
     # def game(self) :
     #     jeu.start()
     #     self.refreshPossibleCaseMovementForCurrentPlayer()
-    #     jeu.displayBoard()
+    #     jeu.displayBoard(False)
     def isPossibleMoveOnLeftSizePlayer(self, position : list, x : int, y : int) -> bool:
         if x != 0 :
             if position[0] != 0 :
@@ -938,7 +944,7 @@ def restartGame(size : int, nb_players : int, nb_IA : int, nb_fences : int, sele
     jeu = Board(size, nb_players , nb_IA, nb_fences, select_map, False, "", "", 0)
     jeu.start()
     jeu.refreshPossibleCaseMovementForCurrentPlayer()
-    jeu.displayBoard()
+    jeu.displayBoard(False)
 
 
 if __name__ == "__main__":

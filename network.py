@@ -434,6 +434,6 @@ def startSession(port : int, nbr_player : int, size : int, nb_players : int, nb_
     Server("", port, nbr_player).server_config(size, nb_players, nb_IA, nb_fences, mapID)
     
 
-# startSession(8000, 2, 5, 2, 0, 8, 1)
+# startSession(8000, 2, 5, 2, 0, 8, 2)
 
-# ClientConfig("10.128.173.188", 8000, 5, 2, 0, 8, 2)
+# ClientConfig("192.168.1.191", 8000, 5, 2, 0, 8, 2)
