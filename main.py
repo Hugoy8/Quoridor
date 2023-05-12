@@ -198,9 +198,9 @@ class Board:
         
         if self.networkStatus == True:
             if self.typeNetwork == "instance":
-                self.InstanceNetwork.SendBoard(x, y, 0)
+                self.InstanceNetwork.SendBoard(x, y, 0, self.fence_orientation)
             elif self.typeNetwork == "socket":
-                SendBoardClient(x, y, 0, self.InstanceNetwork)
+                SendBoardClient(x, y, 0, self.InstanceNetwork, self.fence_orientation)
 
         self.move(x,y)
         if self.victory() == True :
@@ -242,6 +242,7 @@ class Board:
                             self.buildFence(x_co_fence,y_co_fence)
                             if self.fenceNotCloseAccesGoal()==False :
                                 self.deBuildFence(x_co_fence,y_co_fence)
+                                self.displayBoard(False)
                             else : 
                                 can_build = True
                 else :
@@ -365,7 +366,7 @@ class Board:
             canvas_leave.place(relx=0.5, rely=0.1, anchor=CENTER)
             canvas_leave.create_text((self.window.winfo_screenwidth()/2)-100, (canvas_leave.winfo_height()+canvas_leave.winfo_height() + 100)/ 2, text="Un joueur a quitté la partie !", fill='white', font=('Arial', 20))
         
-        self.window.bind("<Button-3>", self.changeFenceOrientation)
+        self.window.bind("<space>", self.changeFenceOrientation)
         tab =[]
         self.pillar_rects = []
         for i in range(self.__size*2-1):
@@ -449,18 +450,18 @@ class Board:
             if len(tags) >= 2 :
                 x = int(tags[0])
                 y = int(tags[1])
-                
-                if self.networkStatus == True:
-                    if self.typeNetwork == "instance":
-                        self.InstanceNetwork.SendBoard(x, y, 1)
-                    elif self.typeNetwork == "socket":
-                        SendBoardClient(x, y, 1, self.InstanceNetwork)
-                
                 if self.isPossibleFence(x,y) == True :
                     self.buildFence(x,y)
                     if self.fenceNotCloseAccesGoal()==False :
                         self.deBuildFence(x,y)
+                        self.displayBoard(False)
                     else :
+                        if self.networkStatus == True:
+                            if self.typeNetwork == "instance":
+                                self.InstanceNetwork.SendBoard(x, y, 1, self.fence_orientation)
+                            elif self.typeNetwork == "socket":
+                                SendBoardClient(x, y, 1, self.InstanceNetwork, self.fence_orientation)
+                        
                         self.resetPossibleCaseMovement() 
                         self.refreshCurrentPlayer()
                         
@@ -492,6 +493,7 @@ class Board:
                                             self.buildFence(x_co_fence,y_co_fence)
                                             if self.fenceNotCloseAccesGoal()==False :
                                                 self.deBuildFence(x_co_fence,y_co_fence)
+                                                self.displayBoard(False)
                                             else : 
                                                 can_build = True
                                 else :
@@ -644,7 +646,7 @@ class Board:
             fence.buildFence()
             fence = self.board[x+1][y]
             fence.buildFence()
-        else :
+        else:
             fence = self.board[x][y-1]
             fence.buildFence()
             fence = self.board[x][y+1]
@@ -652,6 +654,25 @@ class Board:
         nb_fence_current_player  = self.current_player.get_nb_fence()
         self.current_player.set_fence(nb_fence_current_player-1)
         self.displayBoard(False)
+        
+        
+    def buildFenceNetwork(self, x : int, y : int, orientation : int) -> None:
+        pillar = self.board[x][y]
+        pillar.buildPillar()
+        if orientation == 0:
+            fence = self.board[x-1][y]
+            fence.buildFence()
+            fence = self.board[x+1][y]
+            fence.buildFence()
+        else:
+            fence = self.board[x][y-1]
+            fence.buildFence()
+            fence = self.board[x][y+1]
+            fence.buildFence()
+        nb_fence_current_player  = self.current_player.get_nb_fence()
+        self.current_player.set_fence(nb_fence_current_player-1)
+        self.displayBoard(False)
+        
         
     def deBuildFence(self, x : int, y : int) -> None:
         pillar = self.board[x][y]
@@ -959,12 +980,20 @@ class Board:
                     list.append([i,j,1])
         return list
 
-def SendBoardClient(x : int, y : int, typeClick : int, client : socket) -> None:
+def SendBoardClient(x : int, y : int, typeClick : int, client : socket, orientation : str) -> None:
     # typeClick = 0 (caseClicked)
     # typeClick = 1 (fenceClicked)
+    
+    # orientation = 0 (vertical)
+    # orientation = 1 (horizontal)
+    
+    if orientation == "vertical":
+        orientation = 0
+    else: 
+        orientation = 1
         
     DataMove = (
-        [int(x), int(y), int(typeClick)])
+        [int(x), int(y), int(typeClick), int(orientation)])
     dataSendArray = pickle.dumps(DataMove)
     
     try:

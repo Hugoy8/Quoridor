@@ -155,9 +155,7 @@ class ServerThread(threading.Thread):
                     dataRecvClient = pickle.loads(dataRecvArray)
                     
                     # Affichage graphique des changements du client.
-                    print(dataRecvClient)
                     if dataRecvClient[2] == 0:
-                        print("Move")
                         self.board.move(int(dataRecvClient[0]),int(dataRecvClient[1]))
                         self.board.resetPossibleCaseMovement() 
                         self.board.refreshCurrentPlayer()
@@ -165,8 +163,7 @@ class ServerThread(threading.Thread):
                         self.board.displayBoard(False)
                         
                     elif dataRecvClient[2] == 1:
-                        print("Fence")
-                        self.board.buildFence(int(dataRecvClient[0]),int(dataRecvClient[1]))
+                        self.board.buildFenceNetwork(int(dataRecvClient[0]),int(dataRecvClient[1]), int(dataRecvClient[3]))
                         if self.board.fenceNotCloseAccesGoal() == False :
                             self.board.deBuildFence(int(dataRecvClient[0]),int(dataRecvClient[1]))
                         else :
@@ -186,12 +183,20 @@ class ServerThread(threading.Thread):
             self.socket_client.close()
             self.serverStopCrash()
         
-    def SendBoard(self, x : int, y : int, typeClick : int) -> None:
+    def SendBoard(self, x : int, y : int, typeClick : int, orientation : str) -> None:
         # typeClick = 0 (caseClicked)
         # typeClick = 1 (fenceClicked)
         
+        # orientation = 0 (vertical)
+        # orientation = 1 (horizontal)
+        
+        if orientation == "vertical":
+            orientation = 0
+        else: 
+            orientation = 1
+        
         DataMove = (
-            [int(x), int(y), int(typeClick)])
+            [int(x), int(y), int(typeClick), int(orientation)])
         dataSendtable = pickle.dumps(DataMove)
         
         try:
@@ -206,6 +211,7 @@ class ServerThread(threading.Thread):
     def serverStopCrash(self) -> None:
         print("Arrêt du serveur Crash...")
         self.board.displayBoard(True)
+        time.sleep(1)
         self.socketServer.close()
         exit()
         
@@ -286,7 +292,7 @@ class Client(threading.Thread):
                     self.board.displayBoard(False)
                     
                 elif dataRecvServer[2] == 1:
-                    self.board.buildFence(int(dataRecvServer[0]),int(dataRecvServer[1]))
+                    self.board.buildFenceNetwork(int(dataRecvServer[0]),int(dataRecvServer[1]), int(dataRecvServer[3]))
                     if self.board.fenceNotCloseAccesGoal() == False :
                         self.board.deBuildFence(int(dataRecvServer[0]),int(dataRecvServer[1]))
                     else :
@@ -336,4 +342,4 @@ def startSession(port : int, nbr_player : int, size : int, nb_players : int, nb_
     
 startSession(8000, 2, 5, 2, 0, 8, 2)
 
-# ClientConfig("192.168.1.155", 8000, 5, 2, 0, 8, 2)
+# ClientConfig("10.128.173.190", 8000, 5, 2, 0, 8, 2)
