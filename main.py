@@ -416,10 +416,27 @@ class Board:
                             self.pillar_rects.append(self.canvas.create_image(j*self.widget_space+30, i*self.widget_space+30, image=self.pillar, anchor="nw", tags=[i,j]))
                         else :
                             self.pillar_rects.append(self.canvas.create_image(j*self.widget_space+30, i*self.widget_space+30, image=self.pillar_vide, anchor="nw", tags=[i,j]))
-                        self.canvas.tag_bind(self.pillar_rects[-1], "<Button-1>", self.buildFenceOnClick)
-                        if self.victory() == False:
-                            self.canvas.tag_bind(self.pillar_rects[-1], "<Enter>", self.on_hover)
-                            self.canvas.tag_bind(self.pillar_rects[-1], "<Leave>", self.on_leave)
+                        
+                        if self.networkStatus == True:
+                            if self.current_player.get_player() == self.playerUser:
+                                self.canvas.tag_bind(self.pillar_rects[-1], "<Button-1>", self.buildFenceOnClick)
+                            else:
+                                pass
+                        else:
+                            self.canvas.tag_bind(self.pillar_rects[-1], "<Button-1>", self.buildFenceOnClick)
+                            
+                        if self.networkStatus == True:
+                            if self.current_player.get_player() == self.playerUser:
+                                if self.victory() == False:
+                                    self.canvas.tag_bind(self.pillar_rects[-1], "<Enter>", self.on_hover)
+                                    self.canvas.tag_bind(self.pillar_rects[-1], "<Leave>", self.on_leave)
+                            else:
+                                pass
+                        else:
+                            if self.victory() == False:
+                                self.canvas.tag_bind(self.pillar_rects[-1], "<Enter>", self.on_hover)
+                                self.canvas.tag_bind(self.pillar_rects[-1], "<Leave>", self.on_leave)
+                        
                             
                 tab.append(tab2)
             

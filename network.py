@@ -336,4 +336,4 @@ def startSession(port : int, nbr_player : int, size : int, nb_players : int, nb_
     
 startSession(8000, 2, 5, 2, 0, 8, 2)
 
-# ClientConfig("192.168.7.63", 8000, 5, 2, 0, 8, 2)
+# ClientConfig("192.168.1.155", 8000, 5, 2, 0, 8, 2)
