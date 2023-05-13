@@ -81,8 +81,8 @@ class Server:
                 print(self.socketClients)
             
             
-            print("appel serverthread")
-            treading_server = ServerThread(ip, self.port, socket_client, self.typeGame, self.players, self.playerPlayed, self.socketServer, self.statusServer, "")
+            listInfosBoard = [size, nb_players , nb_IA, nb_fences, mapID]
+            treading_server = ServerThread(ip, self.port, socket_client, self.typeGame, self.players, self.playerPlayed, self.socketServer, self.statusServer, listInfosBoard, "")
             
             # Variable qui stocke la class du jeu.
             Network = True
@@ -96,7 +96,7 @@ class Server:
         threading_graphique.start()
 
 class ServerThread(threading.Thread):
-    def __init__(self, host : str, port : int, socket_client : socket, typeGame : str, playersList : list, playerPlayed : int, socketServer : socket, statusServer : bool, instanceRoomWaiting : object) -> None:
+    def __init__(self, host : str, port : int, socket_client : socket, typeGame : str, playersList : list, playerPlayed : int, socketServer : socket, statusServer : bool, listInfosBoard : list, instanceRoomWaiting : object) -> None:
         threading.Thread.__init__(self)
         # Variable de l'adresse ip de connexion.
         self.host = host
@@ -118,11 +118,13 @@ class ServerThread(threading.Thread):
         self.socketServer = socketServer
         # Variable booléenne qui sauvegarde l'état du serveur.
         self.statusServer = statusServer
-        #
+        # L'instance de la class WaitingRoomNetwork.
         self.instanceRoomWaiting = instanceRoomWaiting
         
         # Variable qui stocke la class de jeu.
         self.board = None
+        # Liste qui stocke toutes les infos de la board sélectionnées par le serveur.
+        self.listInfosBoard = listInfosBoard
         
         print("[+] Nouveau thread crée pour le client sur "+str(self.host)+":"+str(self.port))
         
@@ -146,7 +148,7 @@ class ServerThread(threading.Thread):
                 
             
             # Envoie des informations d'enregistrement au client.
-            infoList = ([self.typeGameThread, self.playersThread, self.playerPlayedThread])
+            infoList = ([self.typeGameThread, self.playersThread, self.playerPlayedThread, self.listInfosBoard])
             dataSendInfos = pickle.dumps(infoList)
             try:
                 self.socket_client.send(dataSendInfos)
@@ -183,8 +185,6 @@ class ServerThread(threading.Thread):
                                 self.board.refreshPossibleCaseMovementForCurrentPlayer()
                                 self.board.displayBoard(False)
                             
-                        
-                        
                     elif dataRecvClient[2] == 1:
                         self.board.buildFenceNetwork(int(dataRecvClient[0]),int(dataRecvClient[1]), int(dataRecvClient[3]))
                         if self.board.fenceNotCloseAccesGoal() == False :
@@ -197,7 +197,6 @@ class ServerThread(threading.Thread):
                     else:
                         print("Erreur de type de click")
                         
-
             else:
                 pass
                 # Zone 4 joueurs.
@@ -248,7 +247,7 @@ class ServerThread(threading.Thread):
 
 
 class ClientConfig:
-    def __init__(self, host : str, port : int, size : int, nb_players : int, nb_IA : int, nb_fences : int, mapID : int) -> None:
+    def __init__(self, host : str, port : int, mapID : int) -> None:
         # Variable de l'adresse ip de connexion.
         self.host = host
         # Variable du port de connexion.
@@ -258,9 +257,9 @@ class ClientConfig:
         # Liste qui contient toutes les informations d'enregistrement reçu par le serveur.
         self.Infos = []
         
-        self.client_config(size, nb_players, nb_IA, nb_fences, mapID)
+        self.client_config(mapID)
     
-    def client_config(self, size : int, nb_players : int, nb_IA : int, nb_fences : int, mapID : int) -> None:
+    def client_config(self, mapID : int) -> None:
         # scanNetwork = ScanNetwork(8000, 8005)
         # scanNetwork.scan()
         # listIp = scanNetwork.getIp()
@@ -277,15 +276,19 @@ class ClientConfig:
             ClientConfig(self.host, self.port).client_config()
         
         print("\nConnexion reussie au serveur "+str(self.host)+":"+str(self.port))
-            
+        
+        # Réception des informations d'enregistrement côté serveur.
+        dataRecvInfos = client.recv(4096)
+        self.Infos = pickle.loads(dataRecvInfos)
+        
         # Variable qui stocke la class du jeu.
         Network = True
-        if nb_players == 2:
-            self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, client, "socket", 2)
-        elif nb_players == 4:
+        if self.Infos[3][1] == 2:
+            self.board = Board(self.Infos[3][0], self.Infos[3][1] , self.Infos[3][2], self.Infos[3][3], mapID, Network, client, "socket", 2)
+        elif self.Infos[3][1] == 4:
             pass
-
-        threading_client = Client(client, self.board)
+        
+        threading_client = Client(client, self.board, self.Infos)
         threading_client.start()
         
         threading_graphique = Graphique(self.board, "client")
@@ -293,21 +296,18 @@ class ClientConfig:
         
 
 class Client(threading.Thread):
-    def __init__(self, client : socket, boardInfos : Board) -> None:
+    def __init__(self, client : socket, boardInfos : Board, Infos : list) -> None:
         threading.Thread.__init__(self, group=None, target=self.runClient, args=(client,))
         
         # Variable qui stocke la class de jeu.
         self.board = boardInfos
+        # Liste qui contient tous les paramètres reçu par le serveur.
+        self.Infos = Infos
         
     def runClient(self, client : socket) -> None:
-        # Réception des informations d'enregistrement côté serveur.
-        dataRecvInfos = client.recv(4096)
-        self.Infos = pickle.loads(dataRecvInfos)
-        print('\nVoici les informations d\'enregistrement reçu par le serveur : ', self.Infos)
-
+        # Boucle en de jeu en 2 joueurs.
         if self.Infos[0] == 2:
-            # Boucle de jeu
-            while not self.board.victory():
+            while True:
                 # Réception des informations du serveur.
                 dataRecvArray = client.recv(4096)
                 dataRecvServer = pickle.loads(dataRecvArray)
@@ -343,10 +343,6 @@ class Client(threading.Thread):
                         self.board.displayBoard(False)
                 else:
                     print("Erreur de type de click")
-            
-            # Deconnexion du client du serveur.
-            client.close()
-            exit()
         else:
             pass
             # Zone 4 joueurs.
@@ -422,7 +418,7 @@ class WaitingRoomNetwork(threading.Thread):
         
 
 def joinSession(ip : str, port : int) -> None:
-    ClientConfig(ip, port, 5, 2, 0, 8, 1)
+    ClientConfig(ip, port, 1)
 
 
 def startSession(port : int, nbr_player : int, size : int, nb_players : int, nb_IA : int, nb_fences : int, mapID : int) -> None:
@@ -431,4 +427,4 @@ def startSession(port : int, nbr_player : int, size : int, nb_players : int, nb_
     
 # startSession(8000, 2, 5, 2, 0, 8, 2)
 
-# ClientConfig("10.128.173.173", 8000, 5, 2, 0, 8, 2)
+ClientConfig("10.128.173.173", 8000, 1)
