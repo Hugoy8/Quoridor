@@ -205,7 +205,7 @@ class QuoridorLauncher:
         ip = self.entry1.get()
         port = int(self.entry2.get())
         self.window.destroy()
-        joinSession(ip, port)
+        joinSession(ip, port, self.selectMap)
         
     def startGame(self) -> None:
         port = int(self.entry_port.get())
@@ -249,7 +249,7 @@ class QuoridorLauncher:
         ip = event.widget['text']
         port = int(port)
         self.window.destroy()
-        joinSession(ip, port)
+        joinSession(ip, port, self.selectMap)
         
     def modeToSelectGame(self) -> None:
         self.changeMode()
@@ -259,6 +259,7 @@ class QuoridorLauncher:
         self.choiceMode()
         self.create_entries()
         # self.displayIp()
+        self.choiceMap()
         
     def modeToCreateGame(self) -> None:
         self.changeMode()

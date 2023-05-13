@@ -417,8 +417,8 @@ class WaitingRoomNetwork(threading.Thread):
         self.window.destroy()
         
 
-def joinSession(ip : str, port : int) -> None:
-    ClientConfig(ip, port, 1)
+def joinSession(ip : str, port : int, mapId : int) -> None:
+    ClientConfig(ip, port, mapId)
 
 
 def startSession(port : int, nbr_player : int, size : int, nb_players : int, nb_IA : int, nb_fences : int, mapID : int) -> None:
@@ -427,4 +427,4 @@ def startSession(port : int, nbr_player : int, size : int, nb_players : int, nb_
     
 # startSession(8000, 2, 5, 2, 0, 8, 2)
 
-ClientConfig("10.128.173.173", 8000, 1)
+# ClientConfig("10.128.173.173", 8000, 1)
