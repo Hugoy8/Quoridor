@@ -218,12 +218,12 @@ class QuoridorLauncher:
             nbr_fences = 20
         startSession(port, nbr_player, grid_size, nbr_player, 0, nbr_fences, map)
 
-    # def entriesNetwork(self) -> None:
-    #     self.nbr_player_network = Entry(self.window, width=20)
-    #     self.nbr_player_network.place(x=296, y=508)
+    def entriesNetwork(self) -> None:
+        self.nbr_player_network = Entry(self.window, width=20)
+        self.nbr_player_network.place(x=296, y=508)
         
-    #     self.entry_port = Entry(self.window, width=20)
-    #     self.entry_port.place(x=1201, y=508)
+        self.entry_port = Entry(self.window, width=20)
+        self.entry_port.place(x=1201, y=508)
 
     def startButtonNetwork(self) -> None:
         start = Button(self.window, text="Créer une partie", bg="#2BB0ED", fg="#FFF", font=("Arial", 13), width=20, cursor="hand2", activebackground="#035388",  activeforeground="white", command=self.startGame)
