@@ -4,6 +4,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 from main import restartGame
 from network import joinSession, startSession
+from scanNetwork import ScanNetwork
 
 class QuoridorLauncher:
     def __init__(self) -> None:
@@ -197,9 +198,9 @@ class QuoridorLauncher:
         start = Button(self.window, text="Rejoindre la partie", bg="#2BB0ED", fg="#FFF", font=("Arial", 13), width=20, cursor="hand2", activebackground="#035388",  activeforeground="white", command=self.joinGameNewtork)
         start.place(x=290, y=563)
         
-        reset_button = Button(self.window, text="Réinitialiser", font=("Arial", 13),  cursor="hand2", fg="#FFF",  bg="#486581", command=self.resetEntries, width=10, activebackground="#486581",  activeforeground="white")
-        reset_button.place(x=500, y=563)
-    
+        reset_button = Button(self.window, text="Rechercher une partie", font=("Arial", 13),  cursor="hand2", fg="#FFF",  bg="#486581", command=self.displayIp, width=25, activebackground="#486581",  activeforeground="white")
+        reset_button.place(x=520, y=563)
+        
     def joinGameNewtork(self) -> None:
         ip = self.entry1.get()
         port = int(self.entry2.get())
@@ -217,12 +218,12 @@ class QuoridorLauncher:
             nbr_fences = 20
         startSession(port, nbr_player, grid_size, nbr_player, 0, nbr_fences, map)
 
-    def entriesNetwork(self) -> None:
-        self.nbr_player_network = Entry(self.window, width=20)
-        self.nbr_player_network.place(x=296, y=508)
+    # def entriesNetwork(self) -> None:
+    #     self.nbr_player_network = Entry(self.window, width=20)
+    #     self.nbr_player_network.place(x=296, y=508)
         
-        self.entry_port = Entry(self.window, width=20)
-        self.entry_port.place(x=1201, y=508)
+    #     self.entry_port = Entry(self.window, width=20)
+    #     self.entry_port.place(x=1201, y=508)
 
     def startButtonNetwork(self) -> None:
         start = Button(self.window, text="Créer une partie", bg="#2BB0ED", fg="#FFF", font=("Arial", 13), width=20, cursor="hand2", activebackground="#035388",  activeforeground="white", command=self.startGame)
@@ -233,6 +234,23 @@ class QuoridorLauncher:
         self.entry2.delete(0, END)
         self.entry3.delete(0, END)
 
+    def displayIp(self) -> None:
+        scanNetwork = ScanNetwork(8000, 8005)
+        scanNetwork.scan()
+        listip = scanNetwork.getIp()
+        print(listip)
+        for i, address in enumerate(listip):
+            ip, port = address.split(":")  # Divise la chaîne de caractères en deux parties en fonction de l'espace
+            label = tk.Label(self.window, text=ip)
+            label.grid(row=i, column=0)
+            label.bind("<Button-1>", lambda event, port=port: self.onIpClick(event, port))
+
+    def onIpClick(self, event, port):
+        ip = event.widget['text']
+        port = int(port)
+        self.window.destroy()
+        joinSession(ip, port)
+        
     def modeToSelectGame(self) -> None:
         self.changeMode()
         self.statut = 1
@@ -240,6 +258,7 @@ class QuoridorLauncher:
         self.center_window()
         self.choiceMode()
         self.create_entries()
+        # self.displayIp()
         
     def modeToCreateGame(self) -> None:
         self.changeMode()
@@ -265,5 +284,3 @@ class QuoridorLauncher:
         
 run_launcher = QuoridorLauncher()
 run_launcher.window.mainloop()
-
-

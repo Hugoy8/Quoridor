@@ -42,6 +42,9 @@ class Board:
         self.board = []
         self.fence_orientation = "horizontal"    
         self.id_possible_move = 0 
+        self.leavepopup =  None
+        self.waiting_room1 = None
+        self.waiting_room2 = None
         # CrÃ©ation des images du plateau
         
         # IMAGE DES CASES
@@ -262,33 +265,16 @@ class Board:
                 self.refreshCurrentPlayer()
                 self.refreshPossibleCaseMovementForCurrentPlayer()
                 self.displayBoard(False)                        
-
-    def center_window(self) -> None:
-        # RÃ©cupÃ©ration de la rÃ©solution de l'Ã©cran
-        screen_width = self.window.winfo_screenwidth()
-        screen_height = self.window.winfo_screenheight()
-
-        if self.window_game == True:
-            x = (screen_width - 1500) // 2
-            y = (screen_height - 800) // 2
-        else:
-            x = (screen_width - 600) // 2
-            y = (screen_height - 650) // 2
-
-        if self.window_game == True:
-            self.window.geometry(f"1500x800+{x}+{y}")
-            self.window_game = False
-        else:
-            self.window.geometry(f"600x650+{x}+{y}")
         
         
     def windowVictory(self) -> None:
-        self.window.state('normal')
-        self.window.geometry("600x650")
-        self.window.title("Quoridor")
-        self.window.maxsize(600, 650)
-        self.window.minsize(600, 650)
-        self.center_window()
+        self.bg_image = Image.open(f"./assets/{self.map}/background.png")
+        self.bg_image = self.bg_image.resize((self.window.winfo_screenwidth(), self.window.winfo_screenheight()))
+        self.bg_photo = ImageTk.PhotoImage(self.bg_image)
+        self.bg_label = Label(self.window, image=self.bg_photo)
+        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+        self.displayBoard(False)
+        
         # Affichage de l'image de fond
         victory_canvas = Canvas(self.window, width=600, height=500, bd=0, highlightthickness=0)
         if self.current_player.get_player() == 1:
@@ -299,20 +285,20 @@ class Board:
             victory_canvas.create_image(0, 0, anchor="nw", image=self.img_win_p3)
         elif self.current_player.get_player() == 4:
             victory_canvas.create_image(0, 0, anchor="nw", image=self.img_win_p4)
-        victory_canvas.pack()
+        victory_canvas.place(relx=0.5, rely=0.5, anchor="center")
 
         # Ajout des boutons
-        button_frame = Frame(self.window)
-        button_frame.pack(side="top", expand=True, fill="both")
+        button_frame = Frame(self.window, bg="blue")
+        button_frame.pack(side="bottom", pady=100)
 
         quit_button = Button(button_frame, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, command=self.window.destroy)
-        quit_button.pack(side=LEFT, padx=110)
+        quit_button.pack(side="left", padx=110)
         def rejouer():
             self.window.destroy()
             from launcher import QuoridorLauncher
             QuoridorLauncher()
         replay_button = Button(button_frame, text="Rejouer", font=("Arial", 14), fg="white", bg="#78B000", bd=2, highlightthickness=0, command=rejouer)
-        replay_button.pack(side=LEFT, padx=100)
+        replay_button.pack(side="left", padx=100)
 
     def displayBoard(self, leave: bool) -> None: 
         player_colors = {
@@ -362,9 +348,14 @@ class Board:
         
         if leave == True:
             #PopUp de leave d'un joueur
-            canvas_leave = Canvas(self.window, width=self.window.winfo_screenwidth()-200, height=100, bg='#AD1A1A', bd=0, highlightthickness=0)
-            canvas_leave.place(relx=0.5, rely=0.1, anchor=CENTER)
-            canvas_leave.create_text((self.window.winfo_screenwidth()/2)-100, (canvas_leave.winfo_height()+canvas_leave.winfo_height() + 100)/ 2, text="Un joueur a quitté la partie !", fill='white', font=('Arial', 20))
+            leavepopup = Image.open(f"./assets/leavepopup.png")
+            leavepopup = leavepopup.resize((self.window.winfo_screenwidth() // 2, 100))
+            self.leavepopup = ImageTk.PhotoImage(leavepopup)
+            
+                # Créer un label pour l'image et l'ajouter à la fenêtre avec la méthode grid()
+            label = Label(self.window, image=self.leavepopup)
+            label.place(relx=0.5, rely=0.05, anchor='center')
+            
         
         self.window.bind("<space>", self.changeFenceOrientation)
         tab =[]
@@ -503,9 +494,9 @@ class Board:
                             if self.victory() == True :
                                 self.displayBoard(False)
                                 self.canvas.unbind_all("<Button-1>")
-                                for child in self.window.winfo_children():
-                                    if child.winfo_exists():
-                                        child.destroy()
+                                # for child in self.window.winfo_children():
+                                #     if child.winfo_exists():
+                                #         child.destroy()
                                 self.windowVictory()
                                 break
                             else:
@@ -1002,6 +993,9 @@ def SendBoardClient(x : int, y : int, typeClick : int, client : socket, orientat
     except socket.error:
         print("Erreur d'envoie du tableau ...")
         exit()
+    
+    
+        
 
 
 def restartGame(size : int, nb_players : int, nb_IA : int, nb_fences : int, select_map : int) -> None:
@@ -1012,5 +1006,5 @@ def restartGame(size : int, nb_players : int, nb_IA : int, nb_fences : int, sele
 
 
 if __name__ == "__main__":
-    restartGame(7, 4, 0, 8, 2)
+    restartGame(5, 2, 0, 8, 2)
     mainloop()
