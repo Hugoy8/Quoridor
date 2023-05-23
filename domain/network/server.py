@@ -1,7 +1,7 @@
 import socket
-from graphique import Graphique
+from domain.network.graphique import Graphique
 from infrastructure.services.services import Board
-from serverThread import ServerThread
+from domain.network.serverThread import ServerThread
 
 class Server:
     def __init__(self, host : str, port : int, typeGame : str) -> None:

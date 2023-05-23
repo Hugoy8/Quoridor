@@ -1,5 +1,5 @@
-from clientConfig import ClientConfig
-from server import Server
+from domain.network.clientConfig import ClientConfig
+from domain.network.server import Server
 import tkinter as tk
 
 

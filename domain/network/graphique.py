@@ -11,7 +11,7 @@ class Graphique(threading.Thread):
         # Variable qui contient le numéro de l'utilisateur.
         self.playerUser = playerUser
 
-        from network import MainThread
+        from domain.network.network import MainThread
         MainThread(self.runGraphique())
     
     def runGraphique(self) -> None:

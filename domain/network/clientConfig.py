@@ -1,8 +1,8 @@
 import socket
 import pickle
 from infrastructure.services.services import Board
-from graphique import Graphique
-from client import Client
+from domain.network.graphique import Graphique
+from domain.network.client import Client
 
 class ClientConfig:
     def __init__(self, host : str, port : int, mapID : int) -> None:
