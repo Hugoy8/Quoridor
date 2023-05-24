@@ -31,6 +31,7 @@ class Board:
         self.window.title("Quoridor")
         self.window.state('zoomed')
         self.window.minsize(self.window.winfo_screenwidth(), self.window.winfo_screenheight())
+        self.window.attributes("-fullscreen", True)
         self.window.iconbitmap('./assets/logo.ico')
         self.window.configure(bg="#F0B169")
         self.window_game = True
@@ -48,27 +49,38 @@ class Board:
         # CrÃ©ation des images du plateau
         
         # IMAGE DES CASES
-        width = 80
-        height = 80
-        fence_vertical_width = 20
-        fence_vertical_height = 80
-        fence_horizontal_width = 80
-        fence_horizontal_height = 20
-        pillar_taille = 20
-        self.widget_space = 50
+        
         
         if size == 5:
             self.canvas_game_width = 478
             self.canvas_game_height = 478
+            width = 80
+            height = 80
+            fence_vertical_width = 20
+            fence_vertical_height = 80
+            fence_horizontal_width = 80
+            fence_horizontal_height = 20
+            pillar_taille = 20
+            self.widget_space = 50
         elif size == 7:
-            self.canvas_game_width = 678
-            self.canvas_game_height = 678
+            self.canvas_game_width = 628
+            self.canvas_game_height = 628
+            x=(628-20*6)/7
+            
+            width = int(x)
+            height = int(x)
+            fence_vertical_width = 20
+            fence_vertical_height = int(x)
+            fence_horizontal_width = int(x)
+            fence_horizontal_height = 20
+            pillar_taille = 20
+            self.widget_space = 45
         elif size == 9:
             self.canvas_game_width = 878
             self.canvas_game_height = 878
         elif size == 11:
             self.canvas_game_width = 890
-            self.canvas_game_height = 878
+            self.canvas_game_height = 890
             width = 70
             height = 70
             fence_vertical_width = 10
@@ -85,7 +97,11 @@ class Board:
         elif select_map == 3:
             self.map = "hell"
         
-        self.bg_image = Image.open(f"./assets/{self.map}/background.png")
+        self.name_bg = size
+        if self.name_bg == 11:
+            self.name_bg = 9
+        
+        self.bg_image = Image.open(f"./assets/{self.map}/background{nb_players}{self.name_bg}.png")
         self.bg_image = self.bg_image.resize((self.window.winfo_screenwidth(), self.window.winfo_screenheight()))
         self.bg_photo = ImageTk.PhotoImage(self.bg_image)
         self.bg_label = Label(self.window, image=self.bg_photo)
@@ -153,24 +169,7 @@ class Board:
         pillar_hover = Image.open(f"./assets/{self.map}/pillier_hover.png")
         pillar_hover = pillar_hover.resize((pillar_taille, pillar_taille))
         self.pillar_hover = ImageTk.PhotoImage(pillar_hover)
-        
-        # Image de victoire
-        img_win_p1 = Image.open("./assets/jungle/victory_p1.png")
-        img_win_p1 = img_win_p1.resize((600, 500))
-        self.img_win_p1 = ImageTk.PhotoImage(img_win_p1)
-        
-        img_win_p2 = Image.open("./assets/jungle/victory_p2.png")
-        img_win_p2 = img_win_p2.resize((600, 500))
-        self.img_win_p2 = ImageTk.PhotoImage(img_win_p2)
-        
-        img_win_p3 = Image.open("./assets/jungle/victory_p3.png")
-        img_win_p3 = img_win_p3.resize((600, 500))
-        self.img_win_p3 = ImageTk.PhotoImage(img_win_p3)       
-        
-        img_win_p4 = Image.open("./assets/jungle/victory_p4.png")
-        img_win_p4 = img_win_p4.resize((600, 500))
-        self.img_win_p4 = ImageTk.PhotoImage(img_win_p4) 
-        
+
 
         for i in range(self.__size*2-1):
             if i%2 == 0 :
@@ -267,37 +266,59 @@ class Board:
         
         
     def windowVictory(self) -> None:
-        self.bg_image = Image.open(f"./assets/{self.map}/background.png")
+        # background de fond 
+        self.bg_image = Image.open(f"./assets/{self.map}/background{self.__nb_players}{self.name_bg}.png")
         self.bg_image = self.bg_image.resize((self.window.winfo_screenwidth(), self.window.winfo_screenheight()))
         self.bg_photo = ImageTk.PhotoImage(self.bg_image)
         self.bg_label = Label(self.window, image=self.bg_photo)
         self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
         self.displayBoard(False)
         
-        # Affichage de l'image de fond
-        victory_canvas = Canvas(self.window, width=600, height=500, bd=0, highlightthickness=0)
+        
+        # Affichage de l'image de victoire
         if self.current_player.get_player() == 1:
-            victory_canvas.create_image(0, 0, anchor="nw", image=self.img_win_p1)
+            img_win_p1 = Image.open(f"./assets/{self.map}/victory_p1.png")
+            img_win_p1 = img_win_p1.resize((485, 480))
+            self.img_win_p1 = ImageTk.PhotoImage(img_win_p1)
+            
+            label = Label(self.window, image=self.img_win_p1, bd=0, highlightthickness=0)
+            label.place(x=self.window.winfo_screenwidth()//2.8, y=self.window.winfo_screenheight()//4)
+            
         elif self.current_player.get_player() == 2:
-            victory_canvas.create_image(0, 20, anchor="nw", image=self.img_win_p2)
+            img_win_p2 = Image.open(f"./assets/{self.map}/victory_p2.png")
+            img_win_p2 = img_win_p2.resize((485, 480))
+            self.img_win_p2 = ImageTk.PhotoImage(img_win_p2)
+            
+            label = Label(self.window, image=self.img_win_p2,  bd=0, highlightthickness=0)
+            label.place(x=self.window.winfo_screenwidth()//2.8, y=self.window.winfo_screenheight()//4)
+            
         elif self.current_player.get_player() == 3:
-            victory_canvas.create_image(0, 0, anchor="nw", image=self.img_win_p3)
+            img_win_p3 = Image.open(f"./assets/{self.map}/victory_p3.png")
+            img_win_p3 = img_win_p3.resize((485, 480))
+            self.img_win_p3 = ImageTk.PhotoImage(img_win_p3)
+            
+            label = Label(self.window, image=self.img_win_p3,  bd=0, highlightthickness=0)
+            label.place(x=self.window.winfo_screenwidth()//2.8, y=self.window.winfo_screenheight()//4)
+            
         elif self.current_player.get_player() == 4:
-            victory_canvas.create_image(0, 0, anchor="nw", image=self.img_win_p4)
-        victory_canvas.place(relx=0.5, rely=0.5, anchor="center")
+            img_win_p4 = Image.open(f"./assets/{self.map}/victory_p4.png")
+            img_win_p4 = img_win_p4.resize((485, 480))
+            self.img_win_p4 = ImageTk.PhotoImage(img_win_p4)
+            
+            label = Label(self.window, image=self.img_win_p4,  bd=0, highlightthickness=0)
+            label.place(x=self.window.winfo_screenwidth()//2.8, y=self.window.winfo_screenheight()//4)
 
         # Ajout des boutons
-        button_frame = Frame(self.window, bg="blue")
-        button_frame.pack(side="bottom", pady=100)
-
-        quit_button = Button(button_frame, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, command=self.window.destroy)
-        quit_button.pack(side="left", padx=110)
         def rejouer():
             self.window.destroy()
             from domain.launcher.launcher import QuoridorLauncher
             QuoridorLauncher()
-        replay_button = Button(button_frame, text="Rejouer", font=("Arial", 14), fg="white", bg="#78B000", bd=2, highlightthickness=0, command=rejouer)
-        replay_button.pack(side="left", padx=100)
+        
+        quit_button = Button(self.window, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, width=20, command=self.window.destroy)
+        quit_button.pack(side='bottom', padx=10, pady=40)
+        replay_button = Button(self.window, text="Rejouer", font=("Arial", 14), fg="white", bg="#78B000", bd=2, highlightthickness=0, width=20, command=rejouer)
+        replay_button.pack(side='bottom', padx=10, pady=10)
+
 
     def displayBoard(self, leave: bool) -> None: 
         player_colors = {
@@ -321,16 +342,16 @@ class Board:
         elif self.map == "hell":
             color_frame_info = "#AF3500"
             color_font = "black"
-        info_frame = Frame(self.window, bg=color_frame_info, bd=30)
-        info_frame.place(x=self.window.winfo_screenheight()-self.window.winfo_screenheight()+50, y=self.window.winfo_screenheight()/2, anchor="sw")
+        # Placement des joueurs
+        window_width = self.window.winfo_screenwidth()
+        window_height = self.window.winfo_screenheight()
 
-        current_player_number = self.current_player.get_player()
-        current_player_color = player_colors.get(current_player_number, "gray")
-        Label(info_frame, text="Tour : ", font=("Arial", 14), bg=color_frame_info, fg=color_font).grid(row=0, column=0, padx=(0, 0))
-        Label(info_frame, text="Joueur " + str(current_player_number), font=("Arial", 14), foreground=current_player_color, bg=color_frame_info).grid(row=0, column=1, padx=(0, 10))
-
-        barrier_icon = PhotoImage(file=f"./assets/{self.map}/fence_nbr.png") 
-        barrier_icon = barrier_icon.subsample(3, 3)  
+        
+        """Tour du joueur"""
+        # current_player_number = self.current_player.get_player()
+        # current_player_color = player_colors.get(current_player_number, "gray")
+        # Label(self.window, text="Tour : ", font=("Arial", 14), bg=color_frame_info, fg=color_font).grid(row=0, column=0, padx=(0, 0))
+        # Label(self.window, text="Joueur " + str(current_player_number), font=("Arial", 14), foreground=current_player_color, bg=color_frame_info).grid(row=0, column=1, padx=(0, 10))
 
         for index, nbr_fence_player in enumerate(self.players):
             a = nbr_fence_player.get_player()
@@ -338,12 +359,35 @@ class Board:
             if b == 0:
                 b = "0"
             player_color = player_colors.get(a, "red")
-            Label(info_frame, text=f"Joueur {a} : {b}", font=("Arial", 14), foreground=player_color, bg=color_frame_info).grid(row=index + 2, column=0, padx=(0, 5), pady=(5, 0))
+            
+            window_width = self.window.winfo_screenwidth()
+            window_height = self.window.winfo_screenheight()
 
-            # Affichez l'icÃ´ne de barriÃ¨re Ã  cÃ´tÃ© du nombre de barriÃ¨res
-            barrier_label = Label(info_frame, image=barrier_icon, bg=color_frame_info)
-            barrier_label.image = barrier_icon 
-            barrier_label.grid(row=index + 2, column=1, padx=(0, 5), pady=(5, 0))
+            if self.__nb_players == 2:
+                if index == 0:
+                    # Joueur 1 (en haut au milieu)
+                    Label(self.window, text=f"{b} : Joueur {a}", font=("Arial", 14), foreground=player_color, bg=color_frame_info).place(x=window_width/2, y=70, anchor="center")
+                elif index == 1:
+                    # Joueur 2 (en bas au milieu)
+                    Label(self.window, text=f"Joueur {a} x{b}", font=("Arial", 14), foreground=player_color, bg=color_frame_info).place(x=window_width/2, y=window_height-70, anchor="center")
+            elif self.__nb_players == 4:
+                if index == 0:
+                    # Joueur 1 (en haut au milieu)
+                    Label(self.window, text=f"Joueur {a} x{b}", font=("Arial", 14), foreground=player_color, bg=color_frame_info).place(x=window_width/2, y=70, anchor="center")
+                elif index == 1:
+                    # Joueur 2 (à droite au milieu)
+                    label = Label(self.window, text=f"{b}x Joueur {a}", font=("Arial", 14), foreground=player_color, bg=color_frame_info)
+                    label.place(x=window_width-60, y=window_height/2, anchor="e")
+                    label.config(wraplength=1, justify="center", anchor="w", width=1)
+                elif index == 2:
+                    # Joueur 3 (en bas au milieu)
+                    Label(self.window, text=f"Joueur {a} x{b}", font=("Arial", 14), foreground=player_color, bg=color_frame_info).place(x=window_width/2, y=window_height-70, anchor="center")
+                elif index == 3:
+                    # Joueur 4 (à gauche au milieu)
+                    label = Label(self.window, text=f"Joueur {a} x{b}", font=("Arial", 14), foreground=player_color, bg=color_frame_info)
+                    label.place(x=60, y=window_height/2, anchor="w")
+                    label.config(wraplength=1, justify="center", anchor="s")
+
         
         if leave == True:
             #PopUp de leave d'un joueur
@@ -993,9 +1037,6 @@ def SendBoardClient(x : int, y : int, typeClick : int, client : socket, orientat
         print("Erreur d'envoie du tableau ...")
         exit()
     
-    
-        
-
 
 def restartGame(size : int, nb_players : int, nb_IA : int, nb_fences : int, select_map : int) -> None:
     jeu = Board(size, nb_players , nb_IA, nb_fences, select_map, False, "", "", 0)
