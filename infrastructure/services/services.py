@@ -65,16 +65,14 @@ class Board:
         elif size == 7:
             self.canvas_game_width = 628
             self.canvas_game_height = 628
-            x=(628-20*6)/7
-            
-            width = int(x)
-            height = int(x)
-            fence_vertical_width = 20
-            fence_vertical_height = int(x)
-            fence_horizontal_width = int(x)
-            fence_horizontal_height = 20
-            pillar_taille = 20
-            self.widget_space = 45
+            width = 78
+            height = 78
+            fence_vertical_width = 16
+            fence_vertical_height = 78
+            fence_horizontal_width = 78
+            fence_horizontal_height = 16
+            pillar_taille = 16
+            self.widget_space = 46
         elif size == 9:
             self.canvas_game_width = 878
             self.canvas_game_height = 878
@@ -621,7 +619,6 @@ class Board:
             self.players.append(Player(self.__size-1,(self.__size-1)*2,4,nb_fence_each_player,self.decideIALevel(4)))
         self.current_player = self.players[0]
         
-    
     
     def refreshCurrentPlayer(self) -> None:
         if self.current_player.get_player() == self.__nb_players :
