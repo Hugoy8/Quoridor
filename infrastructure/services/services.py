@@ -499,7 +499,7 @@ class Board:
                             if self.typeNetwork == "instance":
                                 self.InstanceNetwork.SendBoard(x, y, 1, self.fence_orientation)
                             elif self.typeNetwork == "socket":
-                                SendBoardClient(x, y, 0, self.InstanceNetwork, self.fence_orientation, self.playerUser)
+                                SendBoardClient(x, y, 1, self.InstanceNetwork, self.fence_orientation, self.playerUser)
                         
                         self.resetPossibleCaseMovement() 
                         self.refreshCurrentPlayer()
@@ -1030,8 +1030,7 @@ def SendBoardClient(x : int, y : int, typeClick : int, client : socket, orientat
     else: 
         orientation = 1
         
-    DataMove = (
-        [int(x), int(y), int(typeClick), int(orientation), int(playerUser)])
+    DataMove = ([int(x), int(y), int(typeClick), int(orientation), int(playerUser)])
     dataSendArray = pickle.dumps(DataMove)
     
     try:
