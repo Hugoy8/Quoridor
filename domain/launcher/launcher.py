@@ -14,7 +14,7 @@ class QuoridorLauncher:
         # self.window.attributes("-fullscreen", True)
         # self.window.maxsize(self.window.winfo_screenwidth(), self.window.winfo_screenheight())
         self.window.minsize(self.window.winfo_screenwidth(), self.window.winfo_screenheight())
-        self.window.iconbitmap('./assets/logo.ico')
+        self.window.iconbitmap('./assets/images/logo.ico')
         self.statut = 0
         self.modeToSolo()
         self.selectPlayer = 2
@@ -25,7 +25,7 @@ class QuoridorLauncher:
 
     def background(self) -> None:
         # Image de fond
-        self.bg_image = Image.open(f"./assets/launcher{self.statut}.png")
+        self.bg_image = Image.open(f"./assets/images/launcher/launcher{self.statut}.png")
         self.bg_image = self.bg_image.resize((self.window.winfo_screenwidth(), self.window.winfo_screenheight()))
         self.bg_photo = ImageTk.PhotoImage(self.bg_image)
         self.bg_label = Label(self.window, image=self.bg_photo)
@@ -145,7 +145,7 @@ class QuoridorLauncher:
                 child.destroy()
                 
     def choiceMode(self) -> None:
-        image_path = "./assets/fond_menu.png"
+        image_path = "./assets/images/launcher/fond_menu.png"
         img = Image.open(image_path)
         img = img.resize((int(self.window.winfo_screenwidth()/18), int(self.window.winfo_screenheight()-self.window.winfo_screenheight()/1.45)))
         fond_menu = ImageTk.PhotoImage(img)
@@ -154,17 +154,17 @@ class QuoridorLauncher:
         menu_label.image = fond_menu
         menu_label.place(x=self.window.winfo_screenwidth()-self.window.winfo_screenwidth()//1.03, y=self.window.winfo_screenheight()-self.window.winfo_screenheight()//1.43)
 
-        image_path = "./assets/solo_mode.png"
+        image_path = "./assets/images/launcher/solo_mode.png"
         img = Image.open(image_path)
         img = img.resize((int(self.window.winfo_screenwidth()/18), int(self.window.winfo_screenheight()-self.window.winfo_screenheight()/1.1)))
         solo_mode = ImageTk.PhotoImage(img)
 
-        image_path = "./assets/rejoindre.png"
+        image_path = "./assets/images/launcher/rejoindre.png"
         img2 = Image.open(image_path)
         img2 = img2.resize((int(self.window.winfo_screenwidth()/23), int(self.window.winfo_screenheight()-self.window.winfo_screenheight()/1.09)))
         rejoindre = ImageTk.PhotoImage(img2)
 
-        image_path = "./assets/host.png"
+        image_path = "./assets/images/launcher/host.png"
         img3 = Image.open(image_path)
         img3 = img3.resize((int(self.window.winfo_screenwidth()/23), int(self.window.winfo_screenheight()-self.window.winfo_screenheight()/1.09)))
         host = ImageTk.PhotoImage(img3)

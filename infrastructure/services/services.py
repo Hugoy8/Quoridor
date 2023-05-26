@@ -8,6 +8,7 @@ from domain.player.player import Player
 import random
 from PIL import Image, ImageTk
 import time
+from pygame import mixer
 
 class Board:
     def __init__(self, size : int, nb_players : int, nb_IA : int, nb_fence : int, select_map : int, Network : bool, InstanceNetwork : object, typeNetwork : str, playerUser : int) -> None:
@@ -26,13 +27,12 @@ class Board:
         else:
             # Variable bool qui autorise le multijoueur.
             self.networkStatus = False
-            
         self.window = Tk()
         self.window.title("Quoridor")
         self.window.state('zoomed')
         self.window.minsize(self.window.winfo_screenwidth(), self.window.winfo_screenheight())
         self.window.attributes("-fullscreen", True)
-        self.window.iconbitmap('./assets/logo.ico')
+        self.window.iconbitmap('./assets/images/logo.ico')
         self.window.configure(bg="#F0B169")
         self.window_game = True
         self.__size = size
@@ -46,47 +46,37 @@ class Board:
         self.leavepopup =  None
         self.waiting_room1 = None
         self.waiting_room2 = None
+        self.pop_up_no_fence = []
+        mixer.init()
         # CrÃ©ation des images du plateau
         
-        # IMAGE DES CASES
-        
-        
+        # Tailles des éléments
         if size == 5:
             self.canvas_game_width = 478
             self.canvas_game_height = 478
-            width = 80
-            height = 80
-            fence_vertical_width = 20
-            fence_vertical_height = 80
-            fence_horizontal_width = 80
-            fence_horizontal_height = 20
-            pillar_taille = 20
-            self.widget_space = 50
-        elif size == 7:
+            self.epaisseur_barriere = 25
+        elif size == 7 or size == 9 or size == 11:
             self.canvas_game_width = 628
             self.canvas_game_height = 628
-            width = 78
-            height = 78
-            fence_vertical_width = 16
-            fence_vertical_height = 78
-            fence_horizontal_width = 78
-            fence_horizontal_height = 16
-            pillar_taille = 16
-            self.widget_space = 46
-        elif size == 9:
-            self.canvas_game_width = 878
-            self.canvas_game_height = 878
-        elif size == 11:
-            self.canvas_game_width = 890
-            self.canvas_game_height = 890
-            width = 70
-            height = 70
-            fence_vertical_width = 10
-            fence_vertical_height = 73
-            fence_horizontal_width = 73
-            fence_horizontal_height = 10
-            pillar_taille = 11
-            self.widget_space = 41
+            if size == 7:
+                self.epaisseur_barriere = 20
+            elif size == 9:
+                self.epaisseur_barriere = 18
+            elif size == 11:
+                self.canvas_game_width = 622
+                self.canvas_game_height = 622
+                self.epaisseur_barriere = 15
+
+        self.longueur_element = round(((self.canvas_game_width - (self.epaisseur_barriere * (size - 1))) / size))
+        
+        width = self.longueur_element
+        height = self.longueur_element
+        fence_vertical_width = self.epaisseur_barriere
+        fence_vertical_height = self.longueur_element
+        fence_horizontal_width = self.longueur_element
+        fence_horizontal_height = self.epaisseur_barriere
+        pillar_taille = self.epaisseur_barriere
+        self.widget_space = (self.longueur_element + self.epaisseur_barriere) / 2
         
         if select_map == 1:
             self.map = "jungle"
@@ -95,76 +85,80 @@ class Board:
         elif select_map == 3:
             self.map = "hell"
         
-        self.name_bg = size
-        if self.name_bg == 11:
-            self.name_bg = 9
+        self.sound_map = mixer.Sound(f"./assets/sounds/{self.map}.mp3")
+        self.sound_map.play(loops=-1)
+        self.sound_map.set_volume(0.1)
         
-        self.bg_image = Image.open(f"./assets/{self.map}/background{nb_players}{self.name_bg}.png")
+        self.name_bg = size
+        if self.name_bg == 11 or self.name_bg == 9 or self.name_bg == 7:
+            self.name_bg = 7
+        
+        self.bg_image = Image.open(f"./assets/images/{self.map}/background{nb_players}{self.name_bg}.png")
         self.bg_image = self.bg_image.resize((self.window.winfo_screenwidth(), self.window.winfo_screenheight()))
         self.bg_photo = ImageTk.PhotoImage(self.bg_image)
         self.bg_label = Label(self.window, image=self.bg_photo)
         self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
             
-        no_player = Image.open(f"./assets/{self.map}/case.png")
+        no_player = Image.open(f"./assets/images/{self.map}/case.png")
         no_player = no_player.resize((width, height))
         self.no_player = ImageTk.PhotoImage(no_player)
         
-        moove_possible = Image.open(f"./assets/{self.map}/moove_possible.png")
+        moove_possible = Image.open(f"./assets/images/{self.map}/moove_possible.png")
         moove_possible = moove_possible.resize((width, height))
         self.moove_possible = ImageTk.PhotoImage(moove_possible)
         
-        image_player_1 = Image.open(f"./assets/{self.map}/player_1.png")
+        image_player_1 = Image.open(f"./assets/images/{self.map}/player_1.png")
         image_player_1 = image_player_1.resize((width, height))
         self.image_player_1 = ImageTk.PhotoImage(image_player_1)
         
-        image_player_2 = Image.open(f"./assets/{self.map}/player_2.png")
+        image_player_2 = Image.open(f"./assets/images/{self.map}/player_2.png")
         image_player_2 = image_player_2.resize((width, height))
         self.image_player_2 = ImageTk.PhotoImage(image_player_2)
         
-        image_player_3 = Image.open(f"./assets/{self.map}/player_3.png")
+        image_player_3 = Image.open(f"./assets/images/{self.map}/player_3.png")
         image_player_3 = image_player_3.resize((width, height))
         self.image_player_3 = ImageTk.PhotoImage(image_player_3)
         
-        image_player_4 = Image.open(f"./assets/{self.map}/player_4.png")
+        image_player_4 = Image.open(f"./assets/images/{self.map}/player_4.png")
         image_player_4 = image_player_4.resize((width, height))
         self.image_player_4 = ImageTk.PhotoImage(image_player_4)
         
         #IMAGES DES FENCES
-        fence_height = Image.open(f"./assets/{self.map}/fence_height.png")
+        fence_height = Image.open(f"./assets/images/{self.map}/fence_height.png")
         fence_height = fence_height.resize((fence_vertical_width, fence_vertical_height))
         self.fence_height = ImageTk.PhotoImage(fence_height)
         
-        fence_height_vide = Image.open(f"./assets/{self.map}/fence_height_vide.png")
+        fence_height_vide = Image.open(f"./assets/images/{self.map}/fence_height_vide.png")
         fence_height_vide = fence_height_vide.resize((fence_vertical_width, fence_vertical_height))
         self.fence_height_vide = ImageTk.PhotoImage(fence_height_vide)
         
-        fence_width = Image.open(f"./assets/{self.map}/fence_width.png")
+        fence_width = Image.open(f"./assets/images/{self.map}/fence_width.png")
         fence_width = fence_width.resize((fence_horizontal_width, fence_horizontal_height))
         self.fence_width = ImageTk.PhotoImage(fence_width)
         
-        fence_width_vide = Image.open(f"./assets/{self.map}/fence_width_vide.png")
+        fence_width_vide = Image.open(f"./assets/images/{self.map}/fence_width_vide.png")
         fence_width_vide = fence_width_vide.resize((fence_horizontal_width, fence_horizontal_height))
         self.fence_width_vide = ImageTk.PhotoImage(fence_width_vide)
         
         # IMAGE DES PILLIERS
-        pillar = Image.open(f"./assets/{self.map}/pillier.png")
+        pillar = Image.open(f"./assets/images/{self.map}/pillier.png")
         pillar = pillar.resize((pillar_taille, pillar_taille))
         self.pillar = ImageTk.PhotoImage(pillar)
         
-        pillar_vide = Image.open(f"./assets/{self.map}/pillier_vide.png")
+        pillar_vide = Image.open(f"./assets/images/{self.map}/pillier_vide.png")
         pillar_vide = pillar_vide.resize((pillar_taille, pillar_taille))
         self.pillar_vide = ImageTk.PhotoImage(pillar_vide)
         
         # IMAGE DES OBJETS HOVERED
-        fence_width_hover = Image.open(f"./assets/{self.map}/fence_width_hover.png")
+        fence_width_hover = Image.open(f"./assets/images/{self.map}/fence_width_hover.png")
         fence_width_hover = fence_width_hover.resize((fence_horizontal_width, fence_horizontal_height))
         self.fence_width_hover = ImageTk.PhotoImage(fence_width_hover)
         
-        fence_height_hover = Image.open(f"./assets/{self.map}/fence_height_hover.png")
+        fence_height_hover = Image.open(f"./assets/images/{self.map}/fence_height_hover.png")
         fence_height_hover = fence_height_hover.resize((fence_vertical_width, fence_vertical_height))
         self.fence_height_hover = ImageTk.PhotoImage(fence_height_hover)
 
-        pillar_hover = Image.open(f"./assets/{self.map}/pillier_hover.png")
+        pillar_hover = Image.open(f"./assets/images/{self.map}/pillier_hover.png")
         pillar_hover = pillar_hover.resize((pillar_taille, pillar_taille))
         self.pillar_hover = ImageTk.PhotoImage(pillar_hover)
 
@@ -199,9 +193,14 @@ class Board:
             if self.typeNetwork == "instance":
                 self.InstanceNetwork.SendBoard(x, y, 0, self.fence_orientation)
             elif self.typeNetwork == "socket":
-                SendBoardClient(x, y, 0, self.InstanceNetwork, self.fence_orientation)
+                SendBoardClient(x, y, 0, self.InstanceNetwork, self.fence_orientation, self.playerUser)
 
         self.move(x,y)
+        # son de déplacement
+        sound_move = mixer.Sound("./assets/sounds/move.mp3")
+        sound_move.play()
+        sound_move.set_volume(0.4)
+        
         if self.victory() == True :
             self.displayBoard(False)
             self.canvas.unbind_all("<Button-1>")
@@ -264,8 +263,9 @@ class Board:
         
         
     def windowVictory(self) -> None:
+        self.sound_map.stop()
         # background de fond 
-        self.bg_image = Image.open(f"./assets/{self.map}/background{self.__nb_players}{self.name_bg}.png")
+        self.bg_image = Image.open(f"./assets/images/{self.map}/background{self.__nb_players}{self.name_bg}.png")
         self.bg_image = self.bg_image.resize((self.window.winfo_screenwidth(), self.window.winfo_screenheight()))
         self.bg_photo = ImageTk.PhotoImage(self.bg_image)
         self.bg_label = Label(self.window, image=self.bg_photo)
@@ -275,7 +275,7 @@ class Board:
         
         # Affichage de l'image de victoire
         if self.current_player.get_player() == 1:
-            img_win_p1 = Image.open(f"./assets/{self.map}/victory_p1.png")
+            img_win_p1 = Image.open(f"./assets/images/{self.map}/victory_p1.png")
             img_win_p1 = img_win_p1.resize((485, 480))
             self.img_win_p1 = ImageTk.PhotoImage(img_win_p1)
             
@@ -283,7 +283,7 @@ class Board:
             label.place(x=self.window.winfo_screenwidth()//2.8, y=self.window.winfo_screenheight()//4)
             
         elif self.current_player.get_player() == 2:
-            img_win_p2 = Image.open(f"./assets/{self.map}/victory_p2.png")
+            img_win_p2 = Image.open(f"./assets/images/{self.map}/victory_p2.png")
             img_win_p2 = img_win_p2.resize((485, 480))
             self.img_win_p2 = ImageTk.PhotoImage(img_win_p2)
             
@@ -291,7 +291,7 @@ class Board:
             label.place(x=self.window.winfo_screenwidth()//2.8, y=self.window.winfo_screenheight()//4)
             
         elif self.current_player.get_player() == 3:
-            img_win_p3 = Image.open(f"./assets/{self.map}/victory_p3.png")
+            img_win_p3 = Image.open(f"./assets/images/{self.map}/victory_p3.png")
             img_win_p3 = img_win_p3.resize((485, 480))
             self.img_win_p3 = ImageTk.PhotoImage(img_win_p3)
             
@@ -299,7 +299,7 @@ class Board:
             label.place(x=self.window.winfo_screenwidth()//2.8, y=self.window.winfo_screenheight()//4)
             
         elif self.current_player.get_player() == 4:
-            img_win_p4 = Image.open(f"./assets/{self.map}/victory_p4.png")
+            img_win_p4 = Image.open(f"./assets/images/{self.map}/victory_p4.png")
             img_win_p4 = img_win_p4.resize((485, 480))
             self.img_win_p4 = ImageTk.PhotoImage(img_win_p4)
             
@@ -316,7 +316,25 @@ class Board:
         quit_button.pack(side='bottom', padx=10, pady=40)
         replay_button = Button(self.window, text="Rejouer", font=("Arial", 14), fg="white", bg="#78B000", bd=2, highlightthickness=0, width=20, command=rejouer)
         replay_button.pack(side='bottom', padx=10, pady=10)
-
+        
+        # Son de victoire
+        sound_victory = mixer.Sound("./assets/sounds/victory.mp3")
+        sound_victory.play()
+        sound_victory.set_volume(0.3)
+    
+    def popUpNoFence(self, player_name):
+        #PopUp plus de barrière
+        leavepopup = Image.open(f"./assets/images/{self.map}/no_fence{player_name}.png")
+        leavepopup = leavepopup.resize((600, 50))
+        self.leavepopup = ImageTk.PhotoImage(leavepopup)
+        
+        label_no_fence = Label(self.window, image=self.leavepopup, bd=0)
+        if self.__size == 5:
+            y = 0.18
+        else:
+            y = 0.12
+        label_no_fence.place(relx=0.5, rely=y, anchor='center')
+        self.window.after(2000, label_no_fence.destroy)
 
     def displayBoard(self, leave: bool) -> None: 
         player_colors = {
@@ -328,72 +346,58 @@ class Board:
         self.canvas = Canvas(self.window, width=self.canvas_game_width, height=self.canvas_game_height, bg="#F0B169", bd=0, highlightthickness=0)
         self.canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
         
-        # Widget d'informations
-        current_player_number = self.current_player.get_player()
-        current_player_color = player_colors.get(current_player_number, "gray")
-        if self.map == "jungle":
-            color_frame_info = "#FFC593"
-            color_font = "black"
-        elif self.map == "space":
-            color_frame_info = "#371761"
-            color_font = "white"
-        elif self.map == "hell":
-            color_frame_info = "#AF3500"
-            color_font = "black"
         # Placement des joueurs
         window_width = self.window.winfo_screenwidth()
         window_height = self.window.winfo_screenheight()
 
         
-        """Tour du joueur"""
+        # """Tour du joueur"""
         # current_player_number = self.current_player.get_player()
         # current_player_color = player_colors.get(current_player_number, "gray")
-        # Label(self.window, text="Tour : ", font=("Arial", 14), bg=color_frame_info, fg=color_font).grid(row=0, column=0, padx=(0, 0))
-        # Label(self.window, text="Joueur " + str(current_player_number), font=("Arial", 14), foreground=current_player_color, bg=color_frame_info).grid(row=0, column=1, padx=(0, 10))
+        # Label(self.window, text="Tour : ", font=("Arial", 14), bg="white", fg="black").place(x=0, y=0)
+        # Label(self.window, text="Joueur " + str(current_player_number), font=("Arial", 14), foreground=current_player_color, bg="white").place(x=55, y=0)
 
+        
         for index, nbr_fence_player in enumerate(self.players):
             a = nbr_fence_player.get_player()
             b = nbr_fence_player.get_nb_fence()
-            if b == 0:
-                b = "0"
             player_color = player_colors.get(a, "red")
             
             window_width = self.window.winfo_screenwidth()
             window_height = self.window.winfo_screenheight()
-
+            
+            if b == 0 and a not in self.pop_up_no_fence:
+                    self.pop_up_no_fence.append(a)
+                    self.popUpNoFence(a)
+                    
             if self.__nb_players == 2:
                 if index == 0:
                     # Joueur 1 (en haut au milieu)
-                    Label(self.window, text=f"{b} : Joueur {a}", font=("Arial", 14), foreground=player_color, bg=color_frame_info).place(x=window_width/2, y=70, anchor="center")
+                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width/2.2, y=73, anchor="center")
                 elif index == 1:
                     # Joueur 2 (en bas au milieu)
-                    Label(self.window, text=f"Joueur {a} x{b}", font=("Arial", 14), foreground=player_color, bg=color_frame_info).place(x=window_width/2, y=window_height-70, anchor="center")
+                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width/1.8, y=window_height-70, anchor="center")
             elif self.__nb_players == 4:
                 if index == 0:
                     # Joueur 1 (en haut au milieu)
-                    Label(self.window, text=f"Joueur {a} x{b}", font=("Arial", 14), foreground=player_color, bg=color_frame_info).place(x=window_width/2, y=70, anchor="center")
+                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width/2.2, y=70, anchor="center")
                 elif index == 1:
                     # Joueur 2 (à droite au milieu)
-                    label = Label(self.window, text=f"{b}x Joueur {a}", font=("Arial", 14), foreground=player_color, bg=color_frame_info)
-                    label.place(x=window_width-60, y=window_height/2, anchor="e")
-                    label.config(wraplength=1, justify="center", anchor="w", width=1)
+                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width-60, y=window_height/2.4, anchor="e")
+    
                 elif index == 2:
                     # Joueur 3 (en bas au milieu)
-                    Label(self.window, text=f"Joueur {a} x{b}", font=("Arial", 14), foreground=player_color, bg=color_frame_info).place(x=window_width/2, y=window_height-70, anchor="center")
+                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width/1.8, y=window_height-70, anchor="center")
                 elif index == 3:
                     # Joueur 4 (à gauche au milieu)
-                    label = Label(self.window, text=f"Joueur {a} x{b}", font=("Arial", 14), foreground=player_color, bg=color_frame_info)
-                    label.place(x=60, y=window_height/2, anchor="w")
-                    label.config(wraplength=1, justify="center", anchor="s")
-
-        
+                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=60, y=window_height/1.72, anchor="w")
+                    
         if leave == True:
             #PopUp de leave d'un joueur
-            leavepopup = Image.open(f"./assets/leavepopup.png")
+            leavepopup = Image.open(f"./assets/images/leavepopup.png")
             leavepopup = leavepopup.resize((self.window.winfo_screenwidth() // 2, 100))
             self.leavepopup = ImageTk.PhotoImage(leavepopup)
             
-                # Créer un label pour l'image et l'ajouter à la fenêtre avec la méthode grid()
             label = Label(self.window, image=self.leavepopup)
             label.place(relx=0.5, rely=0.05, anchor='center')
             
@@ -427,9 +431,9 @@ class Board:
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
                         if fence.displayFence() == "F1" :
-                            self.canvas.create_image(j*self.widget_space+30, i*self.widget_space, image=self.fence_height, anchor="nw", tags=str(i) + "_" + str(j))
+                            self.canvas.create_image(j*self.widget_space+(self.widget_space-self.epaisseur_barriere), i*self.widget_space, image=self.fence_height, anchor="nw", tags=str(i) + "_" + str(j))
                         else :
-                            self.canvas.create_image(j*self.widget_space+30, i*self.widget_space, image=self.fence_height_vide, anchor="nw", tags=str(i) + "_" + str(j))
+                            self.canvas.create_image(j*self.widget_space+(self.widget_space-self.epaisseur_barriere), i*self.widget_space, image=self.fence_height_vide, anchor="nw", tags=str(i) + "_" + str(j))
 
                 tab.append(tab2)
             else :
@@ -439,16 +443,16 @@ class Board:
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
                         if fence.displayFence() == "F1" :
-                            self.canvas.create_image(j*self.widget_space ,i*self.widget_space+30, image=self.fence_width, anchor="nw", tags=str(i) + "_" + str(j))
+                            self.canvas.create_image(j*self.widget_space ,i*self.widget_space+(self.widget_space-self.epaisseur_barriere), image=self.fence_width, anchor="nw", tags=str(i) + "_" + str(j))
                         else:
-                            self.canvas.create_image(j*self.widget_space ,i*self.widget_space+30, image=self.fence_width_vide, anchor="nw", tags=str(i) + "_" + str(j))
+                            self.canvas.create_image(j*self.widget_space ,i*self.widget_space+(self.widget_space-self.epaisseur_barriere), image=self.fence_width_vide, anchor="nw", tags=str(i) + "_" + str(j))
                     else :
                         pillar = self.board[i][j]
                         tab2.append(pillar.displayPillar())
                         if pillar.displayPillar() == "B1" :
-                            self.pillar_rects.append(self.canvas.create_image(j*self.widget_space+30, i*self.widget_space+30, image=self.pillar, anchor="nw", tags=[i,j]))
+                            self.pillar_rects.append(self.canvas.create_image(j*self.widget_space+(self.widget_space-self.epaisseur_barriere), i*self.widget_space+(self.widget_space-self.epaisseur_barriere), image=self.pillar, anchor="nw", tags=[i,j]))
                         else :
-                            self.pillar_rects.append(self.canvas.create_image(j*self.widget_space+30, i*self.widget_space+30, image=self.pillar_vide, anchor="nw", tags=[i,j]))
+                            self.pillar_rects.append(self.canvas.create_image(j*self.widget_space+(self.widget_space-self.epaisseur_barriere), i*self.widget_space+(self.widget_space-self.epaisseur_barriere), image=self.pillar_vide, anchor="nw", tags=[i,j]))
                         
                         if self.networkStatus == True:
                             if self.current_player.get_player() == self.playerUser:
@@ -469,8 +473,6 @@ class Board:
                             if self.victory() == False:
                                 self.canvas.tag_bind(self.pillar_rects[-1], "<Enter>", self.on_hover)
                                 self.canvas.tag_bind(self.pillar_rects[-1], "<Leave>", self.on_leave)
-                        
-                            
                 tab.append(tab2)
             
     def buildFenceOnClick(self,event):
@@ -487,12 +489,17 @@ class Board:
                     if self.fenceNotCloseAccesGoal()==False :
                         self.deBuildFence(x,y)
                         self.displayBoard(False)
+                        sound_build_fence = mixer.Sound("./assets/sounds/no_fence.mp3")
+                        sound_build_fence.play()
                     else :
+                        # Son de pose de barrière
+                        sound_build_fence = mixer.Sound("./assets/sounds/build_fence.mp3")
+                        sound_build_fence.play()
                         if self.networkStatus == True:
                             if self.typeNetwork == "instance":
                                 self.InstanceNetwork.SendBoard(x, y, 1, self.fence_orientation)
                             elif self.typeNetwork == "socket":
-                                SendBoardClient(x, y, 1, self.InstanceNetwork, self.fence_orientation)
+                                SendBoardClient(x, y, 0, self.InstanceNetwork, self.fence_orientation, self.playerUser)
                         
                         self.resetPossibleCaseMovement() 
                         self.refreshCurrentPlayer()
@@ -1011,7 +1018,7 @@ class Board:
                     list.append([i,j,1])
         return list
 
-def SendBoardClient(x : int, y : int, typeClick : int, client : socket, orientation : str) -> None:
+def SendBoardClient(x : int, y : int, typeClick : int, client : socket, orientation : str, playerUser : int) -> None:
     # typeClick = 0 (caseClicked)
     # typeClick = 1 (fenceClicked)
     
@@ -1024,7 +1031,7 @@ def SendBoardClient(x : int, y : int, typeClick : int, client : socket, orientat
         orientation = 1
         
     DataMove = (
-        [int(x), int(y), int(typeClick), int(orientation)])
+        [int(x), int(y), int(typeClick), int(orientation), int(playerUser)])
     dataSendArray = pickle.dumps(DataMove)
     
     try:

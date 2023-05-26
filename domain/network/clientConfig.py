@@ -18,11 +18,6 @@ class ClientConfig:
         self.client_config(mapID)
     
     def client_config(self, mapID : int) -> None:
-        # scanNetwork = ScanNetwork(8000, 8005)
-        # scanNetwork.scan()
-        # listIp = scanNetwork.getIp()
-        # print(listIp)
-        
         # Variable du socket du client.
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         
@@ -44,7 +39,7 @@ class ClientConfig:
         if self.Infos[3][1] == 2:
             self.board = Board(self.Infos[3][0], self.Infos[3][1] , self.Infos[3][2], self.Infos[3][3], mapID, Network, client, "socket", 2)
         elif self.Infos[3][1] == 4:
-            pass
+            self.board = Board(self.Infos[3][0], self.Infos[3][1] , self.Infos[3][2], self.Infos[3][3], mapID, Network, client, "socket", self.Infos[1][0])
         
         threading_client = Client(client, self.board, self.Infos)
         threading_client.start()

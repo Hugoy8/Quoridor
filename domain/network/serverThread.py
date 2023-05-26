@@ -10,7 +10,8 @@ class ServerThread(threading.Thread):
         # Variable de l'adresse ip de connexion.
         self.host = host
         # Variable du port de connexion.
-        self.port = port
+        self.port = port 
+        
         # Variable du socket du client.
         self.socket_client = socket_client
         # Liste qui stocke tous les messages reçu de la part du serveur.
@@ -81,13 +82,11 @@ class ServerThread(threading.Thread):
                         self.board.resetPossibleCaseMovement() 
                         self.board.refreshCurrentPlayer()
                         
-                        victory = self.board.victory()
-                        if victory == True:
+                        if self.board.victory():
                             self.board.windowVictory()
                         else:
                             self.board.refreshCurrentPlayer()
-                            victory = self.board.victory()
-                            if victory == True:
+                            if self.board.victory():
                                 self.board.windowVictory()
                             else:
                                 self.board.refreshCurrentPlayer()
@@ -105,15 +104,12 @@ class ServerThread(threading.Thread):
                             self.board.displayBoard(False)
                     else:
                         print("Erreur de type de click")
-                        
-            else:
-                pass
-                # Zone 4 joueurs.
         except:
-            print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
-            # self.instanceRoomWaiting.add()
-            self.socket_client.close()
-            self.serverStopCrash()
+            if self.typeGameThread == 2:
+                print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
+                # self.instanceRoomWaiting.add()
+                self.socket_client.close()
+                self.serverStopCrash()
         
     def SendBoard(self, x : int, y : int, typeClick : int, orientation : str) -> None:
         # typeClick = 0 (caseClicked)
@@ -122,25 +118,27 @@ class ServerThread(threading.Thread):
         # orientation = 0 (vertical)
         # orientation = 1 (horizontal)
         
+        
         if orientation == "vertical":
             orientation = 0
         else: 
             orientation = 1
         
-        DataMove = (
-            [int(x), int(y), int(typeClick), int(orientation)])
+        DataMove = ([int(x), int(y), int(typeClick), int(orientation)])
         dataSendtable = pickle.dumps(DataMove)
         
-        try:
-            self.socket_client.send(dataSendtable)
-            time.sleep(0.1)
-        except socket.error:
-            print("Erreur d'envoie du tableau ...")
-            print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
-            self.socket_client.close()
-            self.serverStopCrash()
+        if self.typeGameThread == 2:
+            try:
+                self.socket_client.send(dataSendtable)
+                time.sleep(0.1)
+            except socket.error:
+                print("Erreur d'envoie du tableau ...")
+                print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
+                self.socket_client.close()
+                self.serverStopCrash()
     
     def serverStopCrash(self) -> None:
+        self.statusServer = False
         print("Arrêt du serveur Crash...")
         self.board.displayBoard(True)
         time.sleep(1)

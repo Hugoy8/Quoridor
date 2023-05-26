@@ -20,37 +20,68 @@ class Client(threading.Thread):
                 dataRecvArray = client.recv(4096)
                 dataRecvServer = pickle.loads(dataRecvArray)
                 
-                # Affichage graphique des changements du serveur.
-                if dataRecvServer[2] == 0:
-                    self.board.move(int(dataRecvServer[0]),int(dataRecvServer[1]))
-                    self.board.resetPossibleCaseMovement() 
-                    self.board.refreshCurrentPlayer()
+                self.fonctionBoard(dataRecvServer)
                     
-                    victory = self.board.victory()
-                    if victory == True:
+        elif self.Infos[0] == 4:
+            while True:
+                # Réception des informations du serveur.
+                dataRecvArray = client.recv(4096)
+                dataRecvServer = pickle.loads(dataRecvArray)
+                
+                self.fonctionBoard(dataRecvServer)
+        
+    def fonctionBoard(self, dataRecvServer : list) -> None:
+        # Affichage graphique des changements du serveur.
+        if dataRecvServer[2] == 0:
+            self.board.move(int(dataRecvServer[0]),int(dataRecvServer[1]))
+            self.board.resetPossibleCaseMovement() 
+            self.board.refreshCurrentPlayer()
+            
+            if self.Infos[0] == 4:
+                if self.board.victory():
+                    self.board.windowVictory()
+                else:
+                    self.board.refreshCurrentPlayer()
+                    if self.board.victory():
                         self.board.windowVictory()
                     else:
                         self.board.refreshCurrentPlayer()
-                        victory = self.board.victory()
-                        if victory == True:
+                        if self.board.victory():
                             self.board.windowVictory()
                         else:
                             self.board.refreshCurrentPlayer()
-                            self.board.refreshPossibleCaseMovementForCurrentPlayer()
-                            self.board.displayBoard(False)
-                    
-                    
-                elif dataRecvServer[2] == 1:
-                    self.board.buildFenceNetwork(int(dataRecvServer[0]),int(dataRecvServer[1]), int(dataRecvServer[3]))
-                    if self.board.fenceNotCloseAccesGoal() == False :
-                        self.board.deBuildFence(int(dataRecvServer[0]),int(dataRecvServer[1]))
-                    else :
-                        self.board.resetPossibleCaseMovement() 
+                            if self.board.victory():
+                                self.board.windowVictory()
+                            else:
+                                self.board.refreshCurrentPlayer()
+                                if dataRecvServer[4] == "You":
+                                    self.board.refreshPossibleCaseMovementForCurrentPlayer()
+                                self.board.displayBoard(False)
+            
+            elif self.Infos[0] == 2:
+                if self.board.victory():
+                    self.board.windowVictory()
+                else:
+                    self.board.refreshCurrentPlayer()
+                    if self.board.victory():
+                        self.board.windowVictory()
+                    else:
                         self.board.refreshCurrentPlayer()
                         self.board.refreshPossibleCaseMovementForCurrentPlayer()
                         self.board.displayBoard(False)
-                else:
-                    print("Erreur de type de click")
-        else:
-            pass
-            # Zone 4 joueurs.
+                        
+            
+            
+        elif dataRecvServer[2] == 1:
+            self.board.buildFenceNetwork(int(dataRecvServer[0]),int(dataRecvServer[1]), int(dataRecvServer[3]))
+            if self.board.fenceNotCloseAccesGoal() == False :
+                self.board.deBuildFence(int(dataRecvServer[0]),int(dataRecvServer[1]))
+            else:
+                self.board.resetPossibleCaseMovement() 
+                self.board.refreshCurrentPlayer()
+                if self.Infos[0] == 4:
+                    if dataRecvServer[4] == "You":
+                        self.board.refreshPossibleCaseMovementForCurrentPlayer()
+                elif self.Infos[0] == 2:
+                    self.board.refreshPossibleCaseMovementForCurrentPlayer()
+                self.board.displayBoard(False)
