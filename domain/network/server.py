@@ -4,6 +4,8 @@ from infrastructure.services.services import Board
 from domain.network.serverThread import ServerThread
 from domain.network.serverPlayers import ServerPlayers
 from domain.network.serverToPlay import ServerToPlay
+from domain.network.waitingRoomNetwork import WaitingRoomNetwork
+from domain.network.waitingRoomUi import WaitingRoomUi
 import time
 import pickle
 
@@ -56,20 +58,31 @@ class Server:
 
         if self.typeGame == 2:
             while self.players[0] < self.typeGame:
-                # Ecoute du serveur sur le réseau.
+                # Section salle d'attente.
+                waitingRoomUI = WaitingRoomUi("Server", self.typeGame, 0)
+                waitingRoomNetwork = WaitingRoomNetwork("Server", waitingRoomUI, self.typeGame, 0, self.socketServer, self)
+                waitingRoomUI.setWaitingRoomNetwork(waitingRoomNetwork)
+                waitingRoomNetwork.start()
+                waitingRoomUI.waitNetwork()
+                
+                while waitingRoomUI.status == True:
+                    time.sleep(0.5)
+                
+                # Attribution d'un numéro au Client, et enregistrement dans une variable.
+                self.playersThread = [2, 'Server_1', 'Client_2']
+                
+                # Envoie des informations d'enregistrement au client.
+                infoList = ([self.typeGame, self.players[0], self.playerPlayed, [size, nb_players , nb_IA, nb_fences, mapID]])
+                dataSendInfos = pickle.dumps(infoList)
                 try:
-                    self.socketServer.listen(self.typeGame)
-                    print("Le serveur est démarée et sur écoute ...")
-                    self.statusServer = True
+                    waitingRoomNetwork.socketClient.send(dataSendInfos)
                 except socket.error:
-                    print("[-] Erreur pendant le lancement du serveur.")
-                    self.statusServer = False
-                    exit()
+                    print("Erreur d'envoie des informations d'enregistrement ...")
+                    print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
+                    waitingRoomNetwork.socketClient.close()
+                    self.serverStopCrash()
                 
-                (socket_client, (ip, port)) = self.socketServer.accept()
-                
-                listInfosBoard = [size, nb_players , nb_IA, nb_fences, mapID]
-                treading_server = ServerThread(ip, self.port, socket_client, self.typeGame, self.players, self.playerPlayed, self.socketServer, self.statusServer, listInfosBoard, "")
+                treading_server = ServerThread(ip, self.port, waitingRoomNetwork.socketClient, self.typeGame, self.players, self.playerPlayed, self.socketServer, self.statusServer, "")
                 
                 # Variable qui stocke la class du jeu.
                 Network = True
@@ -89,19 +102,15 @@ class Server:
                 self.statusServer = False
                 exit()
                 
-            print("En attente des connexions des joueurs...")
-            while len(self.listClients) < (self.typeGame - 1):
-                (clientSocket, (ip, port))= self.socketServer.accept()
-                
-                print(f"Joueur connecté : {ip}:{port}")
-                numClient = len(self.listClients) + 1
-                self.listClients[numClient] = clientSocket
-                
-                # Attribution d'un numéro au Client, et enregistrement dans une variable.
-                numTemp = self.players[0]
-                self.players[0] += 1
-                textTemp = 'Client_' + str(numTemp+1)
-                self.players.append(textTemp)
+            # Section salle d'attente.
+            waitingRoomUI = WaitingRoomUi("Server", self.typeGame, 0)
+            waitingRoomNetwork = WaitingRoomNetwork("Server", waitingRoomUI, self.typeGame, 0, self.socketServer, self)
+            waitingRoomUI.setWaitingRoomNetwork(waitingRoomNetwork)
+            waitingRoomNetwork.start()
+            waitingRoomUI.waitNetwork()
+            
+            while waitingRoomUI.status == True:
+                time.sleep(0.5)
                 
             # Socket Server pour le tour de rôle.
             self.listClients[0] = self.socketServer
@@ -169,3 +178,12 @@ class Server:
             return "You"
         else:
             return "NotYou"
+
+    
+    def serverStopCrash(self) -> None:
+        self.statusServer = False
+        print("Arrêt du serveur Crash...")
+        self.board.displayBoard(True)
+        time.sleep(1)
+        self.socketServer.close()
+        exit()

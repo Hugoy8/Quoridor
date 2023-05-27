@@ -3,6 +3,9 @@ import pickle
 from infrastructure.services.services import Board
 from domain.network.graphique import Graphique
 from domain.network.client import Client
+from domain.network.waitingRoomNetwork import WaitingRoomNetwork
+from domain.network.waitingRoomUi import WaitingRoomUi
+import time
 
 class ClientConfig:
     def __init__(self, host : str, port : int, mapID : int) -> None:
@@ -29,6 +32,20 @@ class ClientConfig:
             ClientConfig(self.host, self.port).client_config()
         
         print("\nConnexion reussie au serveur "+str(self.host)+":"+str(self.port))
+        
+        # Réception des informations d'enregistrement côté serveur et de salle d'attente.
+        dataRecvServer = client.recv(4096)
+        self.InfosAttente = pickle.loads(dataRecvServer)
+        
+        # Section salle d'attente.
+        waitingRoomUI = WaitingRoomUi("Client", self.InfosAttente[0], self.InfosAttente[1])
+        waitingRoomNetwork = WaitingRoomNetwork("Client", waitingRoomUI, self.InfosAttente[0], self.InfosAttente[1], client, "")
+        waitingRoomUI.setWaitingRoomNetwork(waitingRoomNetwork)
+        waitingRoomNetwork.start()
+        waitingRoomUI.waitNetwork()
+        
+        while waitingRoomUI.status == True:
+            time.sleep(0.5)
         
         # Réception des informations d'enregistrement côté serveur.
         dataRecvInfos = client.recv(4096)

@@ -5,7 +5,7 @@ from infrastructure.services.services import Board
 import time
 
 class ServerThread(threading.Thread):
-    def __init__(self, host : str, port : int, socket_client : socket, typeGame : str, playersList : list, playerPlayed : int, socketServer : socket, statusServer : bool, listInfosBoard : list, instanceRoomWaiting : object) -> None:
+    def __init__(self, host : str, port : int, socket_client : socket, typeGame : str, playersList : list, playerPlayed : int, socketServer : socket, statusServer : bool, instanceRoomWaiting : object) -> None:
         threading.Thread.__init__(self)
         # Variable de l'adresse ip de connexion.
         self.host = host
@@ -33,8 +33,6 @@ class ServerThread(threading.Thread):
         
         # Variable qui stocke la class de jeu.
         self.board = None
-        # Liste qui stocke toutes les infos de la board sélectionnées par le serveur.
-        self.listInfosBoard = listInfosBoard
         
         print("[+] Nouveau thread crée pour le client sur "+str(self.host)+":"+str(self.port))
         
@@ -47,28 +45,6 @@ class ServerThread(threading.Thread):
         print("Connexion du client %s:%s" % (self.host, self.port))
         
         try:
-            # Attribution d'un numéro au Client, et enregistrement dans une variable.
-            if self.typeGameThread == 2:
-                self.playersThread = [2, 'Server_1', 'Client_2']
-            else:
-                numTemp = self.playersThread[0]
-                self.playersThread[0] += 1
-                textTemp = 'Client_' + str(numTemp+1)
-                self.playersThread.append(textTemp)
-                
-            
-            # Envoie des informations d'enregistrement au client.
-            infoList = ([self.typeGameThread, self.playersThread, self.playerPlayedThread, self.listInfosBoard])
-            dataSendInfos = pickle.dumps(infoList)
-            try:
-                self.socket_client.send(dataSendInfos)
-            except socket.error:
-                print("Erreur d'envoie des informations d'enregistrement ...")
-                print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
-                self.socket_client.close()
-                self.serverStopCrash()
-                    
-            
             if self.typeGameThread == 2:
                 # Boucle de jeu
                 while self.statusServer == True:
