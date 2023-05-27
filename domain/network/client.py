@@ -17,18 +17,28 @@ class Client(threading.Thread):
         if self.Infos[0] == 2:
             while True:
                 # Réception des informations du serveur.
-                dataRecvArray = client.recv(4096)
-                dataRecvServer = pickle.loads(dataRecvArray)
-                
-                self.fonctionBoard(dataRecvServer)
+                try:
+                    dataRecvArray = client.recv(4096)
+                    dataRecvServer = pickle.loads(dataRecvArray)
+                    
+                    self.fonctionBoard(dataRecvServer)
+                except:
+                    print("Erreur de réception des informations du serveur ...")
+                    import main
+                    main()
                     
         elif self.Infos[0] == 4:
             while True:
                 # Réception des informations du serveur.
-                dataRecvArray = client.recv(4096)
-                dataRecvServer = pickle.loads(dataRecvArray)
-                
-                self.fonctionBoard(dataRecvServer)
+                try:
+                    dataRecvArray = client.recv(4096)
+                    dataRecvServer = pickle.loads(dataRecvArray)
+                    
+                    self.fonctionBoard(dataRecvServer)
+                except:
+                    print("Erreur de réception des informations du serveur ...")
+                    import main
+                    main()
         
     def fonctionBoard(self, dataRecvServer : list) -> None:
         # Affichage graphique des changements du serveur.

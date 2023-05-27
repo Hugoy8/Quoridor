@@ -31,18 +31,20 @@ class ClientConfig:
             print("\n\nTentaive de reconnection ...\n")
             ClientConfig(self.host, self.port).client_config()
         
-        print("\nConnexion reussie au serveur "+str(self.host)+":"+str(self.port))
-        
         # Réception des informations d'enregistrement côté serveur et de salle d'attente.
         dataRecvServer = client.recv(4096)
         self.InfosAttente = pickle.loads(dataRecvServer)
         
         # Section salle d'attente.
-        waitingRoomUI = WaitingRoomUi("Client", self.InfosAttente[0], self.InfosAttente[1])
-        waitingRoomNetwork = WaitingRoomNetwork("Client", waitingRoomUI, self.InfosAttente[0], self.InfosAttente[1], client, "")
-        waitingRoomUI.setWaitingRoomNetwork(waitingRoomNetwork)
-        waitingRoomNetwork.start()
-        waitingRoomUI.waitNetwork()
+        try:
+            waitingRoomUI = WaitingRoomUi("Client", self.InfosAttente[0], self.InfosAttente[1], "")
+            waitingRoomNetwork = WaitingRoomNetwork("Client", waitingRoomUI, self.InfosAttente[0], self.InfosAttente[1], client, "")
+            waitingRoomUI.setWaitingRoomNetwork(waitingRoomNetwork)
+            waitingRoomNetwork.start()
+            waitingRoomUI.waitNetwork()
+        except:
+            import main
+            main()
         
         while waitingRoomUI.status == True:
             time.sleep(0.5)
@@ -58,8 +60,12 @@ class ClientConfig:
         elif self.Infos[3][1] == 4:
             self.board = Board(self.Infos[3][0], self.Infos[3][1] , self.Infos[3][2], self.Infos[3][3], mapID, Network, client, "socket", self.Infos[1][0])
         
-        threading_client = Client(client, self.board, self.Infos)
-        threading_client.start()
+        try:
+            threading_client = Client(client, self.board, self.Infos)
+            threading_client.start()
+        except:
+            import main
+            main()
         
         threading_graphique = Graphique(self.board, "client")
         threading_graphique.start()

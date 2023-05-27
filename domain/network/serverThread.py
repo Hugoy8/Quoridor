@@ -83,7 +83,6 @@ class ServerThread(threading.Thread):
         except:
             if self.typeGameThread == 2:
                 print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
-                # self.instanceRoomWaiting.add()
                 self.socket_client.close()
                 self.serverStopCrash()
         

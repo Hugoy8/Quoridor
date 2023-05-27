@@ -8,9 +8,14 @@ from domain.network.waitingRoomNetwork import WaitingRoomNetwork
 from domain.network.waitingRoomUi import WaitingRoomUi
 import time
 import pickle
+import pygame
+import threading
 
 class Server:
     def __init__(self, host : str, port : int, typeGame : str) -> None:
+        # Event de fin de threading
+        self.exit_event = threading.Event()
+        
         # Variable de l'adresse ip de connexion.
         self.host = host
         # Variable du port de connexion.
@@ -35,6 +40,9 @@ class Server:
         
         # Variable du socket du serveur.
         self.socketServer = ""
+        
+        # Variable qui contient l'état de l'écoute de la partie.
+        self.stateListenServer = False
 
         
     def server_config(self, size : int, nb_players : int, nb_IA : int, nb_fences : int, mapID : int) -> None:
@@ -45,21 +53,22 @@ class Server:
         if self.host == "":
             # Recupération de l'ip du pc qui souhaite héberger un serveur.
             ip = ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][0])
-            print("Voici l'ip d'hébergement du serveur de jeu : "+str(ip))
         else: 
             ip = self.host
+        print("Voici l'ip d'hébergement du serveur de jeu : "+str(ip))
         
         # Attribution du port et de l'adresse ip.
         try: 
             self.socketServer.bind((ip,self.port))
+            self.stateListenServer = True
         except socket.error:
             print("[-] Erreur pendant le lancement du serveur.")
             exit()
 
         if self.typeGame == 2:
-            while self.players[0] < self.typeGame:
+            while self.stateListenServer:
                 # Section salle d'attente.
-                waitingRoomUI = WaitingRoomUi("Server", self.typeGame, 0)
+                waitingRoomUI = WaitingRoomUi("Server", self.typeGame, 0, self)
                 waitingRoomNetwork = WaitingRoomNetwork("Server", waitingRoomUI, self.typeGame, 0, self.socketServer, self)
                 waitingRoomUI.setWaitingRoomNetwork(waitingRoomNetwork)
                 waitingRoomNetwork.start()
@@ -67,7 +76,7 @@ class Server:
                 
                 while waitingRoomUI.status == True:
                     time.sleep(0.5)
-                
+            
                 # Attribution d'un numéro au Client, et enregistrement dans une variable.
                 self.playersThread = [2, 'Server_1', 'Client_2']
                 
@@ -88,22 +97,26 @@ class Server:
                 Network = True
                 self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, treading_server, "instance", 1)
 
+                # Arrêt des threading de Salle d'attente.
+                # waitingRoomNetwork.stopAllThread()
+                # waitingRoomNetwork.join()
+                
                 treading_server.startThread(self.board)
                 self.players[0] += 1
 
         elif self.typeGame == 4:
             # Ecoute du serveur sur le réseau.
             try:
-                self.socketServer.listen(self.typeGame)
-                print("Le serveur est démarée et sur écoute ...")
+                self.socketServer.listen(400)
                 self.statusServer = True
             except socket.error:
-                print("[-] Erreur pendant le lancement du serveur.")
+                print("Erreur pendant le lancement du serveur.")
                 self.statusServer = False
-                exit()
+                import main
+                main()
                 
             # Section salle d'attente.
-            waitingRoomUI = WaitingRoomUi("Server", self.typeGame, 0)
+            waitingRoomUI = WaitingRoomUi("Server", self.typeGame, 0, self)
             waitingRoomNetwork = WaitingRoomNetwork("Server", waitingRoomUI, self.typeGame, 0, self.socketServer, self)
             waitingRoomUI.setWaitingRoomNetwork(waitingRoomNetwork)
             waitingRoomNetwork.start()
@@ -111,10 +124,10 @@ class Server:
             
             while waitingRoomUI.status == True:
                 time.sleep(0.5)
-                
+            
+            print("After join")
             # Socket Server pour le tour de rôle.
             self.listClients[0] = self.socketServer
-            print("Tous les joueurs sont connectés.")
 
             listInfosBoard = [size, nb_players , nb_IA, nb_fences, mapID]
                 
@@ -138,6 +151,10 @@ class Server:
 
             self.serverPlayers = ServerPlayers(self, self.serverToPlay, self.board)
             self.serverPlayers.start()
+            
+            # Arrêt des threading de Salle d'attente.
+            # waitingRoomNetwork.stopAllThread()
+            # waitingRoomNetwork.join()
 
         threading_graphique = Graphique(self.board, "server")
         threading_graphique.start()
@@ -181,9 +198,10 @@ class Server:
 
     
     def serverStopCrash(self) -> None:
+        print("Arrêt du serveur...")
+        self.exit_event.set()
         self.statusServer = False
-        print("Arrêt du serveur Crash...")
-        self.board.displayBoard(True)
-        time.sleep(1)
         self.socketServer.close()
-        exit()
+        pygame.quit()
+        import main
+        main()
