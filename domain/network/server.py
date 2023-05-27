@@ -124,8 +124,7 @@ class Server:
             
             while waitingRoomUI.status == True:
                 time.sleep(0.5)
-            
-            print("After join")
+
             # Socket Server pour le tour de rôle.
             self.listClients[0] = self.socketServer
 
