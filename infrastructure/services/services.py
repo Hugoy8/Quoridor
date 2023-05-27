@@ -9,6 +9,7 @@ import random
 from PIL import Image, ImageTk
 import time
 from pygame import mixer
+from infrastructure.database.config import Database
 
 class Board:
     def __init__(self, size : int, nb_players : int, nb_IA : int, nb_fence : int, select_map : int, Network : bool, InstanceNetwork : object, typeNetwork : str, playerUser : int) -> None:
@@ -47,6 +48,7 @@ class Board:
         self.waiting_room1 = None
         self.waiting_room2 = None
         self.pop_up_no_fence = []
+        self.db = Database()
         mixer.init()
         # CrÃ©ation des images du plateau
         
@@ -271,8 +273,6 @@ class Board:
         self.bg_label = Label(self.window, image=self.bg_photo)
         self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
         self.displayBoard(False)
-        
-        
         # Affichage de l'image de victoire
         if self.current_player.get_player() == 1:
             img_win_p1 = Image.open(f"./assets/images/{self.map}/victory_p1.png")
@@ -309,8 +309,8 @@ class Board:
         # Ajout des boutons
         def rejouer():
             self.window.destroy()
-            from domain.launcher.launcher import QuoridorLauncher
-            QuoridorLauncher()
+            import main
+            main()
         
         quit_button = Button(self.window, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, width=20, command=self.window.destroy)
         quit_button.pack(side='bottom', padx=10, pady=40)
@@ -321,6 +321,11 @@ class Board:
         sound_victory = mixer.Sound("./assets/sounds/victory.mp3")
         sound_victory.play()
         sound_victory.set_volume(0.3)
+        if self.networkStatus == True and self.typeNetwork == "instance":
+            ip = "127.0.0.1"
+            port = 8000
+            username = self.db.selectUsername(ip, port,  self.current_player.get_player())
+            self.db.addWin(username)
     
     def popUpNoFence(self, player_name):
         #PopUp plus de barrière

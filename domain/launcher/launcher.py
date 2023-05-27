@@ -5,14 +5,15 @@ from PIL import Image, ImageTk
 from infrastructure.services.services import restartGame
 from domain.network.network import joinSession, startSession
 from domain.network.scanNetwork import ScanNetwork
+from infrastructure.database.config import Database
+import hashlib
 
 class QuoridorLauncher:
-    def __init__(self) -> None:
+    def __init__(self, db: Database) -> None:
         self.window = Tk()
         self.window.title("Quoridor")
         self.window.state('zoomed')
-        # self.window.attributes("-fullscreen", True)
-        # self.window.maxsize(self.window.winfo_screenwidth(), self.window.winfo_screenheight())
+        self.window.attributes("-fullscreen", True)
         self.window.minsize(self.window.winfo_screenwidth(), self.window.winfo_screenheight())
         self.window.iconbitmap('./assets/images/logo.ico')
         self.statut = 0
@@ -22,6 +23,25 @@ class QuoridorLauncher:
         self.selectSize = 5
         self.selectFence = 4
         self.selectMap = 1
+        self.ip = None
+        self.port = None
+        
+        self.loginPassword = None
+        self.loginButton = None
+        self.winButton = None
+        self.loginUsername = None
+        self.login = None
+        self.registerButton = None
+        self.register = None
+        self.registerUsername = None
+        self.registerPassword = None
+        self.db = db
+        self.insert_query = None
+        
+        self.login_created = None
+        self.register_created = None
+        
+        self.pseudo = " "
 
     def background(self) -> None:
         # Image de fond
@@ -215,9 +235,11 @@ class QuoridorLauncher:
         ip = self.entry1.get()
         port = int(self.entry2.get())
         self.window.destroy()
+        self.db.insertUsername(ip, port, self.pseudo)
         joinSession(ip, port, self.selectMap)
         
     def startGame(self) -> None:
+        ip = "127.0.0.1"
         port = int(self.entry_port.get())
         nbr_player = int(self.nbr_player_network.get())
         self.window.destroy()
@@ -226,7 +248,12 @@ class QuoridorLauncher:
         map = self.selectMap
         if grid_size == 5 and nbr_fences > 20:
             nbr_fences = 20
+        
+        self.db.dropTableIfExists(ip, port)
+        self.db.createTableGame(ip, port)
+        self.db.insertUsername(ip, port, self.pseudo)
         startSession(port, nbr_player, grid_size, nbr_player, 0, nbr_fences, map)
+    
 
     def entriesNetwork(self) -> None:
         self.nbr_player_network = Entry(self.window, width=20)
@@ -261,6 +288,7 @@ class QuoridorLauncher:
         ip = event.widget['text']
         port = int(port)
         self.window.destroy()
+        self.db.insertUsername(ip, port, self.pseudo)
         joinSession(ip, port, self.selectMap)
         
     def modeToSelectGame(self) -> None:
@@ -272,6 +300,8 @@ class QuoridorLauncher:
         self.create_entries()
         # self.displayIp()
         self.choiceMap()
+        self.buttonConnexion()
+        self.buttonRegister()
         
     def modeToCreateGame(self) -> None:
         self.changeMode()
@@ -283,6 +313,154 @@ class QuoridorLauncher:
         self.sizeBoard()
         self.choiceMap()
         self.numberFence()
+        self.buttonConnexion()
+        self.buttonRegister()
         
-run_launcher = QuoridorLauncher()
-run_launcher.window.mainloop()
+# -------------------------DATABASE ---------------------------
+    def buttonConnexion(self):
+        login = Button(self.window, text="Se connecter", bg="#2BB0ED", fg="#FFF", 
+                       font=("Arial", 13), width=20, height=2,  cursor="hand2", activebackground="#035388",  activeforeground="white", command=self.connexion)
+        login.pack(side=RIGHT)
+    
+    def buttonRegister(self):
+        register = Button(self.window, text="S'inscrire", bg="#2BB0ED", fg="#FFF", 
+                          font=("Arial", 13), width=20, height=2,  cursor="hand2", activebackground="#035388",  activeforeground="white", command=self.inscription)
+        register.pack(side=RIGHT, pady=50)
+        
+    def addRegister(self):
+        if not self.register_created:
+            self.register = Frame(self.window)
+            self.register.pack()
+
+            self.registerUsername = Entry(self.register)
+            self.registerUsername.pack()
+
+            self.registerPassword = Entry(self.register)
+            self.registerPassword.pack()
+
+            self.registerButton = Button(self.register, text="Register", command=self.createAccount)
+            self.registerButton.pack()
+
+            self.register_created = True
+
+        if self.login_created:
+            self.login.pack_forget()  # Masquer le widget login s'il est affiché
+
+
+    def createAccount(self):
+        self.db.connectDb()
+        username = self.registerUsername.get()
+        password = self.registerPassword.get()
+        if not username or not password:
+            # Vérifier si le label existe déjà, le mettre à jour sinon le créer
+            if hasattr(self, "infoLabel"):
+                self.infoLabel.config(text="Please complete all mandatory fields.")
+            else:
+                self.infoLabel = Label(self.window, text="Please complete all mandatory fields.")
+                self.infoLabel.pack()
+        else:
+            # Check if the username already exists
+            select_query = self.db.select()
+            select_query.execute("SELECT username FROM users WHERE username = %s", (username,))
+            existing_user = select_query.fetchone()
+            select_query.close()
+
+            if existing_user:
+                # Vérifier si le label existe déjà, le mettre à jour sinon le créer
+                if hasattr(self, "infoLabel"):
+                    self.infoLabel.config(text=f"This username '{username}' already exists. Please choose another.")
+                else:
+                    self.infoLabel = Label(self.window, text=f"This username '{username}' already exists. Please choose another.")
+                    self.infoLabel.pack()
+            else:
+                # Username is unique, register
+                insert_query = self.db.insert()
+                query = "INSERT INTO users (username, password) VALUES (%s, %s)"
+
+                hashed_password = hashlib.sha256(password.encode()).hexdigest()
+
+                params = (username, hashed_password)
+                insert_query.execute(query, params)
+                insert_query.close()
+                # Vérifier si le label existe déjà, le mettre à jour sinon le créer
+                if hasattr(self, "infoLabel"):
+                    self.infoLabel.config(text=f"{username} you have successfully subscribed !")
+                    self.pseudo = username
+                    return self.pseudo
+                else:
+                    self.infoLabel = Label(self.window, text=f"{username} you have successfully subscribed !")
+                    self.infoLabel.pack()
+                    self.pseudo = username
+                    return self.pseudo
+        
+    def addLogin(self):
+        if not self.login_created:
+            self.login = Frame(self.window)
+            self.login.pack()
+
+            self.loginUsername = Entry(self.login)
+            self.loginUsername.pack()
+
+            self.loginPassword = Entry(self.login)
+            self.loginPassword.pack()
+
+            self.loginButton = Button(self.login, text="Login", command=self.loginUser)
+            self.loginButton.pack()
+
+            self.login_created = True
+
+        if self.register_created:
+            self.register.pack_forget() 
+
+    def loginUser(self):
+        self.db.connectDb()
+        select_query = self.db.select()
+        query = "SELECT * FROM users WHERE username = %s"
+        username = self.loginUsername.get()
+        password = self.loginPassword.get()
+
+        select_query.execute(query, (username,))
+        result = select_query.fetchone()
+        select_query.close()
+
+        if result is not None:
+            stored_password = result[2]
+            hashed_password = hashlib.sha256(password.encode()).hexdigest()
+
+            if stored_password == hashed_password:
+                # Vérifier si le label existe déjà, le mettre à jour sinon le créer
+                if hasattr(self, "infoLabel"):
+                    self.infoLabel.config(text="You are logged")
+                    self.pseudo = username
+                    return self.pseudo
+                else:
+                    self.infoLabel = Label(self.window, text="You are logged")
+                    self.infoLabel.pack()
+                    self.pseudo = username
+                    return self.pseudo
+            else:
+                # Vérifier si le label existe déjà, le mettre à jour sinon le créer
+                if hasattr(self, "infoLabel"):
+                    self.infoLabel.config(text="Incorrect password")
+                else:
+                    self.infoLabel = Label(self.window, text="Incorrect password")
+                    self.infoLabel.pack()
+        else:
+            # Vérifier si le label existe déjà, le mettre à jour sinon le créer
+            if hasattr(self, "infoLabel"):
+                self.infoLabel.config(text="User not found")
+            else:
+                self.infoLabel = Label(self.window, text="User not found")
+                self.infoLabel.pack()
+    
+    def inscription(self):
+        self.addRegister()
+        self.login_created = False  # Réinitialiser l'état du widget login
+
+    def connexion(self):
+        self.addLogin()
+        self.register_created = False  # Réinitialiser l'état du widget register
+        
+run = QuoridorLauncher(Database())  
+run.window.mainloop()
+        

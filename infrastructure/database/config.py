@@ -33,171 +33,70 @@ class Database:
 
     def close(self):
         self.db.close()
+    
+    def createTableGame(self, ip, port: int) -> None:
+        self.connectDb()
+        cursor = self.db.cursor()
+        table_name = f"Game{ip.replace('.', '_')}{port}"
+        create_table_query = f"""
+        CREATE TABLE {table_name} (
+            ID INT AUTO_INCREMENT PRIMARY KEY,
+            username VARCHAR(255)
+        )
+        """
+        cursor.execute(create_table_query)
+        cursor.close()
+        self.db.close()
+        
+    def dropTableIfExists(self, ip, port):
+        self.connectDb()
+        cursor = self.db.cursor()
+        table_name = f"Game{ip.replace('.', '_')}{port}"
+        check_table_query = f"SHOW TABLES LIKE '{table_name}'"
+        cursor.execute(check_table_query)
+        table_exists = cursor.fetchone()
+        if table_exists:
+            drop_table_query = f"DROP TABLE {table_name}"
+            cursor.execute(drop_table_query)
+            print(f"Table {table_name} dropped.")
+        cursor.close()
+        self.db.close()
+        
+    def insertUsername(self, ip: str, port: int, username: str) -> None:
+        self.connectDb()
+        cursor = self.db.cursor()
 
+        table_name = f"Game{ip.replace('.', '_')}{port}"
+        insert_query = f"INSERT INTO {table_name} (username) VALUES (%s)"
+        values = (username,)
 
-# INSERT
-# db = Database()
-# insert_query = db.insert()
-# query = "INSERT INTO users (username, password) VALUES (%s, %s)"
-# params = ("Hugo", "1234")
-# insert_query.execute(query, params)
-# insert_query.close()
-# db.close()
+        cursor.execute(insert_query, values)
+        self.db.commit()
 
-# DELETE
-# db = Database()
-# delete_query = db.delete()
-# query = "DELETE FROM users WHERE id = %s"
-# params = (1,)
-# delete_query.execute(query, params)
-# delete_query.close()
-# db.close()
-
-# UPDATE
-# db = Database()
-# update_query = db.update()
-# query = "UPDATE users SET username = %s WHERE id = %s"
-# params = ("Jane Doe", 2)
-# update_query.execute(query, params)
-# update_query.close()
-# db.close()
-
-# SELECT
-# db = Database()
-# select_query = db.select()
-# query = "SELECT * FROM users"
-# result = select_query.execute(query)
-
-# for row in result:
-#     print(row)
-
-# select_query.close()
-# db.close()
-
-class Graphique:
-    def __init__(self, db: Database):
-        self.loginPassword = None
-        self.loginButton = None
-        self.winButton = None
-        self.loginUsername = None
-        self.login = None
-        self.registerButton = None
-        self.register = None
-        self.registerUsername = None
-        self.registerPassword = None
-        self.db = db
-        self.root = Tk()
-        self.root.title("Quoridor")
-        self.root.geometry("800x600")
-        self.root.resizable(False, False)
-        self.insert_query = None
-        self.addRegister()
-        self.addLogin()
-        self.buttonWin("adrien")
-        self.root.mainloop()
-
-    def addRegister(self):
-        self.register = Frame(self.root)
-        self.register.pack()
-
-        self.registerUsername = Entry(self.register)
-        self.registerUsername.pack()
-
-        self.registerPassword = Entry(self.register)
-        self.registerPassword.pack()
-
-        self.registerButton = Button(self.register, text="Register", command=self.createAccount)
-        self.registerButton.pack()
-
-    def createAccount(self):
-        self.db.connectDb()
-        username = self.registerUsername.get()
-        password = self.registerPassword.get()
-        if not username or not password:
-            text = Label(self.root, text="Please complete all mandatory fields.")
-            text.pack()
-        else:
-            # Check if the username already exists
-            select_query = self.db.select()
-            select_query.execute("SELECT username FROM users WHERE username = %s", (username,))
-            existing_user = select_query.fetchone()
-            select_query.close()
-
-            if existing_user:
-                text = Label(self.root,
-                             text=f"This username '{username}' already exist. Please choose another.")
-                text.pack()
-            else:
-                # Username is unique, register
-                insert_query = self.db.insert()
-                query = "INSERT INTO users (username, password) VALUES (%s, %s)"
-
-                hashed_password = hashlib.sha256(password.encode()).hexdigest()
-
-                params = (username, hashed_password)
-                insert_query.execute(query, params)
-                insert_query.close()
-                text = Label(self.root, text=f"{username} you have successfully subscribed !")
-                text.pack()
-
-    def addLogin(self):
-        self.login = Frame(self.root)
-        self.login.pack()
-
-        self.loginUsername = Entry(self.login)
-        self.loginUsername.pack()
-
-        self.loginPassword = Entry(self.login)
-        self.loginPassword.pack()
-
-        self.loginButton = Button(self.login, text="Login", command=self.loginUser)
-        self.loginButton.pack()
-
-    def loginUser(self):
-        self.db.connectDb()
-        select_query = self.db.select()
-        query = "SELECT * FROM users WHERE username = %s"
-        username = self.loginUsername.get()
-        password = self.loginPassword.get()
-
-        select_query.execute(query, (username,))
+        cursor.close()
+        self.db.close()
+    
+    def selectUsername(self, ip:str, port: int, id: int):
+        self.connectDb()
+        select_query = self.select()
+        select_query.execute(f"SELECT username FROM Game{ip.replace('.', '_')}{port} WHERE ID = {id}")
         result = select_query.fetchone()
         select_query.close()
-
-        if result is not None:
-            stored_password = result[2]
-            hashed_password = hashlib.sha256(password.encode()).hexdigest()
-
-            if stored_password == hashed_password:
-                text = Label(self.root, text="you are logged")
-                text.pack()
-            else:
-                text = Label(self.root, text="password incorrect")
-                text.pack()
-        else:
-            text = Label(self.root, text="User not found")
-            text.pack()
-
-    def buttonWin(self, username):
-        self.winButton = Button(self.root, text="WIN", command=lambda: self.addWin(username))
-        self.winButton.pack(side=RIGHT)
-
+        return result[0]
+    
     def addWin(self, username):
-        self.db.connectDb()
-        select_query = self.db.select()
-        select_query.queries.execute("SELECT win FROM users WHERE username = %s", (username,))
-        result = select_query.queries.fetchone()
+        if username == " ":
+            return None
+        self.connectDb()
+        select_query = self.select()
+        select_query.execute("SELECT win FROM users WHERE username = %s", (username,))
+        result = select_query.fetchone()
         select_query.close()
-
         if result is not None:
             current_wins = result[0]
             new_wins = current_wins + 1
-
-            update_query = self.db.update()
+            update_query = self.update()
             update_query.execute("UPDATE users SET win = %s WHERE username = %s", (new_wins, username))
             update_query.close()
         else:
             print("User not found.")
-
-
-
