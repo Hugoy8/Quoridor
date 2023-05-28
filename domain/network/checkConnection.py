@@ -19,16 +19,27 @@ class CheckConnection(threading.Thread):
         self.serverClass = serverClass
     
     def run(self) -> None:
+        # Ensemble de gestion de timeout du serveur.
+        self.originalTimeout = self.socketClient.gettimeout()
+        
         while self.stateCheck:
+            self.socketClient.settimeout(0.2)
             try:
                 dataCheck = self.socketClient.recv(1)
+                self.refreshTimeOut()
                 
                 if not dataCheck:
                     raise Exception('Client disconnected')
                 
                 time.sleep(1)
-            except:
-                self.waitingNetwork.waitingRoomUi.remove(0)
+            except socket.timeout:
+                continue
+            except Exception as e:
+                print(self.waitingNetwork.typeGame)
+                if self.waitingNetwork.typeGame == 2:
+                    self.waitingNetwork.waitingRoomUi.remove(3)
+                elif self.waitingNetwork.typeGame == 4:
+                    self.waitingNetwork.waitingRoomUi.remove(0)
                 for keyToSocket, socketClientList in self.serverClass.listClients.items():
                     if socketClientList == self.socketClient:
                         del self.serverClass.listClients[keyToSocket]
@@ -43,12 +54,17 @@ class CheckConnection(threading.Thread):
                             self.refreshNumClient()
                 self.sendNewPlayer()
                 break
-                
+        self.refreshTimeOut()
+        
                 
     def setStateCheck(self, state : bool) -> None:
         self.stateCheck = state
         
 
+    def refreshTimeOut(self) -> None:
+        self.socketClient.settimeout(self.originalTimeout)
+        
+        
     def refreshNumClient(self) -> None:
         for player, socketClient in self.serverClass.listClients.items():
             if socketClient == self.serverClass.listClients[self.numClient]:

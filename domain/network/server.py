@@ -50,6 +50,9 @@ class Server:
         self.socketServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socketServer.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             
+        # Variable qui stocke le timeout du socket de base.
+        self.originalTimeout = self.socketServer.gettimeout()
+            
         if self.host == "":
             # Recupération de l'ip du pc qui souhaite héberger un serveur.
             ip = ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][0])
@@ -76,6 +79,10 @@ class Server:
                 
                 while waitingRoomUI.status == True:
                     time.sleep(0.5)
+
+                # Arrêt des threading de Salle d'attente.
+                waitingRoomNetwork.stopAllThread()
+                waitingRoomNetwork.join()
             
                 # Attribution d'un numéro au Client, et enregistrement dans une variable.
                 self.playersThread = [2, 'Server_1', 'Client_2']
@@ -96,10 +103,6 @@ class Server:
                 # Variable qui stocke la class du jeu.
                 Network = True
                 self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, treading_server, "instance", 1)
-
-                # Arrêt des threading de Salle d'attente.
-                # waitingRoomNetwork.stopAllThread()
-                # waitingRoomNetwork.join()
                 
                 treading_server.startThread(self.board)
                 self.players[0] += 1
@@ -123,8 +126,12 @@ class Server:
             waitingRoomUI.waitNetwork()
             
             while waitingRoomUI.status == True:
-                time.sleep(0.5)
+                time.sleep(0.1)
 
+            # Arrêt des threading de Salle d'attente.
+            waitingRoomNetwork.stopAllThread()
+            waitingRoomNetwork.join()
+            
             # Socket Server pour le tour de rôle.
             self.listClients[0] = self.socketServer
 
@@ -151,9 +158,6 @@ class Server:
             self.serverPlayers = ServerPlayers(self, self.serverToPlay, self.board)
             self.serverPlayers.start()
             
-            # Arrêt des threading de Salle d'attente.
-            # waitingRoomNetwork.stopAllThread()
-            # waitingRoomNetwork.join()
 
         threading_graphique = Graphique(self.board, "server")
         threading_graphique.start()

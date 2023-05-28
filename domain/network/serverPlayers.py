@@ -38,18 +38,22 @@ class ServerPlayers(threading.Thread):
                     
                     if self.board.victory():
                         self.board.windowVictory()
+                        break
                     else:
                         self.board.refreshCurrentPlayer()
                         if self.board.victory():
                             self.board.windowVictory()
+                            break
                         else:
                             self.board.refreshCurrentPlayer()
                             if self.board.victory():
                                 self.board.windowVictory()
+                                break
                             else:
                                 self.board.refreshCurrentPlayer()
                                 if self.board.victory():
                                     self.board.windowVictory()
+                                    break
                                 else:
                                     self.board.refreshCurrentPlayer()
                                     if self.serverToPlay.getPlayerToPlay() == 0:
@@ -79,6 +83,5 @@ class ServerPlayers(threading.Thread):
                             socketClient.send(dataSendtable)
                         except OSError:
                             print(f"Erreur lors de l'envoi du message à Joueur {player}")
-            except:
-                import main
-                main()
+            except Exception as e:
+                print(e)

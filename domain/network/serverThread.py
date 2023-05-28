@@ -33,20 +33,15 @@ class ServerThread(threading.Thread):
         
         # Variable qui stocke la class de jeu.
         self.board = None
-        
-        print("[+] Nouveau thread crée pour le client sur "+str(self.host)+":"+str(self.port))
+
         
     def startThread(self, boardInfos : Board) -> None:
         self.board = boardInfos
         self.start()
         
     def run(self) -> None: 
-        
-        print("Connexion du client %s:%s" % (self.host, self.port))
-        
         try:
             if self.typeGameThread == 2:
-                # Boucle de jeu
                 while self.statusServer == True:
                     # Réception des informations du client.
                     dataRecvArray = self.socket_client.recv(4096)
@@ -78,8 +73,6 @@ class ServerThread(threading.Thread):
                             self.board.refreshCurrentPlayer()
                             self.board.refreshPossibleCaseMovementForCurrentPlayer()
                             self.board.displayBoard(False)
-                    else:
-                        print("Erreur de type de click")
         except:
             if self.typeGameThread == 2:
                 print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
@@ -121,7 +114,6 @@ class ServerThread(threading.Thread):
         exit()
         
     def serverStop(self) -> None:
-        # Deconnexion des clients et arrêt du serveur.
         self.statusServer = False
         print("Arrêt du serveur ...")
         self.socketServer.close()

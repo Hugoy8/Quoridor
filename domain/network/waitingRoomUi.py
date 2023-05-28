@@ -137,16 +137,20 @@ class WaitingRoomUi:
 
 
     def remove(self, position : int) -> None:
-        print("Position" +str(position))
-        if self.numPlayers == 2 or self.numPlayers == 4 and position == 1:
+        if self.numPlayers == 4 and position == 1:
             if self.nbr_player_waiting == 1:
                 self.nbr_player_waiting = 1
             elif self.nbr_player_waiting == 2:
                 self.nbr_player_waiting = 2
-        elif self.numPlayers == 2 or self.numPlayers == 4 and position == 0:
+        elif self.numPlayers == 4 and position == 0:
             if self.nbr_player_waiting == 1:
                 self.nbr_player_waiting = 1
             else:
+                self.nbr_player_waiting -= 1
+        elif self.numPlayers == 2 and position == 3:
+            if self.nbr_player_waiting == 1:
+                self.nbr_player_waiting = 1
+            elif self.nbr_player_waiting == 2:
                 self.nbr_player_waiting -= 1
 
                 
