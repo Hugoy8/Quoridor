@@ -95,6 +95,7 @@ class WaitingRoomUi:
         
         
     def waitNetwork(self) -> None:
+        timeSleep = True
         while self.status == True:
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -103,6 +104,7 @@ class WaitingRoomUi:
                 if event.type == MOUSEBUTTONDOWN:
                     if self.start_game_network_button.collidepoint(event.pos):
                         self.waitingRoomNetwork.serverSendLaunch()
+                        timeSleep = False
                         self.serverClass.stateListenServer = False
                         self.status = False
 
@@ -127,8 +129,8 @@ class WaitingRoomUi:
 
             pygame.display.flip()
             self.clock.tick(60)
-            
-            time.sleep(2)
+            if timeSleep:
+                time.sleep(2)
         self.destroyWindow()
 
 
