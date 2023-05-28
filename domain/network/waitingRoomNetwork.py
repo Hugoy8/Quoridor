@@ -64,6 +64,15 @@ class WaitingRoomNetwork(threading.Thread):
                 try:
                     (clientSocket, (ip, port))= self.serverClass.socketServer.accept()
                     
+                    if len(self.serverClass.listClients) == 3:
+                        clientSocket.send("Full".encode('utf-8'))
+                        clientSocket.close()
+                        continue
+                    else:
+                        messageAutorisation = "OK"
+                        messageAutorisation = messageAutorisation.encode("utf-8")
+                        clientSocket.send(messageAutorisation)
+                        
                     self.refreshTimeOut()
                 
                     numClient = len(self.serverClass.listClients) + 1
@@ -93,7 +102,6 @@ class WaitingRoomNetwork(threading.Thread):
                                 infosListAttente = ([True, True, numClient, player, False])
                                 dataSendInfosAttente = pickle.dumps(infosListAttente)
                                 socketClient.send(dataSendInfosAttente)
-                                
                 except socket.timeout:
                     continue
             self.refreshTimeOut()
@@ -115,6 +123,18 @@ class WaitingRoomNetwork(threading.Thread):
                 self.serverClass.socketServer.settimeout(0.2)
                 try:
                     (socket_client, (ip, port)) = self.serverClass.socketServer.accept()
+                    
+                    if len(self.serverClass.listClients) == 1:
+                        socket_client.send("Full".encode('utf-8'))
+                        socket_client.close()
+                        continue
+                    else:
+                        messageAutorisation = "OK"
+                        messageAutorisation = messageAutorisation.encode("utf-8")
+                        socket_client.send(messageAutorisation)
+                    
+                    numClient = len(self.serverClass.listClients) + 1
+                    self.serverClass.listClients[numClient] = socket_client
                     
                     # Envoie des informations d'enregistrement
                     infosList = ([2, 1])

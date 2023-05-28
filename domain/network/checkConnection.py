@@ -35,7 +35,6 @@ class CheckConnection(threading.Thread):
             except socket.timeout:
                 continue
             except Exception as e:
-                print(self.waitingNetwork.typeGame)
                 if self.waitingNetwork.typeGame == 2:
                     self.waitingNetwork.waitingRoomUi.remove(3)
                 elif self.waitingNetwork.typeGame == 4:

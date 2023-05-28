@@ -24,30 +24,44 @@ class ClientConfig:
         # Variable du socket du client.
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         
+        # Variable qui stocke le timeout du socket de base.
+        originalTimeout = client.gettimeout()
+        client.settimeout(2)
+        
         try:
+            
             client.connect((self.host, self.port))
-        except socket.error:
+            
+            autorisation = client.recv(4096)
+            if autorisation:
+                autorisation = autorisation.decode('utf-8')
+                if autorisation == "Full":
+                    raise Exception("Le serveur est plein. Impossible de se connecter")
+            else:
+                raise Exception("Erreur de connexion au serveur "+str(self.host)+":"+str(self.port))
+        except socket.timeout or Exception as e:
             print("\nErreur de connexion au serveur "+str(self.host)+":"+str(self.port))
             print("\n\nTentaive de reconnection ...\n")
             ClientConfig(self.host, self.port).client_config()
+        except Exception as e:
+            print(e)
+            exit()
+        
+        client.settimeout(originalTimeout)
         
         # Réception des informations d'enregistrement côté serveur et de salle d'attente.
         dataRecvServer = client.recv(4096)
         self.InfosAttente = pickle.loads(dataRecvServer)
         
         # Section salle d'attente.
-        try:
-            waitingRoomUI = WaitingRoomUi("Client", self.InfosAttente[0], self.InfosAttente[1], "")
-            waitingRoomNetwork = WaitingRoomNetwork("Client", waitingRoomUI, self.InfosAttente[0], self.InfosAttente[1], client, "")
-            waitingRoomUI.setWaitingRoomNetwork(waitingRoomNetwork)
-            waitingRoomNetwork.start()
-            waitingRoomUI.waitNetwork()
-        except:
-            import main
-            main()
+        waitingRoomUI = WaitingRoomUi("Client", self.InfosAttente[0], self.InfosAttente[1], "")
+        waitingRoomNetwork = WaitingRoomNetwork("Client", waitingRoomUI, self.InfosAttente[0], self.InfosAttente[1], client, "")
+        waitingRoomUI.setWaitingRoomNetwork(waitingRoomNetwork)
+        waitingRoomNetwork.start()
+        waitingRoomUI.waitNetwork()
         
         while waitingRoomUI.status == True:
-            time.sleep(0.5)
+            time.sleep(0.1)
         
         # Réception des informations d'enregistrement côté serveur.
         dataRecvInfos = client.recv(4096)

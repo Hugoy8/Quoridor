@@ -110,11 +110,20 @@ class WaitingRoomUi:
             self.window.blit(self.waiting_room_images[self.nbr_player_waiting - 1], (0, 0))
 
             if self.role == "Server":
-                pygame.draw.rect(self.window, (43, 176, 237), self.start_game_network_button)
-                font = pygame.font.Font(None, 30)
-                text = font.render("Lancer la partie", True, (255, 255, 255))
-                text_rect = text.get_rect(center=self.start_game_network_button.center)
-                self.window.blit(text, text_rect)
+                if self.serverClass.typeGame == 2:
+                    if len(self.serverClass.listClients) == 1:
+                        pygame.draw.rect(self.window, (43, 176, 237), self.start_game_network_button)
+                        font = pygame.font.Font(None, 30)
+                        text = font.render("Lancer la partie", True, (255, 255, 255))
+                        text_rect = text.get_rect(center=self.start_game_network_button.center)
+                        self.window.blit(text, text_rect)
+                elif self.serverClass.typeGame == 4:
+                    if len(self.serverClass.listClients) == 3:
+                        pygame.draw.rect(self.window, (43, 176, 237), self.start_game_network_button)
+                        font = pygame.font.Font(None, 30)
+                        text = font.render("Lancer la partie", True, (255, 255, 255))
+                        text_rect = text.get_rect(center=self.start_game_network_button.center)
+                        self.window.blit(text, text_rect)
 
             pygame.display.flip()
             self.clock.tick(60)
