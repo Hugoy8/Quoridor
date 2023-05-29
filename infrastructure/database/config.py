@@ -67,8 +67,16 @@ class Database:
         cursor = self.db.cursor()
 
         table_name = f"Game{ip.replace('.', '_')}{port}"
-        insert_query = f"INSERT INTO {table_name} (username) VALUES (%s)"
-        values = (username,)
+        
+        max_id_query = f"SELECT MAX(ID) FROM {table_name}"
+        cursor.execute(max_id_query)
+        max_id = cursor.fetchone()[0]
+        
+        if max_id is None:
+            max_id = 0
+        
+        insert_query = f"INSERT INTO {table_name} (ID, username) VALUES (%s, %s)"
+        values = (max_id + 1, username)
 
         cursor.execute(insert_query, values)
         self.db.commit()
@@ -82,6 +90,7 @@ class Database:
         select_query.execute(f"SELECT username FROM Game{ip.replace('.', '_')}{port} WHERE ID = {id}")
         result = select_query.fetchone()
         select_query.close()
+        self.db.close()
         return result[0]
     
     def addWin(self, username):
@@ -98,5 +107,33 @@ class Database:
             update_query = self.update()
             update_query.execute("UPDATE users SET win = %s WHERE username = %s", (new_wins, username))
             update_query.close()
+            self.db.close()
         else:
             print("User not found.")
+
+    def deconnexionUser(self, ip: str, port: int, id: int):
+        self.connectDb()
+        delete_query = self.delete()
+        delete_query.execute(f"DELETE FROM Game{ip.replace('.', '_')}{port} WHERE ID = {id}")
+
+        self.db.commit()
+        delete_query.close()
+        self.db.close()
+    
+    def refreshTabel(self, ip: str, port: int):
+        self.connectDb()
+        select_query = self.select()
+        select_query.execute(f"SELECT ID FROM Game{ip.replace('.', '_')}{port} ORDER BY ID ASC")
+        rows = select_query.queries.fetchall()
+
+        for index, row in enumerate(rows, start=1):
+            new_id = index
+            existing_id = row[0]
+
+            if new_id != existing_id:
+                update_query = self.update()
+                update_query.execute(f"UPDATE Game{ip.replace('.', '_')}{port} SET ID = {new_id} WHERE ID = {existing_id}")
+                self.db.commit()
+
+        select_query.close()
+        self.db.close()

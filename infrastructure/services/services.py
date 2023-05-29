@@ -321,11 +321,11 @@ class Board:
         sound_victory = mixer.Sound("./assets/sounds/victory.mp3")
         sound_victory.play()
         sound_victory.set_volume(0.3)
-        if self.networkStatus == True and self.typeNetwork == "instance":
-            ip = "127.0.0.1"
-            port = 8000
-            username = self.db.selectUsername(ip, port,  self.current_player.get_player())
-            self.db.addWin(username)
+        # if self.networkStatus == True and self.typeNetwork == "instance":
+        #     ip = "127.0.0.1"
+        #     port = 8000
+        #     username = self.db.selectUsername(ip, port,  self.current_player.get_player())
+        #     self.db.addWin(username)
     
     def popUpNoFence(self, player_name):
         #PopUp plus de barrière
