@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="e92bb7ac-860f-4697-ac72-0422eef88671" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/assets/box_launcher.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/first_section.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/fond_menu.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hell/background.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hell/case.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hell/fence_height.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hell/fence_height_hover.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hell/fence_height_vide.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hell/fence_nbr.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hell/fence_width.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hell/fence_width_hover.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hell/fence_width_vide.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hell/moove_possible.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hell/pillier.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hell/pillier_hover.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hell/pillier_vide.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hell/player_1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hell/player_2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hell/player_3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/hell/player_4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/host.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/background.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/case.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/fence_height.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/fence_height_hover.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/fence_height_vide.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/fence_nbr.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/fence_width.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/fence_width_hover.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/fence_width_vide.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/moove_possible.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/pillier.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/pillier_hover.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/pillier_vide.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/player_1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/player_2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/player_3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/player_4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/victory.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/victory_p1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/victory_p2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/victory_p3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/jungle/victory_p4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/launcher0.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/launcher1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/launcher2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/launcher3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/leavepopup.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/logo.ico" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/logo.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/rejoindre.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/second_section.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/solo_mode.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/space/background.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/space/case.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/space/fence_height.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/space/fence_height_hover.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/space/fence_height_vide.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/space/fence_nbr.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/space/fence_width.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/space/fence_width_hover.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/space/fence_width_vide.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/space/moove_possible.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/space/pillier.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/space/pillier_hover.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/space/pillier_vide.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/space/player_1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/space/player_2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/space/player_3.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/space/player_4.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/third_section.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/wait1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/wait2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/case.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fence.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/launcher.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pillar.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/player.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scanNetwork.py" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2QBcNzizdzHIe9x1x3lk5irrNMu" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/hugoy/Library/CloudStorage/OneDrive-SUPINFO/Cours/Projet/1PROJ&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e92bb7ac-860f-4697-ac72-0422eef88671" name="Changes" comment="" />
+      <created>1684830378869</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1684830378869</updated>
+      <workItem from="1684830389345" duration="3643000" />
+      <workItem from="1684852852013" duration="94000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/1PROJ$main.coverage" NAME="main Coverage Results" MODIFIED="1684852860756" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/1PROJ$network.coverage" NAME="network Coverage Results" MODIFIED="1684834096274" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/domain/network" />
+    <SUITE FILE_PATH="coverage/1PROJ$launcher.coverage" NAME="launcher Coverage Results" MODIFIED="1684834101202" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/domain/launcher" />
+    <SUITE FILE_PATH="coverage/1PROJ$services.coverage" NAME="services Coverage Results" MODIFIED="1684833799125" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/infrastructure/services" />
+  </component>
+</project>
