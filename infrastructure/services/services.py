@@ -320,7 +320,13 @@ class Board:
             import main
             main()
         
-        quit_button = Button(self.window, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, width=20, command=self.window.destroy)
+        # Quitter la partie
+        def quitgame():
+            self.window.destroy()
+            from infrastructure.services.deletePycache import deletePycache
+            deletePycache()
+            
+        quit_button = Button(self.window, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, width=20, command=quitgame)
         quit_button.pack(side='bottom', padx=10, pady=40)
         replay_button = Button(self.window, text="Rejouer", font=("Arial", 14), fg="white", bg="#78B000", bd=2, highlightthickness=0, width=20, command=rejouer)
         replay_button.pack(side='bottom', padx=10, pady=10)
