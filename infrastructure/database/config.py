@@ -102,7 +102,9 @@ class Database:
         select_query.execute("SELECT win FROM users WHERE username = %s", (username,))
         result = select_query.fetchone()
         select_query.close()
+        print("result:", result)
         if result is not None:
+            print("rentre")
             current_wins = result[0]
             new_wins = current_wins + 1
             update_query = self.update()
