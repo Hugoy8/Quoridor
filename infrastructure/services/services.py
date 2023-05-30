@@ -270,6 +270,8 @@ class Board:
     def windowVictory(self) -> None:
         self.sound_map.stop()
         # background de fond 
+        self.db.insertUsername(self.ip, self.port, self.pseudo)
+        print(f'pseudo : {self.pseudo} ajouté à la base de donnée')
         self.bg_image = Image.open(f"./assets/images/{self.map}/background{self.__nb_players}{self.name_bg}.png")
         self.bg_image = self.bg_image.resize((self.window.winfo_screenwidth(), self.window.winfo_screenheight()))
         self.bg_photo = ImageTk.PhotoImage(self.bg_image)
@@ -324,7 +326,6 @@ class Board:
         sound_victory = mixer.Sound("./assets/sounds/victory.mp3")
         sound_victory.play()
         sound_victory.set_volume(0.3)
-        self.db.insertUsername(self.ip, self.port, self.pseudo)
         if self.networkStatus == True and self.typeNetwork == "instance":
             username = self.db.selectUsername(self.ip, self.port,  self.current_player.get_player())
             self.db.addWin(username)

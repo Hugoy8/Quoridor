@@ -19,6 +19,24 @@ class ClientConfig:
         self.Infos = []
         
         self.client_config(mapID)
+        self.setIP(self.host)
+        self.setPort(self.port)
+        
+    def setIP(self, ip):
+        try:
+            with open('serverIP.txt', 'w') as fichier:
+                fichier.write(ip + '\n')
+            print("IP enregistrée avec succès dans le fichier.")
+        except IOError:
+            print("Erreur : impossible d'écrire l'ip dans le fichier.")
+
+    def setPort(self, port):
+        try:
+            with open('serverPort.txt', 'w') as fichier:
+                fichier.write(str(port) + '\n')
+            print("Port enregistré avec succès dans le fichier.")
+        except IOError:
+            print("Erreur : impossible d'écrire le port dans le fichier.")
     
     def client_config(self, mapID : int) -> None:
         # Variable du socket du client.
