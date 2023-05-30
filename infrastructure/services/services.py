@@ -29,6 +29,7 @@ class Board:
             self.db = Database()
             self.ip, self.port, self.pseudo = self.getIpPortUsername("serverIP.txt", "serverPort.txt", "serverPseudo.txt")
             if self.typeNetwork == "instance":
+                self.db.dropTableIfExists(self.ip, self.port)
                 self.db.createTableGame(self.ip, self.port)
         else:
             # Variable bool qui autorise le multijoueur.
