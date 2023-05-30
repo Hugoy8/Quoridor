@@ -3,12 +3,16 @@ from pygame.locals import *
 from PIL import Image
 import ctypes
 import time
+import os
 
 
 class WaitingRoomUi:
     def __init__(self, role: str, numPlayers: int, numClient: int, serverClass : object) -> None:
-        user32 = ctypes.windll.user32
-        self.screen_width, self.screen_height = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+        if os.name == "Windows":
+            user32 = ctypes.windll.user32
+            self.screen_width, self.screen_height = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+        else:
+            self.screen_width, self.screen_height = (1920,1080)
         pygame.init()
         flags = pygame.FULLSCREEN | pygame.DOUBLEBUF
         self.window = pygame.display.set_mode((self.screen_width, self.screen_height), flags)

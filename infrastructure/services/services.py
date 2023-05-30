@@ -1,5 +1,4 @@
 from tkinter import *
-import tkinter
 import socket
 import pickle
 from domain.case.case import Case
@@ -12,6 +11,7 @@ import time
 from pygame import mixer
 from infrastructure.database.config import Database
 from domain.bot.bot import Bot
+import os
 
 class Board:
     def __init__(self, size : int, nb_players : int, nb_IA : int, nb_fence : int, select_map : int, Network : bool, InstanceNetwork : object, typeNetwork : str, playerUser : int) -> None:
@@ -42,14 +42,15 @@ class Board:
         else:
             # Variable bool qui autorise le multijoueur.
             self.networkStatus = False
-            
             self.bot = Bot()
             
         self.window = Tk()
         self.window.title("Quoridor")
-        self.window.state('zoomed')
         self.window.minsize(self.window.winfo_screenwidth(), self.window.winfo_screenheight())
-        self.window.attributes("-fullscreen", True)
+        
+        if os.name == "Windows":
+            self.window.attributes("-fullscreen", True)
+
         self.window.iconbitmap('./assets/images/logo.ico')
         self.window.configure(bg="#F0B169")
         self.window_game = True
@@ -65,6 +66,7 @@ class Board:
         self.waiting_room1 = None
         self.waiting_room2 = None
         self.pop_up_no_fence = []
+        
         mixer.init()
         # Création des images du plateau
         
@@ -240,7 +242,31 @@ class Board:
 
             self.displayBoard(False)
         while self.current_player.get_IALevel() != 0 :
-            self.currentBotPlaysBasedOnDifficulty(self.current_player.get_IALevel())
+            if self.current_player.get_IALevel() == 1 :
+                list = [0,1]
+                action = random.choice(list)
+                if action == 1  and self.playerHasFence() == True and self.allPossibleBuildFence() !=[]:
+                    can_build = False
+                    while can_build == False :
+                        if self.current_player.get_IALevel() == 1:
+                            build = random.choice(self.allPossibleBuildFence())
+                            x_co_fence = build[0]
+                            y_co_fence = build[1]
+                            orientation = build[2]
+                            if orientation == 0 :
+                                self.fence_orientation = "vertical"
+                            else :
+                                self.fence_orientation = "horizontal"
+                            self.buildFence(x_co_fence,y_co_fence)
+                            if self.fenceNotCloseAccesGoal()==False :
+                                self.deBuildFence(x_co_fence,y_co_fence)
+                                self.displayBoard(False)
+                            else : 
+                                can_build = True
+                else :
+                    if self.current_player.get_IALevel() == 1 :
+                        movement = random.choice(self.allPossibleMoveForPlayer())
+                        self.move(movement[0],movement[1])
             if self.victory() == True :
                 self.displayBoard(False)
                 self.canvas.unbind_all("<Button-1>")
@@ -253,43 +279,8 @@ class Board:
                 self.resetPossibleCaseMovement() 
                 self.refreshCurrentPlayer()
                 self.refreshPossibleCaseMovementForCurrentPlayer()
-                self.displayBoard(False)
-    
-    
-    def botBuildRandomFence(self,allPossibleBuildFence):
-        can_build = False
-        possibleBuildFence = allPossibleBuildFence
-        while can_build == False and possibleBuildFence !=[]:
-            build = self.bot.randomChoice(possibleBuildFence)
-            x_co_fence = build[0]
-            y_co_fence = build[1]
-            orientation = build[2]
-            if orientation == 0 :
-                self.fence_orientation = "vertical"
-            else :
-                self.fence_orientation = "horizontal"
-            self.buildFence(x_co_fence,y_co_fence)
-            if self.fenceNotCloseAccesGoal()==False :
-                print(possibleBuildFence)
-                print([x_co_fence,y_co_fence])
-                possibleBuildFence.remove(build)
-                self.deBuildFence(x_co_fence,y_co_fence)
-                self.displayBoard(False) 
-            else : 
-                can_build = True
-                    
-    def botPlaysRandom(self):
-        action = self.bot.randomChoice(["move","build"])
-        if action == "build"  and self.playerHasFence() == True and self.allPossibleBuildFence() !=[]:
-            self.botBuildRandomFence(self.allPossibleBuildFence())
-        else :
-            movement = self.bot.randomChoice(self.allPossibleMoveForPlayer())
-            self.move(movement[0],movement[1])
+                self.displayBoard(False)                        
         
-    
-    def currentBotPlaysBasedOnDifficulty(self, difficulty):
-        if difficulty ==  1 :
-            self.botPlaysRandom()
         
     def windowVictory(self) -> None:
         self.sound_map.stop()
@@ -581,20 +572,44 @@ class Board:
                             
                         self.displayBoard(False)
                         while self.current_player.get_IALevel() != 0 :
-                            self.currentBotPlaysBasedOnDifficulty(self.current_player.get_IALevel())
+                            if self.current_player.get_IALevel() == 1 :
+                                list = [0,1]
+                                action = random.choice(list)
+                                if action == 1  and self.playerHasFence() == True and self.allPossibleBuildFence() !=[]:
+                                    can_build = False
+                                    while can_build == False :
+                                        if self.current_player.get_IALevel() == 1:
+                                            build = random.choice(self.allPossibleBuildFence())
+                                            x_co_fence = build[0]
+                                            y_co_fence = build[1]
+                                            orientation = build[2]
+                                            if orientation == 0 :
+                                                self.fence_orientation = "vertical"
+                                            else :
+                                                self.fence_orientation = "horizontal"
+                                            self.buildFence(x_co_fence,y_co_fence)
+                                            if self.fenceNotCloseAccesGoal()==False :
+                                                self.deBuildFence(x_co_fence,y_co_fence)
+                                                self.displayBoard(False)
+                                            else : 
+                                                can_build = True
+                                else :
+                                    if self.current_player.get_IALevel() == 1 :
+                                        movement = random.choice(self.allPossibleMoveForPlayer())
+                                        self.move(movement[0],movement[1])
                             if self.victory() == True :
                                 self.displayBoard(False)
                                 self.canvas.unbind_all("<Button-1>")
-                                for child in self.window.winfo_children():
-                                    if child.winfo_exists():
-                                        child.destroy()
+                                # for child in self.window.winfo_children():
+                                #     if child.winfo_exists():
+                                #         child.destroy()
                                 self.windowVictory()
                                 break
                             else:
                                 self.resetPossibleCaseMovement() 
                                 self.refreshCurrentPlayer()
                                 self.refreshPossibleCaseMovementForCurrentPlayer()
-                                self.displayBoard(False)
+                                self.displayBoard(False)         
                         
     def on_hover(self, event):
         if self.playerHasFence() == True :
@@ -757,20 +772,17 @@ class Board:
         
     def deBuildFence(self, x : int, y : int) -> None:
         pillar = self.board[x][y]
+        pillar.set_build(0)
         if self.fence_orientation == "vertical":
             fence = self.board[x-1][y]
             fence.set_build(0)
             fence = self.board[x+1][y]
             fence.set_build(0)
-            if self.board[x][y-1].get_build() == 0 and self.board[x][y+1].get_build() == 0:
-                pillar.set_build(0)
         else :
             fence = self.board[x][y-1]
             fence.set_build(0)
             fence = self.board[x][y+1]
             fence.set_build(0)
-            if self.board[x-1][y].get_build() == 0 and self.board[x+1][y].get_build() == 0:
-                pillar.set_build(0)
         nb_fence_current_player  = self.current_player.get_nb_fence()
         self.current_player.set_fence(nb_fence_current_player+1)
     

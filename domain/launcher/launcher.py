@@ -7,12 +7,16 @@ from domain.network.network import joinSession, startSession
 from domain.network.scanNetwork import ScanNetwork
 from infrastructure.database.config import Database
 import hashlib
+import os
 
 class QuoridorLauncher:
     def __init__(self, db: Database):
         self.window = Tk()
         self.window.title("Mon Launcher")
-        self.window.attributes("-fullscreen", True)
+        
+        if os.name == "Windows":
+            self.window.attributes("-fullscreen", True)
+            
         self.window.geometry(f"{self.window.winfo_screenwidth()}x{self.window.winfo_screenheight()}")
         self.selectPlayer = 2
         self.selectIA = 0
