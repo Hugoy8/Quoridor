@@ -4,11 +4,12 @@ from infrastructure.repositories.repositoryUsers.create import Create
 from infrastructure.repositories.repositoryUsers.read import Read
 from infrastructure.repositories.repositoryUsers.delete import Delete
 from tkinter import *
-import hashlib
+import threading
 
 
-class Database:
+class Database(threading.Thread):
     def __init__(self):
+        threading.Thread.__init__(self)
         self.db = None
 
     def connectDb(self):

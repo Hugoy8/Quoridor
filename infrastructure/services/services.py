@@ -26,14 +26,22 @@ class Board:
 
             # Variable qui enregistre le numéro de l'utilisateur sur le pc.
             self.playerUser = playerUser
+            
+            # Espace base de données.
             self.db = Database()
+            self.db.start()
+            
             self.ip, self.port, self.pseudo = self.getIpPortUsername("serverIP.txt", "serverPort.txt", "serverPseudo.txt")
+            
             if self.typeNetwork == "instance":
                 self.db.dropTableIfExists(self.ip, self.port)
                 self.db.createTableGame(self.ip, self.port)
+                
+            self.db.insertUsername(self.ip, self.port, self.pseudo)
         else:
             # Variable bool qui autorise le multijoueur.
             self.networkStatus = False
+            
         self.window = Tk()
         self.window.title("Quoridor")
         self.window.state('zoomed')
@@ -272,9 +280,10 @@ class Board:
     def windowVictory(self) -> None:
         self.sound_map.stop()
         # background de fond 
-        self.db.insertUsername(self.ip, self.port, self.pseudo)
-        self.db.addGame(self.pseudo)
-        print(f'pseudo : {self.pseudo} ajouté à la base de donnée')
+        try:
+            self.db.addGame(self.pseudo)
+        except Exception as e:
+            print("Erreur" + str(e)) 
         self.bg_image = Image.open(f"./assets/images/{self.map}/background{self.__nb_players}{self.name_bg}.png")
         self.bg_image = self.bg_image.resize((self.window.winfo_screenwidth(), self.window.winfo_screenheight()))
         self.bg_photo = ImageTk.PhotoImage(self.bg_image)
@@ -323,8 +332,8 @@ class Board:
         # Quitter la partie
         def quitgame():
             self.window.destroy()
-            from infrastructure.services.deletePycache import deletePycache
-            deletePycache()
+            # from infrastructure.services.deletePycache import deletePycache
+            # deletePycache()
             
         quit_button = Button(self.window, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, width=20, command=quitgame)
         quit_button.pack(side='bottom', padx=10, pady=40)
@@ -335,11 +344,11 @@ class Board:
         sound_victory = mixer.Sound("./assets/sounds/victory.mp3")
         sound_victory.play()
         sound_victory.set_volume(0.3)
-        if self.networkStatus == True and self.typeNetwork == "instance":
-            username = self.db.selectUsername(self.ip, self.port,  self.current_player.get_player())
-            self.db.addWin(username)
+        if self.networkStatus == True:
+            if self.typeNetwork == "instance" :
+                username = self.db.selectUsername(self.ip, self.port,  self.current_player.get_player())
+                self.db.addWin(username)
             self.resetFile("serverIP.txt", "serverPort.txt")
-            # self.db.dropTableIfExists(self.ip, self.port)
     
     def getIpPortUsername(self, fichier1: str, fichier2: str, fichier3: str) -> tuple:
         try:
