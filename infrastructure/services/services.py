@@ -25,6 +25,10 @@ class Board:
 
             # Variable qui enregistre le numéro de l'utilisateur sur le pc.
             self.playerUser = playerUser
+            self.db = Database()
+            self.ip, self.port, self.pseudo = self.getIpPortUsername("serverIP.txt", "serverPort.txt", "serverPseudo.txt")
+            if self.typeNetwork == "instance":
+                self.db.createTableGame(self.ip, self.port)
         else:
             # Variable bool qui autorise le multijoueur.
             self.networkStatus = False
@@ -48,7 +52,6 @@ class Board:
         self.waiting_room1 = None
         self.waiting_room2 = None
         self.pop_up_no_fence = []
-        self.db = Database()
         mixer.init()
         # CrÃ©ation des images du plateau
         
@@ -321,11 +324,37 @@ class Board:
         sound_victory = mixer.Sound("./assets/sounds/victory.mp3")
         sound_victory.play()
         sound_victory.set_volume(0.3)
-        # if self.networkStatus == True and self.typeNetwork == "instance":
-        #     ip = "127.0.0.1"
-        #     port = 8000
-        #     username = self.db.selectUsername(ip, port,  self.current_player.get_player())
-        #     self.db.addWin(username)
+        self.db.insertUsername(self.ip, self.port, self.pseudo)
+        if self.networkStatus == True and self.typeNetwork == "instance":
+            username = self.db.selectUsername(self.ip, self.port,  self.current_player.get_player())
+            self.db.addWin(username)
+            self.resetFile("serverIP.txt", "serverPort.txt")
+            self.db.dropTableIfExists(self.ip, self.port)
+    
+    def getIpPortUsername(self, fichier1: str, fichier2: str, fichier3: str) -> tuple:
+        try:
+            with open(fichier1, 'r') as f1, open(fichier2, 'r') as f2, open(fichier3, 'r') as f3:
+                valeurs_fichier1 = f1.read().strip()
+                valeurs_fichier2 = f2.read().strip()
+                valeurs_fichier3 = f3.read().strip()
+                
+                if not valeurs_fichier3: 
+                    valeurs_fichier3 = " "
+                else:
+                    pass
+                    
+            return valeurs_fichier1, valeurs_fichier2, valeurs_fichier3
+        except IOError:
+            print("Erreur : impossible de lire les fichiers.")
+    
+    def resetFile(self, nom_fichier1: str, nom_fichier2: str) -> None:
+        try:
+            with open(nom_fichier1, 'w') as fichier1, open(nom_fichier2, 'w') as fichier2:
+                fichier1.truncate(0)
+                fichier2.truncate(0)
+            print("Les fichiers", nom_fichier1, "et", nom_fichier2, "ont été réinitialisés avec succès.")
+        except IOError:
+            print("Erreur : impossible de réinitialiser les fichiers", nom_fichier1, "et", nom_fichier2)
     
     def popUpNoFence(self, player_name):
         #PopUp plus de barrière

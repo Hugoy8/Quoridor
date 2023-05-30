@@ -88,6 +88,7 @@ class QuoridorLauncher:
         
         new_canvas.bind("<Button-1>", parameter)
         self.addLogoAccount()
+        self.displayPseudo()
         
     def addLogoAccount(self) -> None:
         account_image = Image.open(f"./assets/images/launcher/account.png")
@@ -342,6 +343,7 @@ class QuoridorLauncher:
         port = int(portstr)
         self.window.destroy()
         # self.db.insertUsername(ip, port, self.pseudo)
+        self.setUsername(self.pseudo)
         joinSession(ip, port, self.selectMap)
         
     
@@ -368,6 +370,7 @@ class QuoridorLauncher:
         port = int(port)
         self.window.destroy()
         # self.db.insertUsername(ip, port, self.pseudo)
+        self.setUsername(self.pseudo)
         joinSession(ip, port, self.selectMap)
         
     """CREER UNE GAME EN LOCAL"""
@@ -436,6 +439,7 @@ class QuoridorLauncher:
             # self.db.createTableGame(ip, port)
             # self.db.insertUsername(ip, port, self.pseudo)
             self.window.destroy()
+            self.setUsername(self.pseudo)
             startSession(port, nbr_player, grid_size, nbr_player, 0, nbr_fences, map)
     
     """SE CONNECTER OU S'INSCRIRE"""
@@ -501,11 +505,13 @@ class QuoridorLauncher:
                 if hasattr(self, "infoLabel"):
                     self.infoLabel.config(text="Vous êtes bien connecté.")
                     self.pseudo = username
+                    self.setUsername(username)
                     return self.pseudo
                 else:
                     self.infoLabel = Label(self.window, text="Vous êtes bien connecté.", fg="green", font=("Arial", 13), bg="#0F283F")
                     self.infoLabel.place(relx=0.54, rely=0.9, anchor=CENTER)
                     self.pseudo = username
+                    self.setUsername(username)
                     return self.pseudo
             else:
                 if hasattr(self, "infoLabel"):
@@ -601,14 +607,51 @@ class QuoridorLauncher:
                 if hasattr(self, "infoLabel"):
                     self.infoLabel.config(text=f"Bravo {username} ! Votre compte à bien été créé.")
                     self.pseudo = username
+                    self.setUsername(username)
                     return self.pseudo
                 else:
                     self.infoLabel = Label(self.window, text=f"Bravo {username} ! Vous êtes bien inscrit.", fg="green", font=("Arial", 13), bg="#0F283F")
                     self.infoLabel.place(relx=0.54, rely=0.9, anchor=CENTER)
                     self.pseudo = username
+                    self.setUsername(username)
                     return self.pseudo
         self.widget_label = [self.infoLabel]
+        
+    def setUsername(self, username):
+        try:
+            with open('serverPseudo.txt', 'a') as fichier:
+                fichier.write(username + '\n')
+            print("Nom d'utilisateur enregistré avec succès dans le fichier.")
+        except IOError:
+            print("Erreur : impossible d'écrire dans le fichier.")
+            
+    """ Vérifie si l'utilisateur est connecté"""
+    def isConnected(self, file_path):
+        try:
+            with open(file_path, 'r') as file:
+                content = file.read().strip()
+                return len(content) == 0
+        except IOError:
+            print("Erreur : impossible de lire le fichier.")
+            return False
 
+    def get_username(self, file_path):
+        try:
+            with open(file_path, 'r') as file:
+                username = file.read().strip()
+                return username
+        except IOError:
+            print("Erreur : impossible de lire le fichier.")
+            return False
+        
+    def displayPseudo(self):
+        if self.isConnected("serverPseudo.txt"):
+            login = Label(self.window, text="Vous n'êtes pas connecté", font=("Arial", 13), bg="#0F283F", fg="red")
+            login.place(relx=0.85, rely=0.02, anchor=CENTER)
+        else:
+            username = self.get_username("serverPseudo.txt")
+            login = Label(self.window, text=f"ℹ️Vous êtes connecté en tant que {username}", font=("Arial", 13), bg="#0F283F", fg="green")
+            login.place(relx=0.85, rely=0.02, anchor=CENTER)
 
 run_launcher = QuoridorLauncher(Database())
 run_launcher.window.mainloop()

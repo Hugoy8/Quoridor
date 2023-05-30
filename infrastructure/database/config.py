@@ -35,6 +35,7 @@ class Database:
         self.db.close()
     
     def createTableGame(self, ip, port: int) -> None:
+        self.dropTableIfExists(ip, port)
         self.connectDb()
         cursor = self.db.cursor()
         table_name = f"Game{ip.replace('.', '_')}{port}"
