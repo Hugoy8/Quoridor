@@ -8,7 +8,7 @@ import os
 
 class WaitingRoomUi:
     def __init__(self, role: str, numPlayers: int, numClient: int, serverClass : object) -> None:
-        if os.name == "Windows":
+        if os.name == "nt":
             user32 = ctypes.windll.user32
             self.screen_width, self.screen_height = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
         else:

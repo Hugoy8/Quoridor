@@ -14,7 +14,7 @@ class QuoridorLauncher:
         self.window = Tk()
         self.window.title("Mon Launcher")
         
-        if os.name == "Windows":
+        if os.name == "nt":
             self.window.attributes("-fullscreen", True)
             
         self.window.geometry(f"{self.window.winfo_screenwidth()}x{self.window.winfo_screenheight()}")
