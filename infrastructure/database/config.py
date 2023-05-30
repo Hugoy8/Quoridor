@@ -102,9 +102,7 @@ class Database:
         select_query.execute("SELECT win FROM users WHERE username = %s", (username,))
         result = select_query.fetchone()
         select_query.close()
-        print("result:", result)
         if result is not None:
-            print("rentre")
             current_wins = result[0]
             new_wins = current_wins + 1
             update_query = self.update()
@@ -140,3 +138,21 @@ class Database:
 
         select_query.close()
         self.db.close()
+
+    def addGame(self, username):
+        if username == " ":
+            return None
+        self.connectDb()
+        select_query = self.select()
+        select_query.execute("SELECT games FROM users WHERE username = %s", (username,))
+        result = select_query.fetchone()
+        select_query.close()
+        if result is not None:
+            current_games = result[0]
+            new_nbrgames = current_games + 1
+            update_query = self.update()
+            update_query.execute("UPDATE users SET games = %s WHERE username = %s", (new_nbrgames, username))
+            update_query.close()
+            self.db.close()
+        else:
+            print("User not found.")

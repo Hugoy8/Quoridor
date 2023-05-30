@@ -1,4 +1,5 @@
 from tkinter import *
+import tkinter
 import socket
 import pickle
 from domain.case.case import Case
@@ -53,7 +54,7 @@ class Board:
         self.waiting_room2 = None
         self.pop_up_no_fence = []
         mixer.init()
-        # CrÃ©ation des images du plateau
+        # Création des images du plateau
         
         # Tailles des éléments
         if size == 5:
@@ -271,6 +272,7 @@ class Board:
         self.sound_map.stop()
         # background de fond 
         self.db.insertUsername(self.ip, self.port, self.pseudo)
+        self.db.addGame(self.pseudo)
         print(f'pseudo : {self.pseudo} ajouté à la base de donnée')
         self.bg_image = Image.open(f"./assets/images/{self.map}/background{self.__nb_players}{self.name_bg}.png")
         self.bg_image = self.bg_image.resize((self.window.winfo_screenwidth(), self.window.winfo_screenheight()))
@@ -330,7 +332,7 @@ class Board:
             username = self.db.selectUsername(self.ip, self.port,  self.current_player.get_player())
             self.db.addWin(username)
             self.resetFile("serverIP.txt", "serverPort.txt")
-            self.db.dropTableIfExists(self.ip, self.port)
+            # self.db.dropTableIfExists(self.ip, self.port)
     
     def getIpPortUsername(self, fichier1: str, fichier2: str, fichier3: str) -> tuple:
         try:
