@@ -5,7 +5,6 @@ from domain.case.case import Case
 from domain.fence.fence import Fence
 from domain.pillar.pillar import Pillar
 from domain.player.player import Player
-import random
 from PIL import Image, ImageTk
 import time
 from pygame import mixer
@@ -36,6 +35,7 @@ class Board:
             self.ip = GetInformation.getInfos("serverIP.txt")
             self.port = GetInformation.getInfos("serverPort.txt")
             
+            print(self.pseudo, self.ip, self.port)
             self.db.insertUsername(self.ip, self.port, self.pseudo)
         else:
             # Variable bool qui autorise le multijoueur.

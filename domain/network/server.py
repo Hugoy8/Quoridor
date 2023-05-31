@@ -46,14 +46,10 @@ class Server:
         # Variable qui contient l'état de l'écoute de la partie.
         self.stateListenServer = False
         
+        # Zone de base de donnée d'initialisation.
         from infrastructure.database.config import Database
         self.db = Database()
         self.db.start()
-            
-        self.pseudo = GetInformation.getInfos("serverPseudo.txt")
-        
-        self.db.dropTableIfExists(self.host, self.port)
-        self.db.createTableGame(self.host, self.port)
 
         
     def server_config(self, size : int, nb_players : int, nb_IA : int, nb_fences : int, mapID : int) -> None:
@@ -70,6 +66,9 @@ class Server:
         else: 
             ip = self.host
         print("Voici l'ip d'hébergement du serveur de jeu : "+str(ip))
+        
+        self.db.dropTableIfExists(ip, self.port)
+        self.db.createTableGame(ip, self.port)
         
         # Attribution du port et de l'adresse ip.
         try: 
