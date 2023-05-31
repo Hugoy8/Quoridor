@@ -113,7 +113,7 @@ class Server:
                 
                 # Variable qui stocke la class du jeu.
                 Network = True
-                self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, treading_server, "instance", 1)
+                self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, treading_server, "instance", 1, self.db)
                 
                 treading_server.startThread(self.board)
                 self.players[0] += 1
@@ -165,7 +165,7 @@ class Server:
                     
             # Variable qui stocke la class du jeu.
             Network = True
-            self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, self, "instance", 1)
+            self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, self, "instance", 1, self.db)
 
             self.serverPlayers = ServerPlayers(self, self.serverToPlay, self.board)
             self.serverPlayers.start()

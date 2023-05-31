@@ -19,6 +19,10 @@ class ClientConfig:
         # Liste qui contient toutes les informations d'enregistrement reçu par le serveur.
         self.Infos = []
         
+        from infrastructure.database.config import Database
+        self.db = Database()
+        self.db.start()
+        
         self.client_config(mapID)
         
     def client_config(self, mapID : int) -> None:
@@ -74,9 +78,9 @@ class ClientConfig:
         # Variable qui stocke la class du jeu.
         Network = True
         if self.Infos[3][1] == 2:
-            self.board = Board(self.Infos[3][0], self.Infos[3][1] , self.Infos[3][2], self.Infos[3][3], mapID, Network, client, "socket", 2)
+            self.board = Board(self.Infos[3][0], self.Infos[3][1] , self.Infos[3][2], self.Infos[3][3], mapID, Network, client, "socket", 2, self.db)
         elif self.Infos[3][1] == 4:
-            self.board = Board(self.Infos[3][0], self.Infos[3][1] , self.Infos[3][2], self.Infos[3][3], mapID, Network, client, "socket", self.Infos[1][0])
+            self.board = Board(self.Infos[3][0], self.Infos[3][1] , self.Infos[3][2], self.Infos[3][3], mapID, Network, client, "socket", self.Infos[1][0], self.db)
         
         try:
             threading_client = Client(client, self.board, self.Infos)
