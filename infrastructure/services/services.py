@@ -32,10 +32,8 @@ class Board:
             self.db = db
             
             self.pseudo = GetInformation.getInfos("serverPseudo.txt")
-            self.ip = GetInformation.getInfos("serverIP.txt")
-            self.port = GetInformation.getInfos("serverPort.txt")
             
-            self.db.insertUsername(self.ip, self.port, self.pseudo)
+            self.db.insertUsername(self.db.ip, self.db.port, self.pseudo)
         else:
             # Variable bool qui autorise le multijoueur.
             self.networkStatus = False
@@ -1089,7 +1087,7 @@ def SendBoardClient(x : int, y : int, typeClick : int, client : socket, orientat
     
 
 def restartGame(size : int, nb_players : int, nb_IA : int, nb_fences : int, select_map : int) -> None:
-    jeu = Board(size, nb_players , nb_IA, nb_fences, select_map, False, "", "", 0)
+    jeu = Board(size, nb_players , nb_IA, nb_fences, select_map, False, "", "", 0, "")
     jeu.start()
     jeu.refreshPossibleCaseMovementForCurrentPlayer()
     jeu.displayBoard(False)

@@ -12,8 +12,18 @@ class Database(threading.Thread):
         threading.Thread.__init__(self)
         self.db = None
         self.numUser = None
+        self.port = None
+        self.ip = None
     
     
+    def setIP(self, newIP: str) -> None:
+        self.ip = newIP
+        
+    
+    def setPort(self, newPort: int) -> None:
+        self.port = newPort
+        
+        
     def setNumPerso(self, newNumUser : int) -> None:
         self.numUser = newNumUser
         
@@ -26,20 +36,26 @@ class Database(threading.Thread):
             database="u338035582_quoridor"
         )
 
+
     def insert(self):
         return Create(self.db)
+
 
     def select(self):
         return Read(self.db)
 
+
     def update(self):
         return Update(self.db)
+
 
     def delete(self):
         return Delete(self.db)
 
+
     def close(self):
         self.db.close()
+    
     
     def createTableGame(self, ip, port: int) -> None:
         self.dropTableIfExists(ip, port)
@@ -56,6 +72,7 @@ class Database(threading.Thread):
         cursor.close()
         self.db.close()
         
+        
     def dropTableIfExists(self, ip, port):
         self.connectDb()
         cursor = self.db.cursor()
@@ -68,6 +85,7 @@ class Database(threading.Thread):
             cursor.execute(drop_table_query)
         cursor.close()
         self.db.close()
+        
         
     def insertUsername(self, ip: str, port: int, username: str) -> None:
         self.connectDb()
@@ -84,6 +102,7 @@ class Database(threading.Thread):
         cursor.close()
         self.db.close()
     
+    
     def selectUsername(self, ip:str, port: int, id: int):
         self.connectDb()
         select_query = self.select()
@@ -92,6 +111,7 @@ class Database(threading.Thread):
         select_query.close()
         self.db.close()
         return result[0]
+    
     
     def addWin(self, username):
         if username == " ":
@@ -111,6 +131,7 @@ class Database(threading.Thread):
         else:
             print("User not found.")
 
+
     def deconnexionUser(self, ip: str, port: int, id: int):
         self.connectDb()
         delete_query = self.delete()
@@ -119,6 +140,7 @@ class Database(threading.Thread):
         self.db.commit()
         delete_query.close()
         self.db.close()
+    
     
     def refreshTabel(self, ip: str, port: int):
         self.connectDb()
@@ -137,6 +159,7 @@ class Database(threading.Thread):
 
         select_query.close()
         self.db.close()
+
 
     def addGame(self, username):
         if username == " ":

@@ -109,6 +109,10 @@ class Server:
                 
                 # Zone d'initialisation de la liste de clients dans la base de donnée.
                 self.db.setNumPerso(1)
+
+                # Assiniation de l'ip et le port dans la class base de données.
+                self.db.setIP(ip)
+                self.db.setPort(self.port)
             
                 treading_server = ServerThread(ip, self.port, waitingRoomNetwork.socketClient, self.typeGame, self.players, self.playerPlayed, self.socketServer, self.statusServer, "")
                 
@@ -165,6 +169,10 @@ class Server:
             
             # Zone d'initialisation de la liste de clients dans la base de donnée.
             self.db.setNumPerso(1)
+            
+            # Assiniation de l'ip et le port dans la class base de données.
+            self.db.setIP(ip)
+            self.db.setPort(self.port)
                 
             # Variable qui stocke la class du jeu.
             Network = True

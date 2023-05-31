@@ -68,8 +68,8 @@ class ClientConfig:
         while waitingRoomUI.status == True:
             time.sleep(0.1)
         
-        GetInformation.setIP(self.host)
-        GetInformation.setPort(self.port)
+        self.db.setIP(self.host)
+        self.db.setPort(self.port)
             
         # Réception des informations d'enregistrement côté serveur.
         dataRecvInfos = client.recv(4096)

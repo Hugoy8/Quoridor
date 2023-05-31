@@ -1,20 +1,4 @@
 class GetInformation:
-    def setIP(ip):
-        try:
-            with open('serverIP.txt', 'w') as fichier:
-                fichier.write(ip + '\n')
-        except IOError:
-            print("Erreur : impossible d'écrire l'ip dans le fichier.")
-
-
-    def setPort(port):
-        try:
-            with open('serverPort.txt', 'w') as fichier:
-                fichier.write(str(port) + '\n')
-        except IOError:
-            print("Erreur : impossible d'écrire le port dans le fichier.")
-            
-    
     def getInfos(fichier1: str) -> tuple:
         try:
             with open(fichier1, 'r') as f1:
