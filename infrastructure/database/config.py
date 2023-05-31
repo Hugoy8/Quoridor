@@ -16,6 +16,13 @@ class Database(threading.Thread):
         self.ip = None
     
     
+    def addMoney(self, numMoney : int) -> None:
+        self.connectDb()
+        
+        # PAS FINIE
+        
+        self.close()
+        
     def setIP(self, newIP: str) -> None:
         self.ip = newIP
         
