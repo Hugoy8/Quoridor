@@ -16,12 +16,23 @@ class Database(threading.Thread):
         self.ip = None
     
     
-    def addMoney(self, numMoney : int) -> None:
+    def addMoney(self, username :str) -> None:
+        if username == " ":
+            return None
         self.connectDb()
+        select_query = self.select()
+        select_query.execute("SELECT money FROM users WHERE username = %s", (username,))
+        result = select_query.fetchone()
+        select_query.close()
+        if result is not None:
+            new_Moneys = result[0] + 50
+            update_query = self.update()
+            update_query.execute("UPDATE users SET money = %s WHERE username = %s", (new_Moneys, username))
+            update_query.close()
+            self.db.close()
+        else:
+            print("User not found.")
         
-        # PAS FINIE
-        
-        self.close()
         
     def setIP(self, newIP: str) -> None:
         self.ip = newIP

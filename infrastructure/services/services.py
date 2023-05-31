@@ -361,6 +361,7 @@ class Board:
             if self.typeNetwork == "instance" :
                 username = self.db.selectUsername(self.db.ip, self.db.port,  self.current_player.get_player())
                 self.db.addWin(username)
+                self.db.addMoney(username)
             self.resetFile("serverIP.txt", "serverPort.txt")
     
     
