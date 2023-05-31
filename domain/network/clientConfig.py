@@ -18,29 +18,8 @@ class ClientConfig:
         # Liste qui contient toutes les informations d'enregistrement reçu par le serveur.
         self.Infos = []
         
-        self.setIP(self.host)
-        self.setPort(self.port)
         self.client_config(mapID)
         
-        
-    def setIP(self, ip):
-        print("ip")
-        try:
-            with open('serverIP.txt', 'w') as fichier:
-                fichier.write(ip + '\n')
-            print("IP enregistrée avec succès dans le fichier.")
-        except IOError:
-            print("Erreur : impossible d'écrire l'ip dans le fichier.")
-
-    def setPort(self, port):
-        print("port")
-        try:
-            with open('serverPort.txt', 'w') as fichier:
-                fichier.write(str(port) + '\n')
-            print("Port enregistré avec succès dans le fichier.")
-        except IOError:
-            print("Erreur : impossible d'écrire le port dans le fichier.")
-    
     def client_config(self, mapID : int) -> None:
         # Variable du socket du client.
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

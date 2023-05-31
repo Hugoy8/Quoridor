@@ -14,7 +14,7 @@ class WaitingRoomUi:
         else:
             self.screen_width, self.screen_height = (1920,1080)
         pygame.init()
-        flags = pygame.FULLSCREEN | pygame.DOUBLEBUF
+        flags = pygame.DOUBLEBUF
         self.window = pygame.display.set_mode((self.screen_width, self.screen_height), flags)
         pygame.display.set_caption("Quoridor")
         self.clock = pygame.time.Clock()

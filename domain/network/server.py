@@ -6,6 +6,7 @@ from domain.network.serverPlayers import ServerPlayers
 from domain.network.serverToPlay import ServerToPlay
 from domain.network.waitingRoomNetwork import WaitingRoomNetwork
 from domain.network.waitingRoomUi import WaitingRoomUi
+from infrastructure.services.getInformation import GetInformation
 import time
 import pickle
 import pygame
@@ -83,7 +84,10 @@ class Server:
                 # Arrêt des threading de Salle d'attente.
                 waitingRoomNetwork.stopAllThread()
                 waitingRoomNetwork.join()
-            
+
+                GetInformation.setIP(ip)
+                GetInformation.setPort(self.port)
+                
                 # Attribution d'un numéro au Client, et enregistrement dans une variable.
                 self.playersThread = [2, 'Server_1', 'Client_2']
                 
@@ -128,9 +132,13 @@ class Server:
             while waitingRoomUI.status == True:
                 time.sleep(0.1)
 
+            
             # Arrêt des threading de Salle d'attente.
             waitingRoomNetwork.stopAllThread()
             waitingRoomNetwork.join()
+            
+            GetInformation.setIP(ip)
+            GetInformation.setPort(self.port)
             
             # Socket Server pour le tour de rôle.
             self.listClients[0] = self.socketServer
