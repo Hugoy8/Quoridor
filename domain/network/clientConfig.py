@@ -81,6 +81,7 @@ class ClientConfig:
             self.db.setNumPerso(2)
             self.board = Board(self.Infos[3][0], self.Infos[3][1] , self.Infos[3][2], self.Infos[3][3], mapID, Network, client, "socket", 2, self.db)
         elif self.Infos[3][1] == 4:
+            print('Client : ' + str(self.Infos[1][0]))
             self.db.setNumPerso(self.Infos[1][0])
             self.board = Board(self.Infos[3][0], self.Infos[3][1] , self.Infos[3][2], self.Infos[3][3], mapID, Network, client, "socket", self.Infos[1][0], self.db)
         

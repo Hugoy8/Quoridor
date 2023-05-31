@@ -359,9 +359,10 @@ class Board:
         sound_victory.set_volume(0.3)
         if self.networkStatus == True:
             if self.typeNetwork == "instance" :
-                username = self.db.selectUsername(self.ip, self.port,  self.current_player.get_player())
+                username = self.db.selectUsername(self.db.ip, self.db.port,  self.current_player.get_player())
                 self.db.addWin(username)
             self.resetFile("serverIP.txt", "serverPort.txt")
+    
     
     def getIpPortUsername(self, fichier1: str, fichier2: str, fichier3: str) -> tuple:
         try:
@@ -379,6 +380,7 @@ class Board:
         except IOError:
             print("Erreur : impossible de lire les fichiers.")
     
+    
     def resetFile(self, nom_fichier1: str, nom_fichier2: str) -> None:
         try:
             with open(nom_fichier1, 'w') as fichier1, open(nom_fichier2, 'w') as fichier2:
@@ -387,6 +389,7 @@ class Board:
             print("Les fichiers", nom_fichier1, "et", nom_fichier2, "ont été réinitialisés avec succès.")
         except IOError:
             print("Erreur : impossible de réinitialiser les fichiers", nom_fichier1, "et", nom_fichier2)
+    
     
     def popUpNoFence(self, player_name):
         #PopUp plus de barrière
@@ -401,6 +404,7 @@ class Board:
             y = 0.12
         label_no_fence.place(relx=0.5, rely=y, anchor='center')
         self.window.after(2000, label_no_fence.destroy)
+
 
     def displayBoard(self, leave: bool) -> None: 
         player_colors = {

@@ -277,7 +277,6 @@ class QuoridorLauncher:
     
     def menuCreateGameSolo(self, event):
         self.changeMode()
-        print("Create Game Solo")
         self.statut = 0
         self.background(self.statut)
         self.createMenu(self.statut)
@@ -292,7 +291,6 @@ class QuoridorLauncher:
     """REJOINDRE UNE PARTIE EN RESEAU"""
     def menuJoinGameNetwork(self, event):
         self.changeMode()
-        print("Join Game Network")
         if self.statut != 3:
             self.statut = 1
         self.background(self.statut)
