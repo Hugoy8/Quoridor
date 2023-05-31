@@ -6,7 +6,6 @@ from domain.network.serverPlayers import ServerPlayers
 from domain.network.serverToPlay import ServerToPlay
 from domain.network.waitingRoomNetwork import WaitingRoomNetwork
 from domain.network.waitingRoomUi import WaitingRoomUi
-from infrastructure.services.getInformation import GetInformation
 
 import time
 import pickle
@@ -137,7 +136,6 @@ class Server:
             
             while waitingRoomUI.status == True:
                 time.sleep(0.1)
-
             
             # Arrêt des threading de Salle d'attente.
             waitingRoomNetwork.stopAllThread()
@@ -161,7 +159,10 @@ class Server:
                         print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
                         socketClient.close()
                         self.socketServer.close()
-                    
+            
+            # Zone d'initialisation de la liste de clients dans la base de donnée.
+            self.db.setNumPerso(0+1)
+                
             # Variable qui stocke la class du jeu.
             Network = True
             self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, self, "instance", 1, self.db)

@@ -11,7 +11,13 @@ class Database(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.db = None
-
+        self.numUser = None
+    
+    
+    def setNumPerso(self, newNumUser : int) -> None:
+        self.numUser = newNumUser
+        
+        
     def connectDb(self):
         self.db = mysql.connector.connect(
             host="sql859.main-hosting.eu",
@@ -42,7 +48,7 @@ class Database(threading.Thread):
         table_name = f"Game{ip.replace('.', '_')}{port}"
         create_table_query = f"""
         CREATE TABLE {table_name} (
-            ID INT AUTO_INCREMENT PRIMARY KEY,
+            ID INT,
             username VARCHAR(255)
         )
         """
@@ -70,15 +76,8 @@ class Database(threading.Thread):
 
         table_name = f"Game{ip.replace('.', '_')}{port}"
         
-        max_id_query = f"SELECT MAX(ID) FROM {table_name}"
-        cursor.execute(max_id_query)
-        max_id = cursor.fetchone()[0]
-        
-        if max_id is None:
-            max_id = 0
-        
         insert_query = f"INSERT INTO {table_name} (ID, username) VALUES (%s, %s)"
-        values = (max_id + 1, username)
+        values = (self.numUser, username)
 
         cursor.execute(insert_query, values)
         self.db.commit()
