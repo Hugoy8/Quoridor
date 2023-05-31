@@ -5,6 +5,7 @@ from domain.network.graphique import Graphique
 from domain.network.client import Client
 from domain.network.waitingRoomNetwork import WaitingRoomNetwork
 from domain.network.waitingRoomUi import WaitingRoomUi
+from infrastructure.services.getInformation import GetInformation
 import time
 
 class ClientConfig:
@@ -63,6 +64,9 @@ class ClientConfig:
         while waitingRoomUI.status == True:
             time.sleep(0.1)
         
+        GetInformation.setIP(self.host)
+        GetInformation.setPort(self.port)
+            
         # Réception des informations d'enregistrement côté serveur.
         dataRecvInfos = client.recv(4096)
         self.Infos = pickle.loads(dataRecvInfos)
