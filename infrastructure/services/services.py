@@ -10,11 +10,12 @@ from PIL import Image, ImageTk
 import time
 from pygame import mixer
 from infrastructure.database.config import Database
+from infrastructure.services.getInformation import GetInformation
 from domain.bot.bot import Bot
 import os
 
 class Board:
-    def __init__(self, size : int, nb_players : int, nb_IA : int, nb_fence : int, select_map : int, Network : bool, InstanceNetwork : object, typeNetwork : str, playerUser : int) -> None:
+    def __init__(self, size : int, nb_players : int, nb_IA : int, nb_fence : int, select_map : int, Network : bool, InstanceNetwork : object, typeNetwork : str, playerUser : int, db : Database) -> None:
         if Network == True:
             # Variable bool qui autorise le multijoueur.
             self.networkStatus = True
@@ -29,15 +30,12 @@ class Board:
             self.playerUser = playerUser
             
             # Espace base de données.
-            self.db = Database()
-            self.db.start()
+            self.db = db
             
-            self.ip, self.port, self.pseudo = self.getIpPortUsername("serverIP.txt", "serverPort.txt", "serverPseudo.txt")
+            self.pseudo = GetInformation.getInfos("serverPseudo.txt")
+            self.ip = GetInformation.getInfos("serverIP.txt")
+            self.port = GetInformation.getInfos("serverPort.txt")
             
-            if self.typeNetwork == "instance":
-                self.db.dropTableIfExists(self.ip, self.port)
-                self.db.createTableGame(self.ip, self.port)
-                
             self.db.insertUsername(self.ip, self.port, self.pseudo)
         else:
             # Variable bool qui autorise le multijoueur.

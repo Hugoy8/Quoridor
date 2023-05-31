@@ -7,6 +7,7 @@ from domain.network.serverToPlay import ServerToPlay
 from domain.network.waitingRoomNetwork import WaitingRoomNetwork
 from domain.network.waitingRoomUi import WaitingRoomUi
 from infrastructure.services.getInformation import GetInformation
+
 import time
 import pickle
 import pygame
@@ -44,6 +45,15 @@ class Server:
         
         # Variable qui contient l'état de l'écoute de la partie.
         self.stateListenServer = False
+        
+        from infrastructure.database.config import Database
+        self.db = Database()
+        self.db.start()
+            
+        self.pseudo = GetInformation.getInfos("serverPseudo.txt")
+        
+        self.db.dropTableIfExists(self.host, self.port)
+        self.db.createTableGame(self.host, self.port)
 
         
     def server_config(self, size : int, nb_players : int, nb_IA : int, nb_fences : int, mapID : int) -> None:
@@ -84,9 +94,6 @@ class Server:
                 # Arrêt des threading de Salle d'attente.
                 waitingRoomNetwork.stopAllThread()
                 waitingRoomNetwork.join()
-
-                GetInformation.setIP(ip)
-                GetInformation.setPort(self.port)
                 
                 # Attribution d'un numéro au Client, et enregistrement dans une variable.
                 self.playersThread = [2, 'Server_1', 'Client_2']
@@ -136,9 +143,6 @@ class Server:
             # Arrêt des threading de Salle d'attente.
             waitingRoomNetwork.stopAllThread()
             waitingRoomNetwork.join()
-            
-            GetInformation.setIP(ip)
-            GetInformation.setPort(self.port)
             
             # Socket Server pour le tour de rôle.
             self.listClients[0] = self.socketServer
