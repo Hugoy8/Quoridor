@@ -7,12 +7,16 @@ from domain.network.network import joinSession, startSession
 from domain.network.scanNetwork import ScanNetwork
 from infrastructure.database.config import Database
 import hashlib
+import os
 
 class QuoridorLauncher:
     def __init__(self, db: Database):
         self.window = Tk()
         self.window.title("Mon Launcher")
-        self.window.attributes("-fullscreen", True)
+        
+        if os.name == "nt":
+            self.window.attributes("-fullscreen", True)
+            
         self.window.geometry(f"{self.window.winfo_screenwidth()}x{self.window.winfo_screenheight()}")
         self.selectPlayer = 2
         self.selectIA = 0
@@ -88,6 +92,7 @@ class QuoridorLauncher:
         
         new_canvas.bind("<Button-1>", parameter)
         self.addLogoAccount()
+        self.displayPseudo()
         
     def addLogoAccount(self) -> None:
         account_image = Image.open(f"./assets/images/launcher/account.png")
@@ -272,7 +277,6 @@ class QuoridorLauncher:
     
     def menuCreateGameSolo(self, event):
         self.changeMode()
-        print("Create Game Solo")
         self.statut = 0
         self.background(self.statut)
         self.createMenu(self.statut)
@@ -287,7 +291,6 @@ class QuoridorLauncher:
     """REJOINDRE UNE PARTIE EN RESEAU"""
     def menuJoinGameNetwork(self, event):
         self.changeMode()
-        print("Join Game Network")
         if self.statut != 3:
             self.statut = 1
         self.background(self.statut)
@@ -342,6 +345,7 @@ class QuoridorLauncher:
         port = int(portstr)
         self.window.destroy()
         # self.db.insertUsername(ip, port, self.pseudo)
+        self.setUsername(self.pseudo)
         joinSession(ip, port, self.selectMap)
         
     
@@ -368,6 +372,7 @@ class QuoridorLauncher:
         port = int(port)
         self.window.destroy()
         # self.db.insertUsername(ip, port, self.pseudo)
+        self.setUsername(self.pseudo)
         joinSession(ip, port, self.selectMap)
         
     """CREER UNE GAME EN LOCAL"""
@@ -436,6 +441,7 @@ class QuoridorLauncher:
             # self.db.createTableGame(ip, port)
             # self.db.insertUsername(ip, port, self.pseudo)
             self.window.destroy()
+            self.setUsername(self.pseudo)
             startSession(port, nbr_player, grid_size, nbr_player, 0, nbr_fences, map)
     
     """SE CONNECTER OU S'INSCRIRE"""
@@ -501,11 +507,13 @@ class QuoridorLauncher:
                 if hasattr(self, "infoLabel"):
                     self.infoLabel.config(text="Vous êtes bien connecté.")
                     self.pseudo = username
+                    self.setUsername(username)
                     return self.pseudo
                 else:
                     self.infoLabel = Label(self.window, text="Vous êtes bien connecté.", fg="green", font=("Arial", 13), bg="#0F283F")
                     self.infoLabel.place(relx=0.54, rely=0.9, anchor=CENTER)
                     self.pseudo = username
+                    self.setUsername(username)
                     return self.pseudo
             else:
                 if hasattr(self, "infoLabel"):
@@ -601,14 +609,54 @@ class QuoridorLauncher:
                 if hasattr(self, "infoLabel"):
                     self.infoLabel.config(text=f"Bravo {username} ! Votre compte à bien été créé.")
                     self.pseudo = username
+                    self.setUsername(username)
                     return self.pseudo
                 else:
                     self.infoLabel = Label(self.window, text=f"Bravo {username} ! Vous êtes bien inscrit.", fg="green", font=("Arial", 13), bg="#0F283F")
                     self.infoLabel.place(relx=0.54, rely=0.9, anchor=CENTER)
                     self.pseudo = username
+                    self.setUsername(username)
                     return self.pseudo
         self.widget_label = [self.infoLabel]
+        
+        
+    def setUsername(self, username):
+        try:
+            with open('serverPseudo.txt', 'a') as fichier:
+                fichier.write(username)
+        except IOError:
+            print("Erreur : impossible d'écrire dans le fichier.")
+            
+            
+    """ Vérifie si l'utilisateur est connecté"""
+    def isConnected(self, file_path):
+        try:
+            with open(file_path, 'r') as file:
+                content = file.read().strip()
+                return len(content) == 0
+        except IOError:
+            print("Erreur : impossible de lire le fichier.")
+            return False
 
+
+    def get_username(self, file_path):
+        try:
+            with open(file_path, 'r') as file:
+                username = file.read().strip()
+                return username
+        except IOError:
+            print("Erreur : impossible de lire le fichier.")
+            return False
+        
+        
+    def displayPseudo(self):
+        if self.isConnected("serverPseudo.txt"):
+            login = Label(self.window, text="Vous n'êtes pas connecté", font=("Arial", 13), bg="#0F283F", fg="red")
+            login.place(relx=0.85, rely=0.02, anchor=CENTER)
+        else:
+            username = self.get_username("serverPseudo.txt")
+            login = Label(self.window, text=f"ℹ️Vous êtes connecté en tant que {username}", font=("Arial", 13), bg="#0F283F", fg="green")
+            login.place(relx=0.85, rely=0.02, anchor=CENTER)
 
 run_launcher = QuoridorLauncher(Database())
 run_launcher.window.mainloop()

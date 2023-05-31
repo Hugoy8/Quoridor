@@ -4,13 +4,48 @@ from infrastructure.repositories.repositoryUsers.create import Create
 from infrastructure.repositories.repositoryUsers.read import Read
 from infrastructure.repositories.repositoryUsers.delete import Delete
 from tkinter import *
-import hashlib
+import threading
 
 
-class Database:
+class Database(threading.Thread):
     def __init__(self):
+        threading.Thread.__init__(self)
         self.db = None
-
+        self.numUser = None
+        self.port = None
+        self.ip = None
+    
+    
+    def addMoney(self, username :str) -> None:
+        if username == " ":
+            return None
+        self.connectDb()
+        select_query = self.select()
+        select_query.execute("SELECT money FROM users WHERE username = %s", (username,))
+        result = select_query.fetchone()
+        select_query.close()
+        if result is not None:
+            new_Moneys = result[0] + 50
+            update_query = self.update()
+            update_query.execute("UPDATE users SET money = %s WHERE username = %s", (new_Moneys, username))
+            update_query.close()
+            self.db.close()
+        else:
+            print("User not found.")
+        
+        
+    def setIP(self, newIP: str) -> None:
+        self.ip = newIP
+        
+    
+    def setPort(self, newPort: int) -> None:
+        self.port = newPort
+        
+        
+    def setNumPerso(self, newNumUser : int) -> None:
+        self.numUser = newNumUser
+        
+        
     def connectDb(self):
         self.db = mysql.connector.connect(
             host="sql859.main-hosting.eu",
@@ -19,34 +54,42 @@ class Database:
             database="u338035582_quoridor"
         )
 
+
     def insert(self):
         return Create(self.db)
+
 
     def select(self):
         return Read(self.db)
 
+
     def update(self):
         return Update(self.db)
+
 
     def delete(self):
         return Delete(self.db)
 
+
     def close(self):
         self.db.close()
     
+    
     def createTableGame(self, ip, port: int) -> None:
+        self.dropTableIfExists(ip, port)
         self.connectDb()
         cursor = self.db.cursor()
         table_name = f"Game{ip.replace('.', '_')}{port}"
         create_table_query = f"""
         CREATE TABLE {table_name} (
-            ID INT AUTO_INCREMENT PRIMARY KEY,
+            ID INT,
             username VARCHAR(255)
         )
         """
         cursor.execute(create_table_query)
         cursor.close()
         self.db.close()
+        
         
     def dropTableIfExists(self, ip, port):
         self.connectDb()
@@ -58,9 +101,9 @@ class Database:
         if table_exists:
             drop_table_query = f"DROP TABLE {table_name}"
             cursor.execute(drop_table_query)
-            print(f"Table {table_name} dropped.")
         cursor.close()
         self.db.close()
+        
         
     def insertUsername(self, ip: str, port: int, username: str) -> None:
         self.connectDb()
@@ -68,21 +111,15 @@ class Database:
 
         table_name = f"Game{ip.replace('.', '_')}{port}"
         
-        max_id_query = f"SELECT MAX(ID) FROM {table_name}"
-        cursor.execute(max_id_query)
-        max_id = cursor.fetchone()[0]
-        
-        if max_id is None:
-            max_id = 0
-        
         insert_query = f"INSERT INTO {table_name} (ID, username) VALUES (%s, %s)"
-        values = (max_id + 1, username)
+        values = (self.numUser, username)
 
         cursor.execute(insert_query, values)
         self.db.commit()
 
         cursor.close()
         self.db.close()
+    
     
     def selectUsername(self, ip:str, port: int, id: int):
         self.connectDb()
@@ -92,6 +129,7 @@ class Database:
         select_query.close()
         self.db.close()
         return result[0]
+    
     
     def addWin(self, username):
         if username == " ":
@@ -111,6 +149,7 @@ class Database:
         else:
             print("User not found.")
 
+
     def deconnexionUser(self, ip: str, port: int, id: int):
         self.connectDb()
         delete_query = self.delete()
@@ -119,6 +158,7 @@ class Database:
         self.db.commit()
         delete_query.close()
         self.db.close()
+    
     
     def refreshTabel(self, ip: str, port: int):
         self.connectDb()
@@ -137,3 +177,22 @@ class Database:
 
         select_query.close()
         self.db.close()
+
+
+    def addGame(self, username):
+        if username == " ":
+            return None
+        self.connectDb()
+        select_query = self.select()
+        select_query.execute("SELECT games FROM users WHERE username = %s", (username,))
+        result = select_query.fetchone()
+        select_query.close()
+        if result is not None:
+            current_games = result[0]
+            new_nbrgames = current_games + 1
+            update_query = self.update()
+            update_query.execute("UPDATE users SET games = %s WHERE username = %s", (new_nbrgames, username))
+            update_query.close()
+            self.db.close()
+        else:
+            print("User not found.")

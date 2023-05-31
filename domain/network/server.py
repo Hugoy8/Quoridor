@@ -6,6 +6,7 @@ from domain.network.serverPlayers import ServerPlayers
 from domain.network.serverToPlay import ServerToPlay
 from domain.network.waitingRoomNetwork import WaitingRoomNetwork
 from domain.network.waitingRoomUi import WaitingRoomUi
+
 import time
 import pickle
 import pygame
@@ -43,6 +44,11 @@ class Server:
         
         # Variable qui contient l'état de l'écoute de la partie.
         self.stateListenServer = False
+        
+        # Zone de base de donnée d'initialisation.
+        from infrastructure.database.config import Database
+        self.db = Database()
+        self.db.start()
 
         
     def server_config(self, size : int, nb_players : int, nb_IA : int, nb_fences : int, mapID : int) -> None:
@@ -59,6 +65,9 @@ class Server:
         else: 
             ip = self.host
         print("Voici l'ip d'hébergement du serveur de jeu : "+str(ip))
+        
+        self.db.dropTableIfExists(ip, self.port)
+        self.db.createTableGame(ip, self.port)
         
         # Attribution du port et de l'adresse ip.
         try: 
@@ -83,7 +92,7 @@ class Server:
                 # Arrêt des threading de Salle d'attente.
                 waitingRoomNetwork.stopAllThread()
                 waitingRoomNetwork.join()
-            
+                
                 # Attribution d'un numéro au Client, et enregistrement dans une variable.
                 self.playersThread = [2, 'Server_1', 'Client_2']
                 
@@ -98,11 +107,18 @@ class Server:
                     waitingRoomNetwork.socketClient.close()
                     self.serverStopCrash()
                 
+                # Zone d'initialisation de la liste de clients dans la base de donnée.
+                self.db.setNumPerso(1)
+
+                # Assiniation de l'ip et le port dans la class base de données.
+                self.db.setIP(ip)
+                self.db.setPort(self.port)
+            
                 treading_server = ServerThread(ip, self.port, waitingRoomNetwork.socketClient, self.typeGame, self.players, self.playerPlayed, self.socketServer, self.statusServer, "")
                 
                 # Variable qui stocke la class du jeu.
                 Network = True
-                self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, treading_server, "instance", 1)
+                self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, treading_server, "instance", 1, self.db)
                 
                 treading_server.startThread(self.board)
                 self.players[0] += 1
@@ -127,7 +143,7 @@ class Server:
             
             while waitingRoomUI.status == True:
                 time.sleep(0.1)
-
+            
             # Arrêt des threading de Salle d'attente.
             waitingRoomNetwork.stopAllThread()
             waitingRoomNetwork.join()
@@ -150,10 +166,17 @@ class Server:
                         print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
                         socketClient.close()
                         self.socketServer.close()
-                    
+            
+            # Zone d'initialisation de la liste de clients dans la base de donnée.
+            self.db.setNumPerso(1)
+            
+            # Assiniation de l'ip et le port dans la class base de données.
+            self.db.setIP(ip)
+            self.db.setPort(self.port)
+                
             # Variable qui stocke la class du jeu.
             Network = True
-            self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, self, "instance", 1)
+            self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, self, "instance", 1, self.db)
 
             self.serverPlayers = ServerPlayers(self, self.serverToPlay, self.board)
             self.serverPlayers.start()

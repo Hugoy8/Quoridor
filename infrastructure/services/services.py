@@ -5,14 +5,16 @@ from domain.case.case import Case
 from domain.fence.fence import Fence
 from domain.pillar.pillar import Pillar
 from domain.player.player import Player
-import random
 from PIL import Image, ImageTk
 import time
 from pygame import mixer
 from infrastructure.database.config import Database
+from infrastructure.services.getInformation import GetInformation
+from domain.bot.bot import Bot
+import os
 
 class Board:
-    def __init__(self, size : int, nb_players : int, nb_IA : int, nb_fence : int, select_map : int, Network : bool, InstanceNetwork : object, typeNetwork : str, playerUser : int) -> None:
+    def __init__(self, size : int, nb_players : int, nb_IA : int, nb_fence : int, select_map : int, Network : bool, InstanceNetwork : object, typeNetwork : str, playerUser : int, db : Database) -> None:
         if Network == True:
             # Variable bool qui autorise le multijoueur.
             self.networkStatus = True
@@ -25,14 +27,25 @@ class Board:
 
             # Variable qui enregistre le numéro de l'utilisateur sur le pc.
             self.playerUser = playerUser
+            
+            # Espace base de données.
+            self.db = db
+            
+            self.pseudo = GetInformation.getInfos("serverPseudo.txt")
+            
+            self.db.insertUsername(self.db.ip, self.db.port, self.pseudo)
         else:
             # Variable bool qui autorise le multijoueur.
             self.networkStatus = False
+        self.bot = Bot()
+            
         self.window = Tk()
         self.window.title("Quoridor")
-        self.window.state('zoomed')
         self.window.minsize(self.window.winfo_screenwidth(), self.window.winfo_screenheight())
-        self.window.attributes("-fullscreen", True)
+        
+        if os.name == "nt":
+            self.window.attributes("-fullscreen", True)
+
         self.window.iconbitmap('./assets/images/logo.ico')
         self.window.configure(bg="#F0B169")
         self.window_game = True
@@ -48,9 +61,9 @@ class Board:
         self.waiting_room1 = None
         self.waiting_room2 = None
         self.pop_up_no_fence = []
-        self.db = Database()
+        
         mixer.init()
-        # CrÃ©ation des images du plateau
+        # Création des images du plateau
         
         # Tailles des éléments
         if size == 5:
@@ -224,31 +237,7 @@ class Board:
 
             self.displayBoard(False)
         while self.current_player.get_IALevel() != 0 :
-            if self.current_player.get_IALevel() == 1 :
-                list = [0,1]
-                action = random.choice(list)
-                if action == 1  and self.playerHasFence() == True and self.allPossibleBuildFence() !=[]:
-                    can_build = False
-                    while can_build == False :
-                        if self.current_player.get_IALevel() == 1:
-                            build = random.choice(self.allPossibleBuildFence())
-                            x_co_fence = build[0]
-                            y_co_fence = build[1]
-                            orientation = build[2]
-                            if orientation == 0 :
-                                self.fence_orientation = "vertical"
-                            else :
-                                self.fence_orientation = "horizontal"
-                            self.buildFence(x_co_fence,y_co_fence)
-                            if self.fenceNotCloseAccesGoal()==False :
-                                self.deBuildFence(x_co_fence,y_co_fence)
-                                self.displayBoard(False)
-                            else : 
-                                can_build = True
-                else :
-                    if self.current_player.get_IALevel() == 1 :
-                        movement = random.choice(self.allPossibleMoveForPlayer())
-                        self.move(movement[0],movement[1])
+            self.currentBotPlaysBasedOnDifficulty(self.current_player.get_IALevel())
             if self.victory() == True :
                 self.displayBoard(False)
                 self.canvas.unbind_all("<Button-1>")
@@ -261,12 +250,53 @@ class Board:
                 self.resetPossibleCaseMovement() 
                 self.refreshCurrentPlayer()
                 self.refreshPossibleCaseMovementForCurrentPlayer()
-                self.displayBoard(False)                        
+                self.displayBoard(False)
+    
+    
+    def botBuildRandomFence(self,allPossibleBuildFence):
+        can_build = False
+        possibleBuildFence = allPossibleBuildFence
+        while can_build == False and possibleBuildFence !=[]:
+            build = self.bot.randomChoice(possibleBuildFence)
+            x_co_fence = build[0]
+            y_co_fence = build[1]
+            orientation = build[2]
+            if orientation == 0 :
+                self.fence_orientation = "vertical"
+            else :
+                self.fence_orientation = "horizontal"
+            self.buildFence(x_co_fence,y_co_fence)
+            if self.fenceNotCloseAccesGoal()==False :
+                print(possibleBuildFence)
+                print([x_co_fence,y_co_fence])
+                possibleBuildFence.remove(build)
+                self.deBuildFence(x_co_fence,y_co_fence)
+                self.displayBoard(False) 
+            else : 
+                can_build = True
+                    
+    def botPlaysRandom(self):
+        action = self.bot.randomChoice(["move","build"])
+        if action == "build"  and self.playerHasFence() == True and self.allPossibleBuildFence() !=[]:
+            self.botBuildRandomFence(self.allPossibleBuildFence())
+        else :
+            movement = self.bot.randomChoice(self.allPossibleMoveForPlayer())
+            self.move(movement[0],movement[1])
+        
+    
+    def currentBotPlaysBasedOnDifficulty(self, difficulty):
+        if difficulty ==  1 :
+            self.botPlaysRandom()                     
         
         
     def windowVictory(self) -> None:
         self.sound_map.stop()
-        # background de fond 
+        # background de fond
+        if self.networkStatus == True:
+            try:
+                self.db.addGame(self.pseudo)
+            except Exception as e:
+                print("Erreur" + str(e)) 
         self.bg_image = Image.open(f"./assets/images/{self.map}/background{self.__nb_players}{self.name_bg}.png")
         self.bg_image = self.bg_image.resize((self.window.winfo_screenwidth(), self.window.winfo_screenheight()))
         self.bg_photo = ImageTk.PhotoImage(self.bg_image)
@@ -312,7 +342,13 @@ class Board:
             import main
             main()
         
-        quit_button = Button(self.window, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, width=20, command=self.window.destroy)
+        # Quitter la partie
+        def quitgame():
+            self.window.destroy()
+            # from infrastructure.services.deletePycache import deletePycache
+            # deletePycache()
+            
+        quit_button = Button(self.window, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, width=20, command=quitgame)
         quit_button.pack(side='bottom', padx=10, pady=40)
         replay_button = Button(self.window, text="Rejouer", font=("Arial", 14), fg="white", bg="#78B000", bd=2, highlightthickness=0, width=20, command=rejouer)
         replay_button.pack(side='bottom', padx=10, pady=10)
@@ -321,11 +357,39 @@ class Board:
         sound_victory = mixer.Sound("./assets/sounds/victory.mp3")
         sound_victory.play()
         sound_victory.set_volume(0.3)
-        # if self.networkStatus == True and self.typeNetwork == "instance":
-        #     ip = "127.0.0.1"
-        #     port = 8000
-        #     username = self.db.selectUsername(ip, port,  self.current_player.get_player())
-        #     self.db.addWin(username)
+        if self.networkStatus == True:
+            if self.typeNetwork == "instance" :
+                username = self.db.selectUsername(self.db.ip, self.db.port,  self.current_player.get_player())
+                self.db.addWin(username)
+                self.db.addMoney(username)
+    
+    
+    def getIpPortUsername(self, fichier1: str, fichier2: str, fichier3: str) -> tuple:
+        try:
+            with open(fichier1, 'r') as f1, open(fichier2, 'r') as f2, open(fichier3, 'r') as f3:
+                valeurs_fichier1 = f1.read().strip()
+                valeurs_fichier2 = f2.read().strip()
+                valeurs_fichier3 = f3.read().strip()
+                
+                if not valeurs_fichier3: 
+                    valeurs_fichier3 = " "
+                else:
+                    pass
+                    
+            return valeurs_fichier1, valeurs_fichier2, valeurs_fichier3
+        except IOError:
+            print("Erreur : impossible de lire les fichiers.")
+    
+    
+    def resetFile(self, nom_fichier1: str, nom_fichier2: str) -> None:
+        try:
+            with open(nom_fichier1, 'w') as fichier1, open(nom_fichier2, 'w') as fichier2:
+                fichier1.truncate(0)
+                fichier2.truncate(0)
+            print("Les fichiers", nom_fichier1, "et", nom_fichier2, "ont été réinitialisés avec succès.")
+        except IOError:
+            print("Erreur : impossible de réinitialiser les fichiers", nom_fichier1, "et", nom_fichier2)
+    
     
     def popUpNoFence(self, player_name):
         #PopUp plus de barrière
@@ -340,6 +404,7 @@ class Board:
             y = 0.12
         label_no_fence.place(relx=0.5, rely=y, anchor='center')
         self.window.after(2000, label_no_fence.destroy)
+
 
     def displayBoard(self, leave: bool) -> None: 
         player_colors = {
@@ -387,15 +452,14 @@ class Board:
                     # Joueur 1 (en haut au milieu)
                     Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width/2.2, y=70, anchor="center")
                 elif index == 1:
-                    # Joueur 2 (à droite au milieu)
-                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width-60, y=window_height/2.4, anchor="e")
-    
+                    # Joueur 2 (en bas au milieu)
+                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width/1.8, y=window_height-70, anchor="center")
                 elif index == 2:
                     # Joueur 3 (en bas au milieu)
-                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width/1.8, y=window_height-70, anchor="center")
+                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=60, y=window_height/1.72, anchor="w")
                 elif index == 3:
                     # Joueur 4 (à gauche au milieu)
-                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=60, y=window_height/1.72, anchor="w")
+                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width-60, y=window_height/2.4, anchor="e")
                     
         if leave == True:
             #PopUp de leave d'un joueur
@@ -519,44 +583,20 @@ class Board:
                             
                         self.displayBoard(False)
                         while self.current_player.get_IALevel() != 0 :
-                            if self.current_player.get_IALevel() == 1 :
-                                list = [0,1]
-                                action = random.choice(list)
-                                if action == 1  and self.playerHasFence() == True and self.allPossibleBuildFence() !=[]:
-                                    can_build = False
-                                    while can_build == False :
-                                        if self.current_player.get_IALevel() == 1:
-                                            build = random.choice(self.allPossibleBuildFence())
-                                            x_co_fence = build[0]
-                                            y_co_fence = build[1]
-                                            orientation = build[2]
-                                            if orientation == 0 :
-                                                self.fence_orientation = "vertical"
-                                            else :
-                                                self.fence_orientation = "horizontal"
-                                            self.buildFence(x_co_fence,y_co_fence)
-                                            if self.fenceNotCloseAccesGoal()==False :
-                                                self.deBuildFence(x_co_fence,y_co_fence)
-                                                self.displayBoard(False)
-                                            else : 
-                                                can_build = True
-                                else :
-                                    if self.current_player.get_IALevel() == 1 :
-                                        movement = random.choice(self.allPossibleMoveForPlayer())
-                                        self.move(movement[0],movement[1])
+                            self.currentBotPlaysBasedOnDifficulty(self.current_player.get_IALevel())
                             if self.victory() == True :
                                 self.displayBoard(False)
                                 self.canvas.unbind_all("<Button-1>")
-                                # for child in self.window.winfo_children():
-                                #     if child.winfo_exists():
-                                #         child.destroy()
+                                for child in self.window.winfo_children():
+                                    if child.winfo_exists():
+                                        child.destroy()
                                 self.windowVictory()
                                 break
                             else:
                                 self.resetPossibleCaseMovement() 
                                 self.refreshCurrentPlayer()
                                 self.refreshPossibleCaseMovementForCurrentPlayer()
-                                self.displayBoard(False)         
+                                self.displayBoard(False)     
                         
     def on_hover(self, event):
         if self.playerHasFence() == True :
@@ -719,17 +759,20 @@ class Board:
         
     def deBuildFence(self, x : int, y : int) -> None:
         pillar = self.board[x][y]
-        pillar.set_build(0)
         if self.fence_orientation == "vertical":
             fence = self.board[x-1][y]
             fence.set_build(0)
             fence = self.board[x+1][y]
             fence.set_build(0)
+            if self.board[x][y-1].get_build() == 0 and self.board[x][y+1].get_build() == 0:
+                pillar.set_build(0)
         else :
             fence = self.board[x][y-1]
             fence.set_build(0)
             fence = self.board[x][y+1]
             fence.set_build(0)
+            if self.board[x-1][y].get_build() == 0 and self.board[x+1][y].get_build() == 0:
+                pillar.set_build(0)
         nb_fence_current_player  = self.current_player.get_nb_fence()
         self.current_player.set_fence(nb_fence_current_player+1)
     
@@ -1047,7 +1090,7 @@ def SendBoardClient(x : int, y : int, typeClick : int, client : socket, orientat
     
 
 def restartGame(size : int, nb_players : int, nb_IA : int, nb_fences : int, select_map : int) -> None:
-    jeu = Board(size, nb_players , nb_IA, nb_fences, select_map, False, "", "", 0)
+    jeu = Board(size, nb_players , nb_IA, nb_fences, select_map, False, "", "", 0, "")
     jeu.start()
     jeu.refreshPossibleCaseMovementForCurrentPlayer()
     jeu.displayBoard(False)
