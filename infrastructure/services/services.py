@@ -345,8 +345,8 @@ class Board:
         # Quitter la partie
         def quitgame():
             self.window.destroy()
-            from infrastructure.services.deletePycache import deletePycache
-            deletePycache()
+            # from infrastructure.services.deletePycache import deletePycache
+            # deletePycache()
             
         quit_button = Button(self.window, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, width=20, command=quitgame)
         quit_button.pack(side='bottom', padx=10, pady=40)
@@ -361,6 +361,34 @@ class Board:
             if self.typeNetwork == "instance" :
                 username = self.db.selectUsername(self.db.ip, self.db.port,  self.current_player.get_player())
                 self.db.addWin(username)
+            self.resetFile("serverIP.txt", "serverPort.txt")
+    
+    
+    def getIpPortUsername(self, fichier1: str, fichier2: str, fichier3: str) -> tuple:
+        try:
+            with open(fichier1, 'r') as f1, open(fichier2, 'r') as f2, open(fichier3, 'r') as f3:
+                valeurs_fichier1 = f1.read().strip()
+                valeurs_fichier2 = f2.read().strip()
+                valeurs_fichier3 = f3.read().strip()
+                
+                if not valeurs_fichier3: 
+                    valeurs_fichier3 = " "
+                else:
+                    pass
+                    
+            return valeurs_fichier1, valeurs_fichier2, valeurs_fichier3
+        except IOError:
+            print("Erreur : impossible de lire les fichiers.")
+    
+    
+    def resetFile(self, nom_fichier1: str, nom_fichier2: str) -> None:
+        try:
+            with open(nom_fichier1, 'w') as fichier1, open(nom_fichier2, 'w') as fichier2:
+                fichier1.truncate(0)
+                fichier2.truncate(0)
+            print("Les fichiers", nom_fichier1, "et", nom_fichier2, "ont été réinitialisés avec succès.")
+        except IOError:
+            print("Erreur : impossible de réinitialiser les fichiers", nom_fichier1, "et", nom_fichier2)
     
     
     def popUpNoFence(self, player_name):
@@ -424,15 +452,14 @@ class Board:
                     # Joueur 1 (en haut au milieu)
                     Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width/2.2, y=70, anchor="center")
                 elif index == 1:
-                    # Joueur 2 (à droite au milieu)
-                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width-60, y=window_height/2.4, anchor="e")
-    
+                    # Joueur 2 (en bas au milieu)
+                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width/1.8, y=window_height-70, anchor="center")
                 elif index == 2:
                     # Joueur 3 (en bas au milieu)
-                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width/1.8, y=window_height-70, anchor="center")
+                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=60, y=window_height/1.72, anchor="w")
                 elif index == 3:
                     # Joueur 4 (à gauche au milieu)
-                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=60, y=window_height/1.72, anchor="w")
+                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width-60, y=window_height/2.4, anchor="e")
                     
         if leave == True:
             #PopUp de leave d'un joueur
