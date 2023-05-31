@@ -66,7 +66,6 @@ class Database(threading.Thread):
         if table_exists:
             drop_table_query = f"DROP TABLE {table_name}"
             cursor.execute(drop_table_query)
-            print(f"Table {table_name} dropped.")
         cursor.close()
         self.db.close()
         

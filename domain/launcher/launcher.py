@@ -621,13 +621,15 @@ class QuoridorLauncher:
                     return self.pseudo
         self.widget_label = [self.infoLabel]
         
+        
     def setUsername(self, username):
         try:
             with open('serverPseudo.txt', 'a') as fichier:
-                fichier.write(username + '\n')
+                fichier.write(username)
             print("Nom d'utilisateur enregistré avec succès dans le fichier.")
         except IOError:
             print("Erreur : impossible d'écrire dans le fichier.")
+            
             
     """ Vérifie si l'utilisateur est connecté"""
     def isConnected(self, file_path):
@@ -639,6 +641,7 @@ class QuoridorLauncher:
             print("Erreur : impossible de lire le fichier.")
             return False
 
+
     def get_username(self, file_path):
         try:
             with open(file_path, 'r') as file:
@@ -647,6 +650,7 @@ class QuoridorLauncher:
         except IOError:
             print("Erreur : impossible de lire le fichier.")
             return False
+        
         
     def displayPseudo(self):
         if self.isConnected("serverPseudo.txt"):
