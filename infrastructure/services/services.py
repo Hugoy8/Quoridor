@@ -18,7 +18,6 @@ class Board:
         if Network == True:
             # Variable bool qui autorise le multijoueur.
             self.networkStatus = True
-            
             # Variable qui contient l'instance de la class en ligne.
             self.InstanceNetwork = InstanceNetwork
             
@@ -38,6 +37,7 @@ class Board:
             # Variable bool qui autorise le multijoueur.
             self.networkStatus = False
         self.bot = Bot()
+        self.bot.setBoard(self)
             
         self.window = Tk()
         self.window.title("Quoridor")
@@ -237,7 +237,7 @@ class Board:
 
             self.displayBoard(False)
         while self.current_player.get_IALevel() != 0 :
-            self.currentBotPlaysBasedOnDifficulty(self.current_player.get_IALevel())
+            self.bot.currentBotPlaysBasedOnDifficulty(self.current_player.get_IALevel())
             if self.victory() == True :
                 self.displayBoard(False)
                 self.canvas.unbind_all("<Button-1>")
@@ -251,44 +251,8 @@ class Board:
                 self.refreshCurrentPlayer()
                 self.refreshPossibleCaseMovementForCurrentPlayer()
                 self.displayBoard(False)
-    
-    
-    def botBuildRandomFence(self,allPossibleBuildFence):
-        can_build = False
-        possibleBuildFence = allPossibleBuildFence
-        while can_build == False and possibleBuildFence !=[]:
-            build = self.bot.randomChoice(possibleBuildFence)
-            x_co_fence = build[0]
-            y_co_fence = build[1]
-            orientation = build[2]
-            if orientation == 0 :
-                self.fence_orientation = "vertical"
-            else :
-                self.fence_orientation = "horizontal"
-            self.buildFence(x_co_fence,y_co_fence)
-            if self.fenceNotCloseAccesGoal()==False :
-                print(possibleBuildFence)
-                print([x_co_fence,y_co_fence])
-                possibleBuildFence.remove(build)
-                self.deBuildFence(x_co_fence,y_co_fence)
-                self.displayBoard(False) 
-            else : 
-                can_build = True
-                    
-    def botPlaysRandom(self):
-        action = self.bot.randomChoice(["move","build"])
-        if action == "build"  and self.playerHasFence() == True and self.allPossibleBuildFence() !=[]:
-            self.botBuildRandomFence(self.allPossibleBuildFence())
-        else :
-            movement = self.bot.randomChoice(self.allPossibleMoveForPlayer())
-            self.move(movement[0],movement[1])
-        
-    
-    def currentBotPlaysBasedOnDifficulty(self, difficulty):
-        if difficulty ==  1 :
-            self.botPlaysRandom()                     
-        
-        
+
+
     def windowVictory(self) -> None:
         self.sound_map.stop()
         # background de fond
