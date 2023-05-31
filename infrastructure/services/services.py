@@ -362,7 +362,6 @@ class Board:
                 username = self.db.selectUsername(self.db.ip, self.db.port,  self.current_player.get_player())
                 self.db.addWin(username)
                 self.db.addMoney(username)
-            self.resetFile("serverIP.txt", "serverPort.txt")
     
     
     def getIpPortUsername(self, fichier1: str, fichier2: str, fichier3: str) -> tuple:

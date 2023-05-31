@@ -46,8 +46,6 @@ class ClientConfig:
                 raise Exception("Erreur de connexion au serveur "+str(self.host)+":"+str(self.port))
         except socket.timeout or Exception as e:
             print("\nErreur de connexion au serveur "+str(self.host)+":"+str(self.port))
-            print("\n\nTentaive de reconnection ...\n")
-            ClientConfig(self.host, self.port).client_config()
         except Exception as e:
             print(e)
             exit()

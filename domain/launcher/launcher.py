@@ -624,7 +624,6 @@ class QuoridorLauncher:
         try:
             with open('serverPseudo.txt', 'a') as fichier:
                 fichier.write(username)
-            print("Nom d'utilisateur enregistré avec succès dans le fichier.")
         except IOError:
             print("Erreur : impossible d'écrire dans le fichier.")
             
