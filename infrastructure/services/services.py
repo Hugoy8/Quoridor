@@ -35,7 +35,6 @@ class Board:
             self.ip = GetInformation.getInfos("serverIP.txt")
             self.port = GetInformation.getInfos("serverPort.txt")
             
-            print(self.pseudo, self.ip, self.port)
             self.db.insertUsername(self.ip, self.port, self.pseudo)
         else:
             # Variable bool qui autorise le multijoueur.

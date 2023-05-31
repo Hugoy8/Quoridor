@@ -107,6 +107,9 @@ class Server:
                     waitingRoomNetwork.socketClient.close()
                     self.serverStopCrash()
                 
+                # Zone d'initialisation de la liste de clients dans la base de donnée.
+                self.db.setNumPerso(1)
+            
                 treading_server = ServerThread(ip, self.port, waitingRoomNetwork.socketClient, self.typeGame, self.players, self.playerPlayed, self.socketServer, self.statusServer, "")
                 
                 # Variable qui stocke la class du jeu.
@@ -161,7 +164,7 @@ class Server:
                         self.socketServer.close()
             
             # Zone d'initialisation de la liste de clients dans la base de donnée.
-            self.db.setNumPerso(0+1)
+            self.db.setNumPerso(1)
                 
             # Variable qui stocke la class du jeu.
             Network = True
