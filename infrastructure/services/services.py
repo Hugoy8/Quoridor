@@ -183,7 +183,7 @@ class Board:
                 tab2 = []
                 for j in range(self.__size*2-1):
                     if j%2 == 0 : 
-                        tab2.append(Case(0,0))
+                        tab2.append(Case(0,0,[i,j]))
                         
                     else :
                         tab2.append(Fence(0))
@@ -196,7 +196,9 @@ class Board:
                     else :
                         tab2.append(Pillar(0))
                 self.board.append(tab2)
-        
+                
+    def get_size(self):
+        return self.__size
     
     def caseClicked(self, event : int) -> None:
         item_id = event.widget.find_closest(event.x, event.y)[0]
@@ -547,7 +549,7 @@ class Board:
                             
                         self.displayBoard(False)
                         while self.current_player.get_IALevel() != 0 :
-                            self.currentBotPlaysBasedOnDifficulty(self.current_player.get_IALevel())
+                            self.bot.currentBotPlaysBasedOnDifficulty(self.current_player.get_IALevel())
                             if self.victory() == True :
                                 self.displayBoard(False)
                                 self.canvas.unbind_all("<Button-1>")
@@ -560,7 +562,7 @@ class Board:
                                 self.resetPossibleCaseMovement() 
                                 self.refreshCurrentPlayer()
                                 self.refreshPossibleCaseMovementForCurrentPlayer()
-                                self.displayBoard(False)     
+                                self.displayBoard(False)
                         
     def on_hover(self, event):
         if self.playerHasFence() == True :
