@@ -101,14 +101,34 @@ class Database(threading.Thread):
         return resultInviting
     
     
+    def selectStatusFriends(self, username : str) -> list:
+        self.connectDb()
+        select_queryFriends = self.select()
+        select_queryFriends.execute(f"SELECT status FROM users WHERE username = '{username}'")
+        resultStatus = select_queryFriends.queries.fetchall()
+        select_queryFriends.close()
+        self.db.close()
+        return resultStatus
+    
+    
+    def setStatusUser(self, username : str, status : int) -> None:
+        self.connectDb()
+        update_query = self.update()
+        update_query.execute(f"UPDATE users SET status = {status} WHERE username = '{username}'")
+        update_query.close()
+        self.db.close()
+        
+        
     def selectAllFriends(self, username : str) -> list:
+        resultStatus = self.selectStatusFriends(username)
+        
         self.connectDb()
         select_queryFriends = self.select()
         select_queryFriends.execute(f"SELECT toNameUser_2 FROM friends WHERE nameUser_1 = '{username}'")
         resultFriends = select_queryFriends.queries.fetchall()
         select_queryFriends.close()
         self.db.close()
-        return resultFriends
+        return resultStatus[0][0], resultFriends
         
     
     def selectAllInvitingGames(self, username : str) -> list:

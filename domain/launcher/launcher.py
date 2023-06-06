@@ -8,7 +8,6 @@ from domain.network.scanNetwork import ScanNetwork
 from infrastructure.database.config import Database
 import hashlib
 import os
-import time
 
 class QuoridorLauncher:
     def __init__(self, db: Database) -> None:
@@ -17,7 +16,7 @@ class QuoridorLauncher:
         
         if os.name == "nt":
             self.window.attributes("-fullscreen", True)
-            
+        
         self.window.geometry(f"{self.window.winfo_screenwidth()}x{self.window.winfo_screenheight()}")
         self.selectPlayer = 2
         self.selectIA = 0
@@ -27,6 +26,10 @@ class QuoridorLauncher:
         self.selectIaDifficulty = 0
         self.statut = 0
         self.db = db
+        
+        # Zone de changement de status 
+        self.db.setStatusUser(self.get_username("serverPseudo.txt"),1)
+        
         self.ip = None
         self.port = None
         self.loginPassword = None
@@ -362,7 +365,8 @@ class QuoridorLauncher:
         button_leave_friends.bind("<Button-1>", lambda event: self.quit_friends_list(friends_panel))
 
 
-        friends = self.db.selectAllFriends(self.get_username("serverPseudo.txt"))  # liste des amis à récupérer depuis la bdd
+        ResultFriends = self.db.selectAllFriends(self.get_username("serverPseudo.txt"))  # liste des amis à récupérer depuis la bdd
+        friends = ResultFriends[1]
         for index, friend in enumerate(friends):
             friend = friend[:19] + ".." if len(friend) > 21 else friend
             label_friend = Label(friends_panel, text=friend, cursor="hand2", bd=0, highlightthickness=0, font=("Arial", 13), fg="white", bg="#102A43")
@@ -418,8 +422,7 @@ class QuoridorLauncher:
     
     def refuseGameDemand(self, friend : tuple) -> None:
         self.db.deleteInvitingGames(friend[0], str(self.get_username("serverPseudo.txt")))
-
-        time.sleep(1)
+        
         self.displayInvitatins(self.notifications_panel, True)
         
         self.displayGameInvitations(self.notifications_panel, False)
@@ -428,8 +431,9 @@ class QuoridorLauncher:
     def searchFriend(self, friend : str) -> None:
         friend = friend.replace(" ", "")
         invList = self.db.selectAllInviting(self.get_username("serverPseudo.txt"), False)
-        friendsList = self.db.selectAllFriends(self.get_username("serverPseudo.txt"))
-            
+        ResultFriends = self.db.selectAllFriends(self.get_username("serverPseudo.txt"))
+        friendsList = ResultFriends[1]
+        
         if friend != "" and friend != self.get_username("serverPseudo.txt") and not any(friend in tupleInfos for tupleInfos in friendsList) and not any(friend in tupleInfosInv for tupleInfosInv in invList):
             self.db.sendInviting(self.get_username("serverPseudo.txt"), friend)
         
