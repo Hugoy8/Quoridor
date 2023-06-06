@@ -8,9 +8,10 @@ from domain.network.scanNetwork import ScanNetwork
 from infrastructure.database.config import Database
 import hashlib
 import os
+import time
 
 class QuoridorLauncher:
-    def __init__(self, db: Database):
+    def __init__(self, db: Database) -> None:
         self.window = Tk()
         self.window.title("Mon Launcher")
         
@@ -25,11 +26,9 @@ class QuoridorLauncher:
         self.selectMap = 1
         self.selectIaDifficulty = 0
         self.statut = 0
-        self.menuCreateGameSolo(event=None)
         self.db = db
         self.ip = None
         self.port = None
-        
         self.loginPassword = None
         self.loginButton = None
         self.winButton = None
@@ -39,17 +38,66 @@ class QuoridorLauncher:
         self.register = None
         self.registerUsername = None
         self.registerPassword = None
-        self.db = db
         self.insert_query = None
-        
         self.login_created = None
         self.register_created = None
-        
         self.widget_register = []
         self.widget_login = []
         self.widget_label = []
-        
         self.pseudo = " "
+        self.owned = Image.open(f"./assets/images/launcher/buy.png")
+        self.owned = self.owned.resize((385, 66))
+        self.owned = ImageTk.PhotoImage(self.owned)
+        
+        self.buying_fail = Image.open(f"./assets/images/launcher/buying_fail.png")
+        self.buying_fail = self.buying_fail.resize((385, 66))
+        self.buying_fail = ImageTk.PhotoImage(self.buying_fail)
+        
+            
+        leave_friend = Image.open(f"./assets/images/launcher/leave_friend.png")
+        leave_friend = leave_friend.resize((34, 32))
+        self.leave_friends = ImageTk.PhotoImage(leave_friend)
+        
+        list_friend = Image.open(f"./assets/images/launcher/list_friends.png")
+        menu_height = self.window.winfo_screenheight()
+        self.list_friend = list_friend.resize((int(self.window.winfo_screenwidth() / 5), menu_height))
+        self.list_friends = ImageTk.PhotoImage(self.list_friend)
+        
+        list_notification = Image.open(f"./assets/images/launcher/list_notifications.png")
+        menu_height = self.window.winfo_screenheight()
+        self.list_notification = list_notification.resize((int(self.window.winfo_screenwidth() / 5), menu_height))
+        self.list_notifications = ImageTk.PhotoImage(self.list_notification)
+        
+        delete_friend = Image.open(f"./assets/images/launcher/delete_friends.png")
+        delete_friend = delete_friend.resize((25, 29))
+        self.delete_friends = ImageTk.PhotoImage(delete_friend)
+        
+        valid_friend = Image.open(f"./assets/images/launcher/check.png")
+        valid_friend = valid_friend.resize((25, 29))
+        self.valid_friends = ImageTk.PhotoImage(valid_friend)
+        
+        invite_friend = Image.open(f"./assets/images/launcher/invite_friends.png")
+        invite_friend = invite_friend.resize((40, 29))
+        self.invite_friends = ImageTk.PhotoImage(invite_friend)
+        
+        search_friend = Image.open(f"./assets/images/launcher/search_friends.png")
+        search_friend = search_friend.resize((29, 29))
+        self.search_friends = ImageTk.PhotoImage(search_friend)
+        
+        no_notification = Image.open(f"./assets/images/launcher/no_notification.png")
+        no_notification = no_notification.resize((28, 29))
+        self.no_notification = ImageTk.PhotoImage(no_notification)
+        
+        notifications = Image.open(f"./assets/images/launcher/notifications.png")
+        notifications = notifications.resize((28, 29))
+        self.notifications = ImageTk.PhotoImage(notifications)
+        
+        back_list_friends = Image.open(f"./assets/images/launcher/back_list_friends.png")
+        back_list_friends = back_list_friends.resize((35, 35))
+        self.back_list_friends = ImageTk.PhotoImage(back_list_friends)
+        
+        self.menuCreateGameSolo(event=None)
+        
         
     def background(self, statut) -> None:
         self.statut = statut
@@ -59,10 +107,12 @@ class QuoridorLauncher:
         self.bg_label = Label(self.window, image=self.bg_photo)
         self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
     
+    
     def changeMode(self) -> None:
         for child in self.window.winfo_children():
             if child.winfo_exists():
                 child.destroy()
+        
         
     def createMenu(self, statut) -> None:
         self.statut = statut
@@ -81,18 +131,31 @@ class QuoridorLauncher:
         self.parameters = ImageTk.PhotoImage(parameters)
 
         parameters_x = 52
-        parameters_y = self.window.winfo_screenheight() - self.parameters.height() - 55  
         
-        new_canvas = Canvas(self.window, width=self.parameters.width(), height=self.parameters.height(), bd=0, highlightthickness=0)
-        new_canvas.place(x=parameters_x, y=parameters_y)
-        new_canvas.create_image(0, 0, anchor=NW, image=self.parameters)
+        settings = Canvas(self.window, width=self.parameters.width(), height=self.parameters.height(), bd=0, highlightthickness=0)
+        settings.place(x=parameters_x, rely=0.85)
+        settings.create_image(0, 0, anchor=NW, image=self.parameters)
         
         def parameter(event):
             print("Section parametres")
         
-        new_canvas.bind("<Button-1>", parameter)
+        settings.bind("<Button-1>", parameter)
+        
+        shop = Image.open(f"./assets/images/launcher/shop.png")
+        shop = shop.resize((90, 90))
+        self.shop = ImageTk.PhotoImage(shop)
+
+        shop_x = 52 
+        
+        shops = Canvas(self.window, width=self.shop.width(), height=self.shop.height(), bd=0, highlightthickness=0)
+        shops.place(x=shop_x, rely=0.72)
+        shops.create_image(0, 0, anchor=NW, image=self.shop)
+        
+        shops.bind("<Button-1>", lambda event: self.displayShop())
+        
         self.addLogoAccount()
         self.displayPseudo()
+        
         
     def addLogoAccount(self) -> None:
         account_image = Image.open(f"./assets/images/launcher/account.png")
@@ -101,8 +164,9 @@ class QuoridorLauncher:
 
         self.account_button = Button(self.window, image=self.account_image, bd=0, highlightthickness=0, cursor="hand2", command=self.displayAccount)
         self.account_button.place(relx=0.99, rely=0.02, anchor=CENTER)
+
     
-    def clickMenu(self, event, callback_zone1, callback_zone2, callback_zone3):
+    def clickMenu(self, event, callback_zone1, callback_zone2, callback_zone3) -> None:
         canvas = event.widget
         x = canvas.canvasx(event.x)
         y = canvas.canvasy(event.y)
@@ -117,6 +181,313 @@ class QuoridorLauncher:
             callback_zone2(event)
         elif 0 <= x <= width and height * 2 / 3 <= y <= height:
             callback_zone3(event)
+    
+    def createButtonShop(self) -> None:
+        username = self.get_username("serverPseudo.txt")
+        listMap = self.db.getMapByUsername(username)
+        money = self.db.getMoney(username)
+
+        map_info = [
+            ("Ice", 1000, 0.29),
+            ("Electricity", 2500, 0.55),
+            ("Sugar", 5000, 0.81)
+        ]
+
+        for i, (map_name, map_price, relx) in enumerate(map_info, start=1):
+            if map_name not in listMap:
+                button = Button(self.window, text=f"Acheter {map_price}$", bg="#2BB0ED", fg="#FFF", font=("Arial", 13), width=18, cursor="hand2", activebackground="#035388", activeforeground="white", command=lambda price=map_price, map=map_name: self.buy(price, map))
+                button.place(relx=relx, rely=0.75, anchor=CENTER)
+                if money < map_price:
+                    # button.config(state="disabled")
+                    pass
+            else:
+                label_owned = Label(self.window, image=self.owned, bd=0, highlightthickness=0)
+                label_owned.place(relx=relx, rely=0.5, anchor=CENTER)
+
+
+    def buy(self, price, map) -> None:
+        if self.isConnected("serverPseudo.txt"):
+            self.displayAccount()
+        else:
+            if map == "Ice":
+                x = 0.29
+            elif map == "Electricity":
+                x = 0.55
+            elif map == "Sugar":
+                x = 0.81
+            pseudo = self.get_username("serverPseudo.txt")
+            money = self.db.getMoney(pseudo)
+            if money >= price:
+                self.db.removeMoney(pseudo, price)
+                self.db.addMap(pseudo, map)
+                id = self.db.getUserIdByUsername(pseudo)
+                self.db.addPurchase(id, map)
+                self.displayShop()
+            else:
+                label_buying_fail = Label(self.window, image=self.buying_fail, bd=0, highlightthickness=0)
+                label_buying_fail.place(relx=x, rely=0.5, anchor=CENTER)
+            self.displayPseudo()
+    
+    
+    def displayPseudo(self) -> None:
+        if self.isConnected("serverPseudo.txt"):
+            login = Label(self.window, text="Vous n'êtes pas connecté", font=("Arial", 13), bg="#0F283F", fg="red")
+            login.place(relx=0.85, rely=0.02, anchor=CENTER)
+        else:
+            username = self.get_username("serverPseudo.txt")
+            money = self.db.getMoney(username)
+            login = Label(self.window, text=f"Vous êtes connecté en tant que {username} : {money}$", font=("Arial", 13), bg="#0F283F", fg="green")
+            login.place(relx=0.5, rely=0.02, anchor=CENTER)
+            
+            
+    def addLogoFriends(self) -> None:
+        if self.isConnected:
+            friend = Image.open(f"./assets/images/launcher/friend.png")
+            friend = friend.resize((34, 32))
+            self.friends = ImageTk.PhotoImage(friend)
+            
+            self.friends_canvas = Button(self.window, image=self.friends, bd=0, highlightthickness=0, cursor="hand2", command=self.displayFriends)
+            self.friends_canvas.place(relx=0.95, rely=0.02, anchor=CENTER)
+            
+            
+    def displayFriends(self) -> None:
+        self.friends_canvas.destroy()
+        self.account_button.destroy()
+        friends_panel = Label(self.window, image=self.list_friends, bd=0, highlightthickness=0)
+        friends_panel.place(relx=0.90, rely=0.5, anchor=CENTER)
+
+        self.displayListFriends(friends_panel)
+        
+        
+    def quit_friends_list(self, panel) -> None:
+        panel.destroy()
+        self.addLogoFriends()
+        self.addLogoAccount()
+            
+        
+    def display_notifications(self, friends_panel : Label) -> None:
+        def destroy_friends_list():
+            friends_panel.destroy()
+            
+        destroy_friends_list()
+        notifications_panel = Label(self.window, image=self.list_notifications, bd=0, highlightthickness=0)
+        notifications_panel.place(relx=0.90, rely=0.5, anchor=CENTER)
+
+        self.displayInvitatins(notifications_panel, True)
+        
+        self.displayGameInvitations(notifications_panel, False)
+        
+        self.notifications_panel = notifications_panel
+        
+        
+    def quit_notifications(self, notifications_panel) -> None:
+        notifications_panel.destroy()
+        self.addLogoFriends()
+        self.addLogoAccount()
+
+
+    def back_friends_list(self, notifications_panel) -> None:
+        notifications_panel.destroy()
+        self.displayFriends()
+            
+            
+    def displayGameInvitations(self, notifications_panel : Label, btnDisplay : bool) -> None:
+        def blink_text(label):
+            current_color = label.cget("fg")
+            new_color = "#D7D03A" if current_color == "#93904D" else "#93904D"
+            label.config(fg=new_color)
+            label.after(500, blink_text, label)
+        
+        if btnDisplay:
+            button_leave_friends = Label(notifications_panel, image=self.leave_friends, bd=0, highlightthickness=0, cursor="hand2")
+            button_leave_friends.place(relx=0.92, rely=0.02, anchor=CENTER)
+            button_leave_friends.bind("<Button-1>", lambda event: self.quit_notifications(notifications_panel))
+
+            back_list_friends = Label(notifications_panel, image=self.back_list_friends, bd=0, highlightthickness=0, cursor="hand2")
+            back_list_friends.place(relx=0.8, rely=0.02, anchor=CENTER)
+            back_list_friends.bind("<Button-1>", lambda event: self.back_friends_list(notifications_panel))
+                
+        friend_game_demands = self.db.selectAllInvitingGames(self.get_username("serverPseudo.txt")) # demande de partie via la bdd
+        for index, friend in enumerate(friend_game_demands):
+            friend = friend[:19] + ".." if len(friend) > 21 else friend
+            label_game_demand = Label(notifications_panel, text=friend, cursor="hand2", bd=0, highlightthickness=0, font=("Arial", 13), fg="#D7D03A", bg="#102A43")
+            label_game_demand.place(relx=0.1, rely=0.52 + index * 0.05, anchor=NW)
+            blink_text(label_game_demand)
+
+            accept_game_demand = Label(notifications_panel, image=self.valid_friends, bd=0, highlightthickness=0, cursor="hand2")
+            accept_game_demand.place(relx=0.75, rely=0.53 + index * 0.05, anchor=CENTER)
+            accept_game_demand.bind("<Button-1>", lambda event, friend=friend: self.acceptGameDemand(friend))
+            
+            refuse_game_demand = Label(notifications_panel, image=self.delete_friends, bd=0, highlightthickness=0, cursor="hand2",)
+            refuse_game_demand.place(relx=0.9, rely=0.53 + index * 0.05, anchor=CENTER)
+            refuse_game_demand.bind("<Button-1>", lambda event, friend=friend: self.refuseGameDemand(friend))
+
+
+    def displayInvitatins(self, notifications_panel : Label, btnDisplay: bool) -> None:
+        if btnDisplay:
+            button_leave_friends = Label(notifications_panel, image=self.leave_friends, bd=0, highlightthickness=0, cursor="hand2")
+            button_leave_friends.place(relx=0.92, rely=0.02, anchor=CENTER)
+            button_leave_friends.bind("<Button-1>", lambda event: self.quit_notifications(notifications_panel))
+
+            back_list_friends = Label(notifications_panel, image=self.back_list_friends, bd=0, highlightthickness=0, cursor="hand2")
+            back_list_friends.place(relx=0.8, rely=0.02, anchor=CENTER)
+            back_list_friends.bind("<Button-1>", lambda event: self.back_friends_list(notifications_panel))
+        
+        friend_demands = self.db.selectAllInviting(self.get_username("serverPseudo.txt"), False)  # demande d'amis à récupérer depuis la bdd
+        for index, friend in enumerate(friend_demands):
+            friend = friend[:19] + ".." if len(friend) > 21 else friend
+            label_friend_demand = Label(notifications_panel, text=friend, cursor="hand2", bd=0, highlightthickness=0, font=("Arial", 13), fg="white", bg="#102A43")
+            label_friend_demand.place(relx=0.1, rely=0.23 + index * 0.05, anchor=NW)
+
+            valid_friend_demand = Label(notifications_panel, image=self.valid_friends, bd=0, highlightthickness=0, cursor="hand2")
+            valid_friend_demand.place(relx=0.75, rely=0.24 + index * 0.05, anchor=CENTER)
+            valid_friend_demand.bind("<Button-1>", lambda event, friend=friend: self.acceptFriendDemand(friend))
+
+            delete_friend_demand = Label(notifications_panel, image=self.delete_friends, bd=0, highlightthickness=0, cursor="hand2")
+            delete_friend_demand.place(relx=0.9, rely=0.24 + index * 0.05, anchor=CENTER)
+            delete_friend_demand.bind("<Button-1>", lambda event, friend=friend: self.refuseFriendDemand(friend))
+
+
+    def displayListFriends(self, friends_panel : Label) -> None:
+        if len(self.db.selectAllInviting(self.get_username("serverPseudo.txt"), False)) != 0 or len(self.db.selectAllInvitingGames(self.get_username("serverPseudo.txt"))) != 0:
+            image_notifications = self.notifications
+        else:
+            image_notifications = self.no_notification
+        button_notifications = Label(friends_panel, image=image_notifications, bd=0, highlightthickness=0, cursor="hand2")
+        button_notifications.place(relx=0.75, rely=0.045, anchor=CENTER)
+        button_notifications.bind("<Button-1>", lambda event: self.display_notifications(friends_panel))
+
+        button_leave_friends = Button(friends_panel, image=self.leave_friends, bd=0, highlightthickness=0, cursor="hand2")
+        button_leave_friends.place(relx=0.92, rely=0.02, anchor=CENTER)
+        button_leave_friends.bind("<Button-1>", lambda event: self.quit_friends_list(friends_panel))
+
+
+        friends = self.db.selectAllFriends(self.get_username("serverPseudo.txt"))  # liste des amis à récupérer depuis la bdd
+        for index, friend in enumerate(friends):
+            friend = friend[:19] + ".." if len(friend) > 21 else friend
+            label_friend = Label(friends_panel, text=friend, cursor="hand2", bd=0, highlightthickness=0, font=("Arial", 13), fg="white", bg="#102A43")
+            label_friend.place(relx=0.1, rely=0.2 + index * 0.05, anchor=NW)
+
+            invite_friend = Label(friends_panel, image=self.invite_friends, bd=0, highlightthickness=0, cursor="hand2")
+            invite_friend.place(relx=0.75, rely=0.21 + index * 0.05, anchor=CENTER)
+            invite_friend.bind("<Button-1>", lambda event, friend=friend: self.invitFriend(friend))
+
+            delete_friend = Label(friends_panel, image=self.delete_friends, bd=0, highlightthickness=0, cursor="hand2")
+            delete_friend.place(relx=0.9, rely=0.21 + index * 0.05, anchor=CENTER)
+            delete_friend.bind("<Button-1>", lambda event, friend=friend: self.deleteFriends(friend))
+
+        entry_friend = Entry(friends_panel, bd=0, font=("Arial", 13))
+        entry_friend.place(relx=0.45, rely=0.115, anchor=CENTER)
+
+        search_button = Button(friends_panel, image=self.search_friends, bd=0, highlightthickness=0, cursor="hand2", command=lambda: self.searchFriend(entry_friend.get()))
+        search_button.place(relx=0.85, rely=0.115, anchor=CENTER)
+        
+        self.friends_panel = friends_panel
+        
+        
+    def invitFriend(self, friend : tuple) -> None:
+        self.db.sendInvitingGames(str(self.get_username("serverPseudo.txt")), friend[0], "127.0.0.1", 8000)
+
+    
+    def acceptFriendDemand(self, friend : tuple) -> None:
+        self.db.acceptInviting(str(self.get_username("serverPseudo.txt")), friend[0])
+        self.notifications_panel.config(text="")
+        self.displayInvitatins(self.notifications_panel, True)
+        
+        self.displayGameInvitations(self.notifications_panel, False)
+    
+    
+    def refuseFriendDemand(self, friend : tuple) -> None:
+        self.db.deleteInviting(friend[0], str(self.get_username("serverPseudo.txt")))
+        self.notifications_panel.config(text="")
+        self.displayInvitatins(self.notifications_panel, True)
+        
+        self.displayGameInvitations(self.notifications_panel, False)
+        
+        
+    def acceptGameDemand(self, friend : tuple) -> None:
+        resultGameInfo = self.db.acceptInvitingGames(str(self.get_username("serverPseudo.txt")), friend[0])
+        (ip, port) = resultGameInfo[0][0].split(":")
+        print(ip, port)
+        # joinSession(ip, int(port), 1)
+        
+        self.displayInvitatins(self.notifications_panel, True)
+        
+        self.displayGameInvitations(self.notifications_panel, False)
+    
+    
+    def refuseGameDemand(self, friend : tuple) -> None:
+        self.db.deleteInvitingGames(friend[0], str(self.get_username("serverPseudo.txt")))
+
+        time.sleep(1)
+        self.displayInvitatins(self.notifications_panel, True)
+        
+        self.displayGameInvitations(self.notifications_panel, False)
+        
+        
+    def searchFriend(self, friend : str) -> None:
+        friend = friend.replace(" ", "")
+        invList = self.db.selectAllInviting(self.get_username("serverPseudo.txt"), False)
+        friendsList = self.db.selectAllFriends(self.get_username("serverPseudo.txt"))
+            
+        if friend != "" and friend != self.get_username("serverPseudo.txt") and not any(friend in tupleInfos for tupleInfos in friendsList) and not any(friend in tupleInfosInv for tupleInfosInv in invList):
+            self.db.sendInviting(self.get_username("serverPseudo.txt"), friend)
+        
+        
+    def deleteFriends(self, friend):
+        delete = Tk()
+        delete.title("Confirmation de suppression")
+        delete.geometry("500x200")
+        delete.resizable(False, False)
+        delete.config(bg="#0F283F")
+        delete.iconbitmap("./assets/images/launcher/delete_friends.ico")
+
+        def on_yes_click():
+            delete.destroy()
+            self.db.deleteFriends(self.get_username("serverPseudo.txt"), friend[0])
+            self.db.deleteFriends(friend[0], self.get_username("serverPseudo.txt"))
+            self.displayListFriends(self.friends_panel)
+
+        def on_no_click():
+            delete.destroy()
+
+
+        if len(friend) > 15:
+                friend = friend[:15] + ".."
+        label = Label(delete, text=f"Êtes-vous sûr de vouloir supprimer l'ami '{friend}' ?", padx=20, pady=10, bd=0,
+                    highlightthickness=0, font=("Arial", 13), fg="white", bg="#0F283F")
+        label.place(relx=0.5, rely=0.4, anchor=CENTER)
+
+        button_frame = Frame(delete, bg="#0F283F")
+        button_frame.pack(pady=10)
+
+        yes_button = Button(button_frame, text="Oui", bg="green", fg="#FFF", font=("Arial", 13), width=18, cursor="hand2", activebackground="green", command=on_yes_click)
+        yes_button.pack(side="left", padx=20)
+
+        no_button = Button(button_frame, text="Non", bg="red", fg="#FFF", font=("Arial", 13), width=18, cursor="hand2", activebackground="red", command=on_no_click)
+        no_button.pack(side="left", padx=20)
+
+        delete.update_idletasks() 
+        width = delete.winfo_width()
+        height = delete.winfo_height()
+        x = (delete.winfo_screenwidth() // 2) - (width // 2)
+        y = (delete.winfo_screenheight() // 2) - (height // 2)
+        delete.geometry(f"{width}x{height}+{x}+{y}")
+
+        button_frame.place(relx=0.5, rely=0.8, anchor="center")
+
+        delete.mainloop()
+
+
+    def displayShop(self) -> None:
+        self.changeMode()
+        statut = self.getStatut()
+        self.statut = 5
+        self.background(self.statut)
+        self.createMenu(statut)
+        self.createButtonShop()
+        self.addLogoFriends()
+            
             
     def numberIA(self) -> None:
         def action(event) -> None:
@@ -131,6 +502,7 @@ class QuoridorLauncher:
         if self.statut == 0:
             nbrIA = Label(self.window, text="Nombre d'IA", font=("Arial", 10), bg="#0F283F", fg="#E3F8FF")
             nbrIA.place(relx=0.45, rely=0.7, anchor=CENTER)
+    
     
     def getIaDifficulty(self) -> None:
         def action(event) -> None:
@@ -155,6 +527,7 @@ class QuoridorLauncher:
             nbrIA = Label(self.window, text="Difficulté des bots", font=("Arial", 10), bg="#0F283F", fg="#E3F8FF")
             nbrIA.place(relx=0.55, rely=0.7, anchor=CENTER)
 
+
     def numberPlayer(self) -> None:
         def action(event) -> None:
             self.selectPlayer = int(listPlayer.get())
@@ -174,6 +547,7 @@ class QuoridorLauncher:
         if self.statut == 0 or self.statut == 2:
             nbrPlayer = Label(self.window, text="Nombre de Joueur(s)", font=("Arial", 10), bg="#0F283F", fg="#E3F8FF")
             nbrPlayer.place(relx=0.35, rely=0.7, anchor=CENTER)
+
 
     def sizeBoard(self) -> None:
         def action(event) -> None:
@@ -198,6 +572,7 @@ class QuoridorLauncher:
 
         nbrIA = Label(self.window, text="Taille du plateau", font=("Arial", 10), bg="#0F283F", fg="#E3F8FF")
         nbrIA.place(relx=x2, rely=y2, anchor=CENTER)
+
 
     def numberFence(self) -> None:
         def action(event) -> None:
@@ -226,6 +601,7 @@ class QuoridorLauncher:
         nbrFence = Label(self.window, text="Nombre de barrières", font=("Arial", 10), bg="#0F283F", fg="#E3F8FF")
         nbrFence.place(relx=x2, rely=y2, anchor=CENTER)
 
+
     def choiceMap(self) -> None:
         def action(event) -> None:
             selected_value = listMap.get()
@@ -237,10 +613,17 @@ class QuoridorLauncher:
                     self.selectMap = 2
                 elif selected_value == "Hell":
                     self.selectMap = 3
+                elif selected_value == "Ice":
+                    self.selectMap = 4
+                elif selected_value == "Electricity":
+                    self.selectMap = 5
+                elif selected_value == "Sugar":
+                    self.selectMap = 6
             except ValueError:
                 print(f"Error: '{selected_value}' is not a valid map")
-
-        listMaps=["Jungle", "Space", "Hell"]
+                
+        username = self.get_username("serverPseudo.txt")
+        listMaps=self.db.getMapByUsername(username)
         listMap = ttk.Combobox(self.window, values=listMaps, state="readonly")
         listMap.current(0)
         X = 0.25
@@ -252,6 +635,7 @@ class QuoridorLauncher:
         if self.statut == 0 or self.statut == 2:
             nameMap = Label(self.window, text="Thème de la carte", font=("Arial", 10), bg="#0F283F", fg="#E3F8FF")
             nameMap.place(relx=0.25, rely=0.7, anchor=CENTER)
+        
         
     def buttonStart(self) -> None:
         def start_game() -> None:
@@ -275,6 +659,7 @@ class QuoridorLauncher:
         start = Button(self.window, text="Lancer la partie", command=start_game, bg="#2BB0ED", fg="#FFF", font=("Arial", 13), width=18, cursor="hand2",  activebackground="#035388",  activeforeground="white")
         start.place(relx=0.25, rely=0.8, anchor=CENTER)
     
+    
     def menuCreateGameSolo(self, event):
         self.changeMode()
         self.statut = 0
@@ -287,6 +672,7 @@ class QuoridorLauncher:
         self.numberFence()
         self.choiceMap()
         self.buttonStart()
+        self.addLogoFriends()
         
     """REJOINDRE UNE PARTIE EN RESEAU"""
     def menuJoinGameNetwork(self, event):
@@ -297,6 +683,7 @@ class QuoridorLauncher:
         self.createMenu(self.statut)
         self.create_entries()
         self.choiceMap()
+        self.addLogoFriends()
         
     def create_entries(self) -> None:
         ip = Label(self.window, text="Adresse IP :", font=("Arial", 10), bg="#0F283F", fg="#E3F8FF")
@@ -344,7 +731,6 @@ class QuoridorLauncher:
 
         port = int(portstr)
         self.window.destroy()
-        # self.db.insertUsername(ip, port, self.pseudo)
         self.setUsername(self.pseudo)
         joinSession(ip, port, self.selectMap)
         
@@ -389,6 +775,7 @@ class QuoridorLauncher:
         self.numberFence()
         self.entryPortGame()
         self.startButtonNetwork()
+        self.addLogoFriends()
         
     def entryPortGame(self) -> None:
         if self.statut ==2:
@@ -411,7 +798,6 @@ class QuoridorLauncher:
         start.place(relx=0.25, rely=0.8, anchor=CENTER)
     
     def startGame(self) -> None:
-        # ip = "127.0.0.1"
         portstr = self.entry_port.get()
         
         if hasattr(self, 'error_label'):
@@ -437,9 +823,6 @@ class QuoridorLauncher:
             self.error_label = Label(self.window, text=f"Le nombre de barrières({nbr_fences}) pour une taille de 5x5 est incorrect (20 max).", font=("Arial", 13), bg="#0F283F", fg="red")
             self.error_label.place(relx=0.5, rely=0.9, anchor=CENTER)
         else:
-            # self.db.dropTableIfExists(ip, port)
-            # self.db.createTableGame(ip, port)
-            # self.db.insertUsername(ip, port, self.pseudo)
             self.window.destroy()
             self.setUsername(self.pseudo)
             startSession(port, nbr_player, grid_size, nbr_player, 0, nbr_fences, map)
@@ -457,6 +840,7 @@ class QuoridorLauncher:
         self.createMenu(statut)
         self.connexion()
         self.inscription()
+        self.addLogoFriends()
     
     def connexion(self) -> None:
         login_image = Image.open(f"./assets/images/launcher/connexion.png")
@@ -647,16 +1031,6 @@ class QuoridorLauncher:
         except IOError:
             print("Erreur : impossible de lire le fichier.")
             return False
-        
-        
-    def displayPseudo(self):
-        if self.isConnected("serverPseudo.txt"):
-            login = Label(self.window, text="Vous n'êtes pas connecté", font=("Arial", 13), bg="#0F283F", fg="red")
-            login.place(relx=0.85, rely=0.02, anchor=CENTER)
-        else:
-            username = self.get_username("serverPseudo.txt")
-            login = Label(self.window, text=f"ℹ️Vous êtes connecté en tant que {username}", font=("Arial", 13), bg="#0F283F", fg="green")
-            login.place(relx=0.85, rely=0.02, anchor=CENTER)
 
 run_launcher = QuoridorLauncher(Database())
 run_launcher.window.mainloop()

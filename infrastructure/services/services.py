@@ -45,6 +45,7 @@ class Board:
         
         if os.name == "nt":
             self.window.attributes("-fullscreen", True)
+            self.window.state('zoomed')
 
         self.window.iconbitmap('./assets/images/logo.ico')
         self.window.configure(bg="#F0B169")
@@ -99,6 +100,8 @@ class Board:
             self.map = "space"
         elif select_map == 3:
             self.map = "hell"
+        elif select_map == 4:
+            self.map = "ice"
         
         self.sound_map = mixer.Sound(f"./assets/sounds/{self.map}.mp3")
         self.sound_map.play(loops=-1)
