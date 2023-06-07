@@ -1,202 +1,35 @@
 from tkinter import *
 import socket
 import pickle
-from domain.case.case import Case
-from domain.fence.fence import Fence
-from domain.pillar.pillar import Pillar
 from domain.player.player import Player
 from PIL import Image, ImageTk
 import time
 from pygame import mixer
 from infrastructure.database.config import Database
-from infrastructure.services.getInformation import GetInformation
-from domain.bot.bot import Bot
-import os
+
 
 class Board:
     def __init__(self, size : int, nb_players : int, nb_IA : int, nb_fence : int, select_map : int, Network : bool, InstanceNetwork : object, typeNetwork : str, playerUser : int, db : Database) -> None:
-        if Network == True:
-            # Variable bool qui autorise le multijoueur.
-            self.networkStatus = True
-            
-            # Variable qui contient l'instance de la class en ligne.
-            self.InstanceNetwork = InstanceNetwork
-            
-            # Variable qui enregistre si l'instance est en est une ou un socket.
-            self.typeNetwork = typeNetwork
-
-            # Variable qui enregistre le numéro de l'utilisateur sur le pc.
-            self.playerUser = playerUser
-            
-            # Espace base de données.
-            self.db = db
-            
-            self.pseudo = GetInformation.getInfos("serverPseudo.txt")
-            
-            self.db.insertUsername(self.db.ip, self.db.port, self.pseudo)
-        else:
-            # Variable bool qui autorise le multijoueur.
-            self.networkStatus = False
-        self.bot = Bot()
-            
-        self.window = Tk()
-        self.window.title("Quoridor")
-        self.window.minsize(self.window.winfo_screenwidth(), self.window.winfo_screenheight())
+        # Lancement de la class d'initialisation des variables, images, sons...
+        from infrastructure.services.initGame import InitGame
+        initGame = InitGame(self)
         
-        if os.name == "nt":
-            self.window.attributes("-fullscreen", True)
-
-        self.window.iconbitmap('./assets/images/logo.ico')
-        self.window.configure(bg="#F0B169")
-        self.window_game = True
-        self.__size = size
-        self.__nb_players = nb_players
-        self.__nb_IA = nb_IA
-        self.__nb_fence = nb_fence
-        self.players = []
-        self.board = []
-        self.fence_orientation = "horizontal"    
-        self.id_possible_move = 0 
-        self.leavepopup =  None
-        self.waiting_room1 = None
-        self.waiting_room2 = None
-        self.pop_up_no_fence = []
+        initGame.startInit(size, nb_players, nb_IA, nb_fence, select_map, Network, InstanceNetwork, typeNetwork, playerUser, db)
         
-        mixer.init()
-        # Création des images du plateau
         
-        # Tailles des éléments
-        if size == 5:
-            self.canvas_game_width = 478
-            self.canvas_game_height = 478
-            self.epaisseur_barriere = 25
-        elif size == 7 or size == 9 or size == 11:
-            self.canvas_game_width = 628
-            self.canvas_game_height = 628
-            if size == 7:
-                self.epaisseur_barriere = 20
-            elif size == 9:
-                self.epaisseur_barriere = 18
-            elif size == 11:
-                self.canvas_game_width = 622
-                self.canvas_game_height = 622
-                self.epaisseur_barriere = 15
-
-        self.longueur_element = round(((self.canvas_game_width - (self.epaisseur_barriere * (size - 1))) / size))
-        
-        width = self.longueur_element
-        height = self.longueur_element
-        fence_vertical_width = self.epaisseur_barriere
-        fence_vertical_height = self.longueur_element
-        fence_horizontal_width = self.longueur_element
-        fence_horizontal_height = self.epaisseur_barriere
-        pillar_taille = self.epaisseur_barriere
-        self.widget_space = (self.longueur_element + self.epaisseur_barriere) / 2
-        
-        if select_map == 1:
-            self.map = "jungle"
-        elif select_map == 2:
-            self.map = "space"
-        elif select_map == 3:
-            self.map = "hell"
-        
+    def loadVolumeSettings(self) -> None:
+        with open("settings.txt", "r") as file:
+            lines = file.readlines()
+            if len(lines) >= 6:
+                self.volume_map = float(lines[1].strip())
+                self.volume_victory = float(lines[2].strip())
+                self.volume_pion = float(lines[3].strip())
+                self.volume_fence = float(lines[4].strip())
+                self.volume_nofence = float(lines[5].strip())
         self.sound_map = mixer.Sound(f"./assets/sounds/{self.map}.mp3")
         self.sound_map.play(loops=-1)
-        self.sound_map.set_volume(0.1)
-        
-        self.name_bg = size
-        if self.name_bg == 11 or self.name_bg == 9 or self.name_bg == 7:
-            self.name_bg = 7
-        
-        self.bg_image = Image.open(f"./assets/images/{self.map}/background{nb_players}{self.name_bg}.png")
-        self.bg_image = self.bg_image.resize((self.window.winfo_screenwidth(), self.window.winfo_screenheight()))
-        self.bg_photo = ImageTk.PhotoImage(self.bg_image)
-        self.bg_label = Label(self.window, image=self.bg_photo)
-        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
-            
-        no_player = Image.open(f"./assets/images/{self.map}/case.png")
-        no_player = no_player.resize((width, height))
-        self.no_player = ImageTk.PhotoImage(no_player)
-        
-        moove_possible = Image.open(f"./assets/images/{self.map}/moove_possible.png")
-        moove_possible = moove_possible.resize((width, height))
-        self.moove_possible = ImageTk.PhotoImage(moove_possible)
-        
-        image_player_1 = Image.open(f"./assets/images/{self.map}/player_1.png")
-        image_player_1 = image_player_1.resize((width, height))
-        self.image_player_1 = ImageTk.PhotoImage(image_player_1)
-        
-        image_player_2 = Image.open(f"./assets/images/{self.map}/player_2.png")
-        image_player_2 = image_player_2.resize((width, height))
-        self.image_player_2 = ImageTk.PhotoImage(image_player_2)
-        
-        image_player_3 = Image.open(f"./assets/images/{self.map}/player_3.png")
-        image_player_3 = image_player_3.resize((width, height))
-        self.image_player_3 = ImageTk.PhotoImage(image_player_3)
-        
-        image_player_4 = Image.open(f"./assets/images/{self.map}/player_4.png")
-        image_player_4 = image_player_4.resize((width, height))
-        self.image_player_4 = ImageTk.PhotoImage(image_player_4)
-        
-        #IMAGES DES FENCES
-        fence_height = Image.open(f"./assets/images/{self.map}/fence_height.png")
-        fence_height = fence_height.resize((fence_vertical_width, fence_vertical_height))
-        self.fence_height = ImageTk.PhotoImage(fence_height)
-        
-        fence_height_vide = Image.open(f"./assets/images/{self.map}/fence_height_vide.png")
-        fence_height_vide = fence_height_vide.resize((fence_vertical_width, fence_vertical_height))
-        self.fence_height_vide = ImageTk.PhotoImage(fence_height_vide)
-        
-        fence_width = Image.open(f"./assets/images/{self.map}/fence_width.png")
-        fence_width = fence_width.resize((fence_horizontal_width, fence_horizontal_height))
-        self.fence_width = ImageTk.PhotoImage(fence_width)
-        
-        fence_width_vide = Image.open(f"./assets/images/{self.map}/fence_width_vide.png")
-        fence_width_vide = fence_width_vide.resize((fence_horizontal_width, fence_horizontal_height))
-        self.fence_width_vide = ImageTk.PhotoImage(fence_width_vide)
-        
-        # IMAGE DES PILLIERS
-        pillar = Image.open(f"./assets/images/{self.map}/pillier.png")
-        pillar = pillar.resize((pillar_taille, pillar_taille))
-        self.pillar = ImageTk.PhotoImage(pillar)
-        
-        pillar_vide = Image.open(f"./assets/images/{self.map}/pillier_vide.png")
-        pillar_vide = pillar_vide.resize((pillar_taille, pillar_taille))
-        self.pillar_vide = ImageTk.PhotoImage(pillar_vide)
-        
-        # IMAGE DES OBJETS HOVERED
-        fence_width_hover = Image.open(f"./assets/images/{self.map}/fence_width_hover.png")
-        fence_width_hover = fence_width_hover.resize((fence_horizontal_width, fence_horizontal_height))
-        self.fence_width_hover = ImageTk.PhotoImage(fence_width_hover)
-        
-        fence_height_hover = Image.open(f"./assets/images/{self.map}/fence_height_hover.png")
-        fence_height_hover = fence_height_hover.resize((fence_vertical_width, fence_vertical_height))
-        self.fence_height_hover = ImageTk.PhotoImage(fence_height_hover)
-
-        pillar_hover = Image.open(f"./assets/images/{self.map}/pillier_hover.png")
-        pillar_hover = pillar_hover.resize((pillar_taille, pillar_taille))
-        self.pillar_hover = ImageTk.PhotoImage(pillar_hover)
-
-
-        for i in range(self.__size*2-1):
-            if i%2 == 0 :
-                tab2 = []
-                for j in range(self.__size*2-1):
-                    if j%2 == 0 : 
-                        tab2.append(Case(0,0))
-                        
-                    else :
-                        tab2.append(Fence(0))
-                self.board.append(tab2)
-            else :
-                tab2 = []
-                for j in range(self.__size*2-1):
-                    if j%2 == 0 :
-                        tab2.append(Fence(0))
-                    else :
-                        tab2.append(Pillar(0))
-                self.board.append(tab2)
-        
+        self.sound_map.set_volume(self.volume_map)
+    
     
     def caseClicked(self, event : int) -> None:
         item_id = event.widget.find_closest(event.x, event.y)[0]
@@ -214,8 +47,7 @@ class Board:
         # son de déplacement
         sound_move = mixer.Sound("./assets/sounds/move.mp3")
         sound_move.play()
-        sound_move.set_volume(0.4)
-        
+        sound_move.set_volume(self.volume_pion)
         if self.victory() == True :
             self.displayBoard(False)
             self.canvas.unbind_all("<Button-1>")
@@ -267,8 +99,7 @@ class Board:
                 self.fence_orientation = "horizontal"
             self.buildFence(x_co_fence,y_co_fence)
             if self.fenceNotCloseAccesGoal()==False :
-                print(possibleBuildFence)
-                print([x_co_fence,y_co_fence])
+
                 possibleBuildFence.remove(build)
                 self.deBuildFence(x_co_fence,y_co_fence)
                 self.displayBoard(False) 
@@ -297,7 +128,7 @@ class Board:
                 self.db.addGame(self.pseudo)
             except Exception as e:
                 print("Erreur" + str(e)) 
-        self.bg_image = Image.open(f"./assets/images/{self.map}/background{self.__nb_players}{self.name_bg}.png")
+        self.bg_image = Image.open(f"./assets/images/{self.map}/background{self.nb_players}{self.name_bg}.png")
         self.bg_image = self.bg_image.resize((self.window.winfo_screenwidth(), self.window.winfo_screenheight()))
         self.bg_photo = ImageTk.PhotoImage(self.bg_image)
         self.bg_label = Label(self.window, image=self.bg_photo)
@@ -345,8 +176,8 @@ class Board:
         # Quitter la partie
         def quitgame():
             self.window.destroy()
-            # from infrastructure.services.deletePycache import deletePycache
-            # deletePycache()
+            from infrastructure.services.deletePycache import deletePycache
+            deletePycache()
             
         quit_button = Button(self.window, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, width=20, command=quitgame)
         quit_button.pack(side='bottom', padx=10, pady=40)
@@ -356,7 +187,7 @@ class Board:
         # Son de victoire
         sound_victory = mixer.Sound("./assets/sounds/victory.mp3")
         sound_victory.play()
-        sound_victory.set_volume(0.3)
+        sound_victory.set_volume(self.volume_victory)
         if self.networkStatus == True:
             if self.typeNetwork == "instance" :
                 username = self.db.selectUsername(self.db.ip, self.db.port,  self.current_player.get_player())
@@ -398,7 +229,7 @@ class Board:
         self.leavepopup = ImageTk.PhotoImage(leavepopup)
         
         label_no_fence = Label(self.window, image=self.leavepopup, bd=0)
-        if self.__size == 5:
+        if self.size == 5:
             y = 0.18
         else:
             y = 0.12
@@ -440,14 +271,14 @@ class Board:
                     self.pop_up_no_fence.append(a)
                     self.popUpNoFence(a)
                     
-            if self.__nb_players == 2:
+            if self.nb_players == 2:
                 if index == 0:
                     # Joueur 1 (en haut au milieu)
                     Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width/2.2, y=73, anchor="center")
                 elif index == 1:
                     # Joueur 2 (en bas au milieu)
                     Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width/1.8, y=window_height-70, anchor="center")
-            elif self.__nb_players == 4:
+            elif self.nb_players == 4:
                 if index == 0:
                     # Joueur 1 (en haut au milieu)
                     Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width/2.2, y=70, anchor="center")
@@ -474,10 +305,10 @@ class Board:
         self.window.bind("<space>", self.changeFenceOrientation)
         tab =[]
         self.pillar_rects = []
-        for i in range(self.__size*2-1):
+        for i in range(self.size*2-1):
             if i%2 == 0 :
                 tab2 = []
-                for j in range(self.__size*2-1):
+                for j in range(self.size*2-1):
                     if j%2 == 0 :
                         case = self.board[i][j]
                         tab2.append(case.displayPlayer())
@@ -507,7 +338,7 @@ class Board:
                 tab.append(tab2)
             else :
                 tab2 = []
-                for j in range(self.__size*2-1):
+                for j in range(self.size*2-1):
                     if j%2 == 0 :
                         fence = self.board[i][j]
                         tab2.append(fence.displayFence())
@@ -546,7 +377,7 @@ class Board:
             
     def buildFenceOnClick(self,event):
         if self.playerHasFence() == False :
-            print(" ")
+            print("")
         else :
             item_id = event.widget.find_withtag("current")[0], 
             tags = self.canvas.gettags(item_id)
@@ -560,10 +391,12 @@ class Board:
                         self.displayBoard(False)
                         sound_build_fence = mixer.Sound("./assets/sounds/no_fence.mp3")
                         sound_build_fence.play()
+                        sound_build_fence.set_volume(self.volume_nofence)
                     else :
                         # Son de pose de barrière
                         sound_build_fence = mixer.Sound("./assets/sounds/build_fence.mp3")
                         sound_build_fence.play()
+                        sound_build_fence.set_volume(self.volume_fence)
                         if self.networkStatus == True:
                             if self.typeNetwork == "instance":
                                 self.InstanceNetwork.SendBoard(x, y, 1, self.fence_orientation)
@@ -649,31 +482,31 @@ class Board:
 
 
     def decideIALevel(self, player : int) -> bool:
-        if player > self.__nb_players - self.__nb_IA:
+        if player > self.nb_players - self.nb_IA:
             return 1
         return False
 
 
     def start(self) -> None:
-        nb_fence_each_player = int(self.__nb_fence / self.__nb_players)
-        case = self.board[0][self.__size-1]
+        nb_fence_each_player = int(self.nb_fence / self.nb_players)
+        case = self.board[0][self.size-1]
         case.set_player(1)
-        self.players.append(Player(0,self.__size-1,1,nb_fence_each_player,self.decideIALevel(1)))
-        case = self.board[-1][self.__size-1]
+        self.players.append(Player(0,self.size-1,1,nb_fence_each_player,self.decideIALevel(1)))
+        case = self.board[-1][self.size-1]
         case.set_player(2)
-        self.players.append(Player((self.__size-1)*2,self.__size-1,2,nb_fence_each_player,self.decideIALevel(2)))
-        if self.__nb_players == 4 :
-            case = self.board[self.__size-1][0]
+        self.players.append(Player((self.size-1)*2,self.size-1,2,nb_fence_each_player,self.decideIALevel(2)))
+        if self.nb_players == 4 :
+            case = self.board[self.size-1][0]
             case.set_player(3)
-            self.players.append(Player(self.__size-1,0,3,nb_fence_each_player,self.decideIALevel(3)))
-            case = self.board[self.__size-1][-1]
+            self.players.append(Player(self.size-1,0,3,nb_fence_each_player,self.decideIALevel(3)))
+            case = self.board[self.size-1][-1]
             case.set_player(4)
-            self.players.append(Player(self.__size-1,(self.__size-1)*2,4,nb_fence_each_player,self.decideIALevel(4)))
+            self.players.append(Player(self.size-1,(self.size-1)*2,4,nb_fence_each_player,self.decideIALevel(4)))
         self.current_player = self.players[0]
         
     
     def refreshCurrentPlayer(self) -> None:
-        if self.current_player.get_player() == self.__nb_players :
+        if self.current_player.get_player() == self.nb_players :
             self.current_player = self.players[0]
         else :
             self.current_player = self.players[self.current_player.get_player()]
@@ -779,13 +612,13 @@ class Board:
     def victory(self) -> bool:
         position = self.current_player.displayPlace()
         if self.current_player.get_player() == 1 :
-            if position[0] == (self.__size-1)*2 :
+            if position[0] == (self.size-1)*2 :
                 return True
         elif self.current_player.get_player() == 2 : 
             if position[0] == 0 :
                 return True
         elif self.current_player.get_player() == 3 : 
-            if position[1] == (self.__size-1)*2 :
+            if position[1] == (self.size-1)*2 :
                 return True
         elif self.current_player.get_player() == 4 : 
             if position[1] == 0 :
@@ -807,11 +640,11 @@ class Board:
         
     def isPossibleWay(self, x : int, y : int, player : str) -> bool:
         self.list_case_check.append([x, y])
-        if x == (self.__size-1)*2 and player == 1:
+        if x == (self.size-1)*2 and player == 1:
             return True
         elif x == 0 and player == 2:
             return True
-        elif y == (self.__size-1)*2 and player == 3:
+        elif y == (self.size-1)*2 and player == 3:
             return True
         elif y == 0 and player == 4:
             return True
@@ -825,7 +658,7 @@ class Board:
                     if self.isPossibleWay(2, 0, player) == True :
                         return True
                         
-            elif y==(self.__size-1)*2: #coin haut droite
+            elif y==(self.size-1)*2: #coin haut droite
                 if self.alreadyChecked(0, y-2) == False and self.thereIsFence(0, y-1) == False:
                     if self.isPossibleWay(0, y-2, player) == True :
                         return True
@@ -848,7 +681,7 @@ class Board:
                         return True 
                         
         elif y==0: 
-            if x == (self.__size-1)*2: #coin bas gauche
+            if x == (self.size-1)*2: #coin bas gauche
                 if self.alreadyChecked(x-2, y) == False and self.thereIsFence(x-1, y) == False:
                     if self.isPossibleWay(x-2, y, player) == True :
                         return True
@@ -870,8 +703,8 @@ class Board:
                     if self.isPossibleWay(x, y+2, player) == True :
                         return True 
                         
-        elif y==(self.__size-1)*2: 
-            if x == (self.__size-1)*2: #coin bas droite
+        elif y==(self.size-1)*2: 
+            if x == (self.size-1)*2: #coin bas droite
                 if self.alreadyChecked(x-2, y) == False and self.thereIsFence(x-1, y) == False:
                     if self.isPossibleWay(x-2, y, player) == True :
                         return True 
@@ -893,7 +726,7 @@ class Board:
                     if self.isPossibleWay(x, y-2, player) == True :
                         return True 
                     
-        elif x == (self.__size-1)*2: #ligne bas 
+        elif x == (self.size-1)*2: #ligne bas 
             if self.alreadyChecked(x, y-2) == False and self.thereIsFence(x, y-1) == False:
                 if self.isPossibleWay(x, y-2, player) == True :
                     return True 
@@ -932,7 +765,7 @@ class Board:
         return True
         
     def fenceNotCloseAccesGoal(self) -> bool:
-        for i in range(self.__nb_players):
+        for i in range(self.nb_players):
             if self.seachPossibleWayForPlayer(i+1) == False :
                 return False
         return True
@@ -945,10 +778,10 @@ class Board:
         if position[1]==0:
             if y==-2:
                 return False
-        if position[0]==(self.__size-1)*2:
+        if position[0]==(self.size-1)*2:
             if x==2:
                 return False
-        if position[1]==(self.__size-1)*2:
+        if position[1]==(self.size-1)*2:
             if y==2:
                 return False
         if self.thereIsFence(position[0]+int(x/2), position[1]+int(y/2)) == True :
@@ -963,9 +796,9 @@ class Board:
             case.set_possibleMove([coord[0],coord[1]])
             
     def resetPossibleCaseMovement(self) -> None:
-        for i in range(self.__size*2-1):
+        for i in range(self.size*2-1):
             if i%2 == 0 :
-                for j in range(self.__size*2-1):
+                for j in range(self.size*2-1):
                     if j%2 == 0 :
                         case = self.board[i][j]
                         case.set_possibleMove(0)
@@ -992,13 +825,13 @@ class Board:
     
     def isPossibleMoveOnRightSizePlayer(self,position : list, x : int, y : int) -> bool:
         if x != 0 :
-            if position[0] != (self.__size-1)*2 :
+            if position[0] != (self.size-1)*2 :
                 if self.board[position[0]+int(x*1.5)][position[1]].get_build() != 0 or self.board[position[0]+x*2][position[1]].get_player() !=0 :
                     if self.board[position[0]+x][position[1]+1].get_build() == 0 and self.board[position[0]+x][position[1]+2].get_player() ==0 :
                         return True
                 
         else :
-            if position[1] != (self.__size-1)*2 :
+            if position[1] != (self.size-1)*2 :
                 if self.board[position[0]][position[1]+int(y*1.5)].get_build() != 0 or self.board[position[0]][position[1]+y*2].get_player() !=0 :
                         if self.board[position[0]+1][position[1]+y].get_build() == 0 and self.board[position[0]+2][position[1]+y].get_player() ==0 :
                             return True
@@ -1021,7 +854,7 @@ class Board:
                 list.append([-2,0])
         if self.isPossibleMove(2,0) == True :
             if self.board[position[0]+2][position[1]].get_player() !=0:
-                if position[0] != (self.__size-1)*2-2 :
+                if position[0] != (self.size-1)*2-2 :
                     if self.board[position[0]+3][position[1]].get_build() ==0:
                         list.append([4,0])
                     if self.isPossibleMoveOnLeftSizePlayer(position,2,0) == True :
@@ -1043,7 +876,7 @@ class Board:
                 list.append([0,-2])
         if self.isPossibleMove(0,2) == True :
             if self.board[position[0]][position[1]+2].get_player() !=0:
-                if position[1] != (self.__size-1)*2-2 :
+                if position[1] != (self.size-1)*2-2 :
                     if self.board[position[0]][position[1]+3].get_build() ==0:
                         list.append([0,4])
                     if self.isPossibleMoveOnLeftSizePlayer(position,0,2) == True :
@@ -1056,8 +889,8 @@ class Board:
     
     def allPossibleBuildFence(self) -> list:
         list = [] 
-        for i in range(1,self.__size*2-1,2):
-            for j in range(1,self.__size*2-1,2):
+        for i in range(1,self.size*2-1,2):
+            for j in range(1,self.size*2-1,2):
                 self.fence_orientation == "vertical"
                 if self.isPossibleFence(i, j) == True :
                     list.append([i,j,0])

@@ -7,4 +7,4 @@ def deletePycache():
         if "__pycache__" in dirs:
             pycache_dir = os.path.join(root, "__pycache__")
             shutil.rmtree(pycache_dir)
-        
+            
