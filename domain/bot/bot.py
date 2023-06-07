@@ -1,20 +1,19 @@
 import random
-import math
 from queue import PriorityQueue
 
 class Bot :
-    def __init__(self):
+    def __init__(self) -> None:
         self.board = None
         
         
-    def setBoard(self, newBoard : object):
+    def setBoard(self, newBoard : object) -> None:
         self.board = newBoard
         
         
     def randomChoice(self, allPossibleChoice : list ):
         return random.choice(allPossibleChoice)
     
-    def botPlaysRandom(self):
+    def botPlaysRandom(self) -> list:
         action = self.randomChoice(["move","build"])
         if action == "build"  and self.board.playerHasFence() == True and self.board.allPossibleBuildFence() !=[]:
             build = self.botBuildRandomFence(self.board.allPossibleBuildFence())
@@ -23,7 +22,7 @@ class Bot :
         return ["move",self.randomChoice(self.board.allPossibleMoveForPlayer())]
             
             
-    def currentBotPlaysBasedOnDifficulty(self, difficulty):
+    def currentBotPlaysBasedOnDifficulty(self, difficulty : int) -> None:
         if difficulty ==  1 :
             action = self.botPlaysRandom()
         if difficulty == 2:
@@ -32,7 +31,7 @@ class Bot :
         
             
             
-    def botBuildRandomFence(self, allPossibleBuildFence):
+    def botBuildRandomFence(self, allPossibleBuildFence : list) -> list:
         possibleBuildFence = allPossibleBuildFence
         while possibleBuildFence !=[]:
             build = self.randomChoice(possibleBuildFence)
@@ -53,7 +52,7 @@ class Bot :
         return False
     
     
-    def doAction(self, action):
+    def doAction(self, action : list) -> None:
         if action[0] == "move":
             self.board.move(action[1][0],action[1][1])
         else :
@@ -64,21 +63,21 @@ class Bot :
             self.board.buildFence(action[1][0],action[1][1])
             
     
-    def updateNeighborsForEachCase(self):
+    def updateNeighborsForEachCase(self) -> None:
         for i in range(self.board.get_size()*2-1):
             if i%2 == 0 :
                 for j in range(self.board.get_size()*2-1):
                     if j%2 == 0 : 
                         self.board.board[i][j].updateNeighbors(self.board, i, j, self.board.get_size())
                         
-    def h(self, coordinates1 : list, coordinates2 : list):  #calculer distance
+    def h(self, coordinates1 : list, coordinates2 : list) -> int:
         x1 = int(coordinates1[0])
         y1 = int(coordinates1[1])
         x2 = int(coordinates2[0])
         y2 = int(coordinates2[1])
-        return abs(x1 - x2) + abs(y1 - y2)   #abs = distance absolue
+        return abs(x1 - x2) + abs(y1 - y2)   #abs = absolute distance
     
-    def algorithm(self, board, startCase, endCase):
+    def algorithm(self, board : object, startCase : object, endCase :object) -> list :
         count = 0
         open_set = PriorityQueue()
         open_set.put((0, count, startCase))
@@ -93,24 +92,17 @@ class Bot :
             for case in row:
                 f_score[case] = float("inf")
         f_score[startCase] = self.h(startCase.get_position(), endCase.get_position())
-
         open_set_hash = {startCase}
-        
-        
         while not open_set.empty():
             currentCase = open_set.get()[2]
             open_set_hash.remove(currentCase)
-
+            
             if currentCase == endCase:
                 path = self.reconstruct_path(came_from, endCase)
                 return [len(path), path]
-                # print("win")
-                # print(came_from)
-                # return came_from
-
+            
             for neighbor in currentCase.get_neighbors():
                 temp_g_score = g_score[currentCase] + 1
-
                 if temp_g_score < g_score[neighbor]:
                     came_from[neighbor] = currentCase
                     g_score[neighbor] = temp_g_score
@@ -119,30 +111,22 @@ class Bot :
                         count += 1
                         open_set.put((f_score[neighbor], count, neighbor))
                         open_set_hash.add(neighbor)
-                        # neighbor.make_open()
-
-            # if currentCase != start:
-            #     currentCase.make_closed()
-
         return False
     
-    def reconstruct_path(self, came_from, current):
+    def reconstruct_path(self, came_from : list, current : object) -> list:
         path = []
         while current in came_from:
-            # print(current.get_position())
             path.append(current.get_position())
             current = came_from[current]
-            # current.make_path()
-            # draw()
         return path
     
     
-    def main(self, startCase, endCase):
-        self.updateNeighborsForEachCase()  #mets a jour les voisins de chaque case
+    def calculatePath(self, startCase : object, endCase : object) -> list:
+        self.updateNeighborsForEachCase()
         return self.algorithm(self.board.board, startCase, endCase)
     
     
-    def haveAllCasePositionWin(self):
+    def haveAllCasePositionWin(self) -> list:
         list = []
         if self.board.current_player.get_player() == 1 :
             x = (self.board.get_size()-1)*2
@@ -166,35 +150,30 @@ class Bot :
                     list.append([x,y])
         return list
     
-    def havePathForEachCase(self, listCase):
+    def havePathForEachCase(self, listCase : list) -> None:
         listPath = []
         for case in listCase:
-            path = self.main(self.board.board[self.board.current_player.displayPlace()[0]][self.board.current_player.displayPlace()[1]], self.board.board[case[0]][case[1]])
+            path = self.calculatePath(self.board.board[self.board.current_player.displayPlace()[0]][self.board.current_player.displayPlace()[1]], self.board.board[case[0]][case[1]])
             if path != False :
                 listPath.append(path)
+        listPath.sort(key=lambda x: x[0])
         return listPath
-    
-    def chooseShortestPath(self, sumPath):
-        defaultPath = sumPath[0]
-        if len(sumPath) == 1 :
-            return defaultPath
-        else:
-            for path in sumPath :
-                if path[0] < defaultPath[0]:
-                    defaultPath = path
-            return defaultPath
         
-    def nextMove(self, path, possibleMove):
+    def nextMove(self, paths : list, possibleMove : list) -> list:
         x = self.board.current_player.displayPlace()[0]
         y = self.board.current_player.displayPlace()[1]
-        for element in path[1]:
-            for move in possibleMove:
-                if x + move[0] == element[0] and y + move[1] == element[1] :
-                    return [move[0], move[1]]
+        for path in paths :
+            for element in path[1]:
+                for move in possibleMove:
+                    if x + move[0] == element[0] and y + move[1] == element[1] :
+                        return [move[0], move[1]]
                 
-    def botPlaysGoodMove(self):
+    def botPlaysGoodMove(self) -> list:
         listCase = self.haveAllCasePositionWin()
         sumPath = self.havePathForEachCase(listCase)
-        finalPath = self.chooseShortestPath(sumPath)
-        return ["move", self.nextMove(finalPath, self.board.allPossibleMoveForPlayer())]
+        movement = self.nextMove(sumPath, self.board.allPossibleMoveForPlayer())
+        if movement == None :
+            return self.botPlaysRandom()
+        return ["move", movement]
+        
         

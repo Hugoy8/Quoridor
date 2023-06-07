@@ -552,6 +552,7 @@ class Board:
                         while self.current_player.get_IALevel() != 0 :
                             # self.bot.currentBotPlaysBasedOnDifficulty(self.current_player.get_IALevel())
                             self.bot.currentBotPlaysBasedOnDifficulty(2)
+                            time.sleep(1)
                             if self.victory() == True :
                                 self.displayBoard(False)
                                 self.canvas.unbind_all("<Button-1>")
@@ -937,90 +938,28 @@ class Board:
                     if j%2 == 0 :
                         case = self.board[i][j]
                         case.set_possibleMove(0)
-                    
-
-    #partie IA
-    # def game(self) :
-    #     jeu.start()
-    #     self.refreshPossibleCaseMovementForCurrentPlayer()
-    #     jeu.displayBoard(False)
-    def isPossibleMoveOnLeftSizePlayer(self, position : list, x : int, y : int) -> bool:
-        if x != 0 :
-            if position[0] != 0 :
-                if self.board[position[0]+int(x*1.5)][position[1]].get_build() != 0 or self.board[position[0]+x*2][position[1]].get_player() !=0 :
-                    if self.board[position[0]+x][position[1]-1].get_build() == 0 and self.board[position[0]+x][position[1]-2].get_player() ==0 :
-                        return True
-                
-        else :
-            if position[1] != 0 :
-                if self.board[position[0]][position[1]+int(y*1.5)].get_build() != 0 or self.board[position[0]][position[1]+y*2].get_player() !=0 :
-                        if self.board[position[0]-1][position[1]+y].get_build() == 0 and self.board[position[0]-2][position[1]+y].get_player() ==0 :
-                            return True
-        return False
-    
-    def isPossibleMoveOnRightSizePlayer(self,position : list, x : int, y : int) -> bool:
-        if x != 0 :
-            if position[0] != (self.__size-1)*2 :
-                if self.board[position[0]+int(x*1.5)][position[1]].get_build() != 0 or self.board[position[0]+x*2][position[1]].get_player() !=0 :
-                    if self.board[position[0]+x][position[1]+1].get_build() == 0 and self.board[position[0]+x][position[1]+2].get_player() ==0 :
-                        return True
-                
-        else :
-            if position[1] != (self.__size-1)*2 :
-                if self.board[position[0]][position[1]+int(y*1.5)].get_build() != 0 or self.board[position[0]][position[1]+y*2].get_player() !=0 :
-                        if self.board[position[0]+1][position[1]+y].get_build() == 0 and self.board[position[0]+2][position[1]+y].get_player() ==0 :
-                            return True
-        return False
-
             
     def allPossibleMoveForPlayer(self) -> list:
-        list = []
+        list2 = []
         position = self.current_player.displayPlace()
-        if self.isPossibleMove(-2,0) == True :
-            if self.board[position[0]-2][position[1]].get_player() !=0:
-                if position[0] != 2 :
-                    if self.board[position[0]-3][position[1]].get_build() == 0 and self.board[position[0]-4][position[1]].get_player() == 0:
-                        list.append([-4,0])
-                    if self.isPossibleMoveOnLeftSizePlayer(position,-2,0) == True :
-                        list.append([-2,-2])
-                    if self.isPossibleMoveOnRightSizePlayer(position,-2,0) == True :
-                        list.append([-2,2])
-            else:
-                list.append([-2,0])
-        if self.isPossibleMove(2,0) == True :
-            if self.board[position[0]+2][position[1]].get_player() !=0:
-                if position[0] != (self.__size-1)*2-2 :
-                    if self.board[position[0]+3][position[1]].get_build() ==0:
-                        list.append([4,0])
-                    if self.isPossibleMoveOnLeftSizePlayer(position,2,0) == True :
-                        list.append([2,-2])
-                    if self.isPossibleMoveOnRightSizePlayer(position,2,0) == True :
-                        list.append([2,2])
-            else:
-                list.append([2,0])
-        if self.isPossibleMove(0,-2) == True :
-            if self.board[position[0]][position[1]-2].get_player() !=0:
-                if position[1] != 2 :
-                    if self.board[position[0]][position[1]-3].get_build() ==0:
-                        list.append([0,-4])
-                    if self.isPossibleMoveOnLeftSizePlayer(position,0,-2) == True :
-                        list.append([-2,-2])
-                    if self.isPossibleMoveOnRightSizePlayer(position,0,-2) == True :
-                        list.append([2,-2])
-            else:
-                list.append([0,-2])
-        if self.isPossibleMove(0,2) == True :
-            if self.board[position[0]][position[1]+2].get_player() !=0:
-                if position[1] != (self.__size-1)*2-2 :
-                    if self.board[position[0]][position[1]+3].get_build() ==0:
-                        list.append([0,4])
-                    if self.isPossibleMoveOnLeftSizePlayer(position,0,2) == True :
-                        list.append([-2,2])
-                    if self.isPossibleMoveOnRightSizePlayer(position,0,2) == True :
-                        list.append([2,2])
-            else:
-                list.append([0,2])
-        return list
+        self.bot.updateNeighborsForEachCase()
+        for neighbor in self.board[position[0]][position[1]].get_neighbors():
+            if neighbor.get_player() == 0 :
+                list2.append([neighbor.get_position()[0] - position[0], neighbor.get_position()[1] - position[1]])
+            else :
+                can_jump = False
+                for neighbor2 in neighbor.get_neighbors():
+                    if neighbor2.get_player() == 0 and neighbor2.get_position()[0] == position[0] + (neighbor.get_position()[0] - position[0])*2 and neighbor2.get_position()[1] == position[1] + (neighbor.get_position()[1] - position[1])*2 :
+                        list2.append([(neighbor.get_position()[0] - position[0])*2, (neighbor.get_position()[1] - position[1])*2])
+                        can_jump = True
+                if can_jump == False :
+                    for neighbor2 in neighbor.get_neighbors():
+                        if neighbor2.get_player() == 0 :
+                            list2.append([neighbor2.get_position()[0] - position[0], neighbor2.get_position()[1] - position[1]])
+                    
+                    
+        print(list2)
+        return list2
     
     def allPossibleBuildFence(self) -> list:
         list = [] 

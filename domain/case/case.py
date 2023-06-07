@@ -33,20 +33,19 @@ class Case:
         elif self.__player == 0:
             return 'P0'
         
-    def updateNeighbors(self, board, i, j, size):
+    def updateNeighbors(self, board, i, j, size) -> None:
         self.neighbors = []
-        if i < (size-1)*2 and board.board[i + 1][j].get_build() == 0: # DOWN
+        if i < (size-1)*2 and board.board[i + 1][j].get_build() == 0 : # DOWN
             self.neighbors.append(board.board[i + 2][j])
 
-        if i > 0 and board.board[i - 1][j].get_build() == 0: # UP
+        if i > 0 and board.board[i - 1][j].get_build() == 0 : # UP
             self.neighbors.append(board.board[i - 2][j])
 
-        if j < (size-1)*2 and board.board[i][j + 1].get_build() == 0: # RIGHT
+        if j < (size-1)*2 and board.board[i][j + 1].get_build() == 0 : # RIGHT
             self.neighbors.append(board.board[i][j + 2])
 
-        if j > 0 and board.board[i][j - 1].get_build() == 0: # LEFT
+        if j > 0 and board.board[i][j - 1].get_build() == 0 : # LEFT
             self.neighbors.append(board.board[i][j - 2])
-        # print(board.board[i][j].displayPlayer())
         
     def get_neighbors(self):
         return self.neighbors
