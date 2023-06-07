@@ -13,6 +13,7 @@ from infrastructure.services.getInformation import GetInformation
 from domain.bot.bot import Bot
 import os
 
+
 class Board:
     def __init__(self, size : int, nb_players : int, nb_IA : int, nb_fence : int, select_map : int, Network : bool, InstanceNetwork : object, typeNetwork : str, playerUser : int, db : Database) -> None:
         if Network == True:
@@ -103,9 +104,12 @@ class Board:
         elif select_map == 4:
             self.map = "ice"
         
-        self.sound_map = mixer.Sound(f"./assets/sounds/{self.map}.mp3")
-        self.sound_map.play(loops=-1)
-        self.sound_map.set_volume(0.1)
+        self.volume_map = 0.1
+        self.volume_victory = 0.3
+        self.volume_pion = 0.4
+        self.volume_fence = 1
+        self.volume_nofence = 1
+        
         
         self.name_bg = size
         if self.name_bg == 11 or self.name_bg == 9 or self.name_bg == 7:
@@ -180,6 +184,7 @@ class Board:
         pillar_hover = pillar_hover.resize((pillar_taille, pillar_taille))
         self.pillar_hover = ImageTk.PhotoImage(pillar_hover)
 
+        self.loadVolumeSettings()
 
         for i in range(self.__size*2-1):
             if i%2 == 0 :
@@ -199,7 +204,20 @@ class Board:
                     else :
                         tab2.append(Pillar(0))
                 self.board.append(tab2)
-        
+    
+    def loadVolumeSettings(self) -> None:
+        with open("settings.txt", "r") as file:
+            lines = file.readlines()
+            if len(lines) >= 6:
+                self.volume_map = float(lines[1].strip())
+                self.volume_victory = float(lines[2].strip())
+                self.volume_pion = float(lines[3].strip())
+                self.volume_fence = float(lines[4].strip())
+                self.volume_nofence = float(lines[5].strip())
+                print(self.volume_map, self.volume_victory, self.volume_pion, self.volume_fence, self.volume_nofence)
+        self.sound_map = mixer.Sound(f"./assets/sounds/{self.map}.mp3")
+        self.sound_map.play(loops=-1)
+        self.sound_map.set_volume(self.volume_map)
     
     def caseClicked(self, event : int) -> None:
         item_id = event.widget.find_closest(event.x, event.y)[0]
@@ -217,8 +235,7 @@ class Board:
         # son de déplacement
         sound_move = mixer.Sound("./assets/sounds/move.mp3")
         sound_move.play()
-        sound_move.set_volume(0.4)
-        
+        sound_move.set_volume(self.volume_pion)
         if self.victory() == True :
             self.displayBoard(False)
             self.canvas.unbind_all("<Button-1>")
@@ -359,7 +376,7 @@ class Board:
         # Son de victoire
         sound_victory = mixer.Sound("./assets/sounds/victory.mp3")
         sound_victory.play()
-        sound_victory.set_volume(0.3)
+        sound_victory.set_volume(self.volume_victory)
         if self.networkStatus == True:
             if self.typeNetwork == "instance" :
                 username = self.db.selectUsername(self.db.ip, self.db.port,  self.current_player.get_player())
@@ -563,10 +580,12 @@ class Board:
                         self.displayBoard(False)
                         sound_build_fence = mixer.Sound("./assets/sounds/no_fence.mp3")
                         sound_build_fence.play()
+                        sound_build_fence.set_volume(self.volume_nofence)
                     else :
                         # Son de pose de barrière
                         sound_build_fence = mixer.Sound("./assets/sounds/build_fence.mp3")
                         sound_build_fence.play()
+                        sound_build_fence.set_volume(self.volume_fence)
                         if self.networkStatus == True:
                             if self.typeNetwork == "instance":
                                 self.InstanceNetwork.SendBoard(x, y, 1, self.fence_orientation)
