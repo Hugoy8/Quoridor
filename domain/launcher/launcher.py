@@ -103,7 +103,6 @@ class QuoridorLauncher:
     def choiceFavoriteMap(self) -> None:
         def action(event) -> None:
             selected_value = listMap.get()
-            print("Value : ", selected_value)
             try:
                 if selected_value == "Jungle":
                     self.selectFavoriteMap = 1
@@ -117,6 +116,7 @@ class QuoridorLauncher:
                     self.selectFavoriteMap = 5
                 elif selected_value == "Sugar":
                     self.selectFavoriteMap = 6
+                
                 # Ajouter la valeur de self.selectFavoriteMap à la 7e ligne de settings.txt
                 with open("settings.txt", "r") as file:
                     lines = file.readlines()
@@ -124,6 +124,7 @@ class QuoridorLauncher:
                     lines[6] = str(self.selectFavoriteMap) + "\n"
                 with open("settings.txt", "w") as file:
                     file.writelines(lines)
+                    
             except ValueError:
                 print(f"Error: '{selected_value}' is not a valid map")
 
@@ -132,17 +133,18 @@ class QuoridorLauncher:
             listMaps = self.db.getMapByUsername(username)
         else:
             listMaps = ["Jungle", "Space", "Hell"]
+        
+        self.selectFavoriteMap = min(self.selectFavoriteMap, len(listMaps))  # Assure un index valide
+        
         listMap = ttk.Combobox(self.window, values=listMaps, state="readonly")
         listMap.current(self.selectFavoriteMap - 1)
-        X = 0.25
-        Y = 0.73
-        if self.statut == 1 or self.statut == 3:
-            X = 0.45
-        listMap.place(relx=X, rely=Y, anchor=CENTER)
+            
+        listMap.place(relx=0.25, rely=0.8, anchor=CENTER)
         listMap.bind("<<ComboboxSelected>>", action)
-        if self.statut == 0 or self.statut == 2:
-            nameMap = Label(self.window, text="Votre carte favorite:", font=("Arial", 10), bg="#0F2234", fg="#E3F8FF")
-            nameMap.place(relx=0.25, rely=0.7, anchor=CENTER)
+        
+        nameMap = Label(self.window, text="Votre carte favorite:", font=("Arial", 10), bg="#0F2234", fg="#E3F8FF")
+        nameMap.place(relx=0.25, rely=0.73, anchor=CENTER)
+
 
     
     # Activer ou désactiver le son des notifications de demande d'amis
@@ -706,7 +708,6 @@ class QuoridorLauncher:
     def numberIA(self) -> None:
         def action(event) -> None:
             self.selectIA = int(listIA.get())
-            print("IA : ", self.selectIA)
             
         listIAs=[0, 1, 2, 3]
         listIA = ttk.Combobox(self.window, values=listIAs, state="readonly")
@@ -721,7 +722,6 @@ class QuoridorLauncher:
     def getIaDifficulty(self) -> None:
         def action(event) -> None:
             self.selectIaDifficulty = listIAdifficulty.get()
-            print("IA difficulty : ", self.selectIaDifficulty)
             try:
                 if self.selectIaDifficulty == "Facile":
                     self.selectIaDifficulty = 1
@@ -745,7 +745,6 @@ class QuoridorLauncher:
     def numberPlayer(self) -> None:
         def action(event) -> None:
             self.selectPlayer = int(listPlayer.get())
-            print("Player : ", self.selectPlayer)
 
         if self.statut == 0:
             listPlayers = [1, 2, 3, 4]
@@ -766,7 +765,6 @@ class QuoridorLauncher:
     def sizeBoard(self) -> None:
         def action(event) -> None:
             self.selectSize = int(listSize.get())
-            print("Board : ", self.selectSize)
 
         listSizes=[5, 7, 9, 11]
         listSize = ttk.Combobox(self.window, values=listSizes, state="readonly")
@@ -791,7 +789,6 @@ class QuoridorLauncher:
     def numberFence(self) -> None:
         def action(event) -> None:
             self.selectFence = int(listFence.get())
-            print("Fence : ", self.selectFence)
 
         listFences = []
         for i in range(4, 41):
@@ -819,7 +816,6 @@ class QuoridorLauncher:
     def choiceMap(self) -> None:
         def action(event) -> None:
             selected_value = listMap.get()
-            print("Value : ", selected_value)
             try:
                 if selected_value == "Jungle":
                     self.selectMap = 1
@@ -957,7 +953,6 @@ class QuoridorLauncher:
         scanNetwork = ScanNetwork(8000, 8005)
         scanNetwork.scan()
         listip = scanNetwork.getIp()
-        print(listip)
         if len(listip) == 0:
             self.statut = 3
             self.menuJoinGameNetwork(event=None)
