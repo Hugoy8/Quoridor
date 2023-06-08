@@ -1,5 +1,6 @@
 import random
 from queue import PriorityQueue
+import time
 
 class Bot :
     def __init__(self) -> None:
@@ -150,7 +151,7 @@ class Bot :
                     list.append([x,y])
         return list
     
-    def havePathForEachCase(self, listCase : list) -> None:
+    def havePathForEachCase(self, listCase : list) -> list:
         listPath = []
         for case in listCase:
             path = self.calculatePath(self.board.board[self.board.current_player.displayPlace()[0]][self.board.current_player.displayPlace()[1]], self.board.board[case[0]][case[1]])
@@ -168,7 +169,7 @@ class Bot :
                     if x + move[0] == element[0] and y + move[1] == element[1] :
                         return [move[0], move[1]]
                 
-    def botPlaysGoodMove(self) -> list:
+    def botPlaysGoodMove(self) -> list :
         listCase = self.haveAllCasePositionWin()
         sumPath = self.havePathForEachCase(listCase)
         movement = self.nextMove(sumPath, self.board.allPossibleMoveForPlayer())

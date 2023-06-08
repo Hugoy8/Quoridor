@@ -512,9 +512,7 @@ class Board:
                 tab.append(tab2)
             
     def buildFenceOnClick(self,event):
-        if self.playerHasFence() == False :
-            print(" ")
-        else :
+        if self.playerHasFence() == True:
             item_id = event.widget.find_withtag("current")[0], 
             tags = self.canvas.gettags(item_id)
             if len(tags) >= 2 :
@@ -552,7 +550,6 @@ class Board:
                         while self.current_player.get_IALevel() != 0 :
                             # self.bot.currentBotPlaysBasedOnDifficulty(self.current_player.get_IALevel())
                             self.bot.currentBotPlaysBasedOnDifficulty(2)
-                            time.sleep(1)
                             if self.victory() == True :
                                 self.displayBoard(False)
                                 self.canvas.unbind_all("<Button-1>")
@@ -638,7 +635,11 @@ class Board:
             case = self.board[self.__size-1][-1]
             case.set_player(4)
             self.players.append(Player(self.__size-1,(self.__size-1)*2,4,nb_fence_each_player,self.decideIALevel(4)))
-        self.current_player = self.players[0]
+        if self.networkStatus == True:
+            self.current_player = self.players[0]
+        else :
+            self.current_player = self.bot.randomChoice(self.players)
+        
         
     
     def refreshCurrentPlayer(self) -> None:
@@ -773,134 +774,30 @@ class Board:
         if fence.get_build() == 1:
             return True
         return False
-        
-    def isPossibleWay(self, x : int, y : int, player : str) -> bool:
-        self.list_case_check.append([x, y])
-        if x == (self.__size-1)*2 and player == 1:
+    
+    def isPossibleWay2(self, case : object, player : object):
+        self.list_case_check.append(case.get_position())
+        if case.get_position()[0] == (self.__size-1)*2 and player == 1:
             return True
-        elif x == 0 and player == 2:
+        elif case.get_position()[0] == 0 and player == 2:
             return True
-        elif y == (self.__size-1)*2 and player == 3:
+        elif case.get_position()[1] == (self.__size-1)*2 and player == 3:
             return True
-        elif y == 0 and player == 4:
+        elif case.get_position()[1] == 0 and player == 4:
             return True
-        if x == 0:
-            if y == 0: #coin haut gauche
-                if self.alreadyChecked(0, 2) == False and self.thereIsFence(0, 1) == False:
-                    if self.isPossibleWay(0, 2, player) == True :
-                        return True
-                        
-                if self.alreadyChecked(2, 0) == False and self.thereIsFence(1, 0) == False:
-                    if self.isPossibleWay(2, 0, player) == True :
-                        return True
-                        
-            elif y==(self.__size-1)*2: #coin haut droite
-                if self.alreadyChecked(0, y-2) == False and self.thereIsFence(0, y-1) == False:
-                    if self.isPossibleWay(0, y-2, player) == True :
-                        return True
-                        
-                if self.alreadyChecked(2, y) == False and self.thereIsFence(1, y) == False:
-                    if self.isPossibleWay(2, y, player) == True :
-                        return True
-                        
-            else: #ligne haut
-                if self.alreadyChecked(x, y-2) == False and self.thereIsFence(x, y-1) == False:
-                    if self.isPossibleWay(x, y-2, player) == True :
-                        return True 
-                        
-                if self.alreadyChecked(x, y+2) == False and self.thereIsFence(x, y+1) == False:
-                    if self.isPossibleWay(x, y+2, player) == True :
-                        return True 
-                        
-                if self.alreadyChecked(x+2, y) == False and self.thereIsFence(x+1, y) == False:
-                    if self.isPossibleWay(x+2, y, player) == True :
-                        return True 
-                        
-        elif y==0: 
-            if x == (self.__size-1)*2: #coin bas gauche
-                if self.alreadyChecked(x-2, y) == False and self.thereIsFence(x-1, y) == False:
-                    if self.isPossibleWay(x-2, y, player) == True :
-                        return True
-                        
-                if self.alreadyChecked(x, y+2) == False and self.thereIsFence(x,y+1) == False:
-                    if self.isPossibleWay(x, y+2, player) == True :
-                        return True 
-                        
-            else : #colonne gauche
-                if self.alreadyChecked(x-2, y) == False and self.thereIsFence(x-1, y) == False:
-                    if self.isPossibleWay(x-2, y, player) == True :
-                        return True 
-                        
-                if self.alreadyChecked(x+2, y) == False and self.thereIsFence(x+1, y) == False:
-                    if self.isPossibleWay(x+2, y, player) == True :
-                        return True 
-                        
-                if self.alreadyChecked(x, y+2) == False and self.thereIsFence(x, y+1) == False:
-                    if self.isPossibleWay(x, y+2, player) == True :
-                        return True 
-                        
-        elif y==(self.__size-1)*2: 
-            if x == (self.__size-1)*2: #coin bas droite
-                if self.alreadyChecked(x-2, y) == False and self.thereIsFence(x-1, y) == False:
-                    if self.isPossibleWay(x-2, y, player) == True :
-                        return True 
-                        
-                if self.alreadyChecked(x, y-2) == False and self.thereIsFence(x, y-1) == False:
-                    if self.isPossibleWay(x, y-2, player) == True :
-                        return True 
-                        
-            else: #colonne droite
-                if self.alreadyChecked(x-2, y) == False and self.thereIsFence(x-1, y) == False:
-                    if self.isPossibleWay(x-2, y, player) == True :
-                        return True 
-                        
-                if self.alreadyChecked(x+2, y) == False and self.thereIsFence(x+1, y) == False:
-                    if self.isPossibleWay(x+2, y, player) == True :
-                        return True 
-                        
-                if self.alreadyChecked(x, y-2) == False  and self.thereIsFence(x, y-1) == False:
-                    if self.isPossibleWay(x, y-2, player) == True :
-                        return True 
-                    
-        elif x == (self.__size-1)*2: #ligne bas 
-            if self.alreadyChecked(x, y-2) == False and self.thereIsFence(x, y-1) == False:
-                if self.isPossibleWay(x, y-2, player) == True :
-                    return True 
-            if self.alreadyChecked(x, y+2) == False and self.thereIsFence(x, y+1) == False:
-                if self.isPossibleWay(x, y+2, player) == True :
-                    return True 
-                    
-            if self.alreadyChecked(x-2, y) == False and self.thereIsFence(x-1, y) == False:
-                if self.isPossibleWay(x-2, y, player) == True :
-                    return True
-                
-        else: #middle
-            if self.alreadyChecked(x-2, y) == False and self.thereIsFence(x-1, y) == False:
-                if self.isPossibleWay(x-2, y, player) == True :
-                    return True 
-                        
-            if self.alreadyChecked(x+2, y) == False and self.thereIsFence(x+1, y) == False:
-                if self.isPossibleWay(x+2, y, player) == True :
-                    return True 
-                        
-            if self.alreadyChecked(x, y-2) == False and self.thereIsFence(x, y-1) == False:
-                if self.isPossibleWay(x, y-2, player) == True :
-                    return True 
-                        
-            if self.alreadyChecked(x, y+2) == False and self.thereIsFence(x, y+1) == False:
-                if self.isPossibleWay(x, y+2, player) == True :
-                    return True 
-                        
-        
+        for neighbor in case.get_neighbors() :
+            if self.alreadyChecked(neighbor.get_position()[0], neighbor.get_position()[1]) == False and self.isPossibleWay2(neighbor, player) == True :
+                return True
     
     def seachPossibleWayForPlayer(self, player : str) -> bool:
         self.list_case_check = []
-        position = self.players[player-1].displayPlace()
-        if self.isPossibleWay(position[0], position[1], player) !=True :
+        if self.isPossibleWay2(self.board[self.players[player-1].displayPlace()[0]][self.players[player-1].displayPlace()[1]], player) !=True :
             return False
-        return True
+        else :
+            return True
         
     def fenceNotCloseAccesGoal(self) -> bool:
+        self.bot.updateNeighborsForEachCase()
         for i in range(self.__nb_players):
             if self.seachPossibleWayForPlayer(i+1) == False :
                 return False
@@ -956,9 +853,6 @@ class Board:
                     for neighbor2 in neighbor.get_neighbors():
                         if neighbor2.get_player() == 0 :
                             list2.append([neighbor2.get_position()[0] - position[0], neighbor2.get_position()[1] - position[1]])
-                    
-                    
-        print(list2)
         return list2
     
     def allPossibleBuildFence(self) -> list:
