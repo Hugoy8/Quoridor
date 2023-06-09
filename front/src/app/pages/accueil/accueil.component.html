@@ -1,0 +1,81 @@
+<app-header></app-header>
+
+<div class="main-container bg-[#132D44] -mt-1 max-[1023px]:pt-28" style="background-image: url(assets/hero_background.png);">
+    <div data-aos="fade-up" data-aos-duration="2000" class="container px-4 py-5 mx-auto sm:max-w-xl md:max-w-full lg:max-w-screen-xl md:px-24 lg:px-8">
+        <div class="items-center lg:flex">
+            <div class="w-full lg:w-1/2">
+                <div class="lg:max-w-lg">
+                    <h1 class="text-3xl font-semibold text-gray-800 dark:text-white lg:text-4xl">Découvrez et jouez <br> au <span class="text-blue-500 ">Quoridor</span> en Python !</h1>
+                    
+                    <p class="mt-3 text-gray-600 dark:text-gray-400">Le Quoridor est un jeu de stratégie passionnant où vous devez être le premier à atteindre la ligne opposée. <br><br>Téléchargez-le ci-dessous et jouez seul ou entre amis !</p>
+                    
+                    <button routerLink="/download" class="h-10 w-48 px-5 py-2 mt-6 text-sm text-white transition-colors duration-300 bg-[#007EEE] rounded-lg lg:w-auto hover:bg-blue-500"><i class="fa-solid fa-arrow-down-long fa-sm mr-2"></i>Télécharger</button>
+                    <button (click)="scrollToCategories()" class="h-10 w-48 px-5 py-2 mt-6 text-sm text-white transition-colors duration-300 lg:w-auto">En savoir plus</button>
+
+                </div>
+            </div>
+
+            <div class="flex items-center justify-center w-full mt-6 lg:mt-0 lg:w-1/2">
+                <img class="w-full h-full lg:max-w-3xl pointer-events-none" src="assets/home_page_illustration.png" alt="Illustration de la page d'accueil (hero)">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="game-axes-container bg-[#132D44]" id="axes-section">
+    <div data-aos="fade-up" data-aos-duration="1000" class="axes-container pt-40 pb-48 px-48 max-[900px]:px-32">
+    
+        <div data-aos="fade-up" data-aos-duration="1000" class="category-title flex flex-col justify-center items-center">
+            <h1 class="text-4xl font-extrabold text-white text-center">Le jeu en <span class="text-primary600 text-center">3 étapes</span>.</h1>
+            <p class="text-xl mt-4 text-neutral500 font-regular text-center">Autour de 3 axes principaux, découvrez le fonctionnement du Quoridor ainsi qu’un bref rappel des règles et des objectifs.</p>
+        </div>
+        
+        <div class="content-all mt-24 flex justify-between max-[1500px]:flex-col max-[1500px]:justify-center items-center">
+    
+            <div data-aos="fade-up" data-aos-duration="2000" class="first flex flex-col max-[1500px]:mb-20 max-[1500px]:mr-0 mr-20">
+    
+                <div class="why-section-title flex flex-col">
+                    <i class="fa-solid fa-flag-checkered fa-lg ease-linear hover:rotate-180 hover:opacity-70 duration-300 flex items-center justify-center text-primary600 bg-primary600/10 rounded-full overflow-hidden w-14 h-14 text-center"></i>
+                    <h6 class="font-bold text-primary600 text-xl pt-4">L’objectif</h6>
+                </div>
+            
+                <div class="why-section-text">
+                    <p class="text-base pt-2 text-neutral500 w-96">Le but du Quoridor est d'être le premier joueur à atteindre la ligne opposée. Chaque joueur a un pion et doit le déplacer sur un plateau de jeu de 5x5, 7x7, 9x9 ou 11x11 cases, en évitant les barrières de l'adversaire.</p>
+                </div>
+            
+            </div>
+            
+            <div data-aos="fade-up" data-aos-duration="2500" class="second flex flex-col max-[1500px]:mb-20 max-[1500px]:mr-0 mr-20">
+        
+                <div class="why-section-title flex flex-col">
+                    <i class="fa-solid fa-scale-balanced fa-lg ease-linear hover:rotate-180 hover:opacity-70 duration-300 flex items-center justify-center text-primary600 bg-primary600/10 rounded-full overflow-hidden w-14 h-14 text-center"></i>
+                    <h6 class="font-bold text-primary600 text-xl pt-4">Les règles</h6>
+                </div>
+            
+                <div class="why-section-text">
+                    <p class="text-base pt-2 text-neutral500 w-96">Chaque joueur dispose d’un nombre défini barrières qu'il peut placer pour bloquer le chemin de son adversaire. Les barrières ne peuvent pas être placées sur la ligne de départ Les joueurs peuvent sauter par-dessus les pions et les barrières.</p>
+                </div>
+            
+            </div>
+            
+            <div data-aos="fade-up" data-aos-duration="3000" class="third flex flex-col">
+        
+                <div class="why-section-title flex flex-col">
+                    <i class="fa-solid fa-gamepad fa-lg ease-linear hover:rotate-180 hover:opacity-70 duration-300 flex items-center justify-center text-primary600 bg-primary600/10 rounded-full overflow-hidden w-14 h-14 text-center"></i>
+                    <h6 class="font-bold text-primary600 text-xl pt-4">Jouer au Quoridor</h6>
+                </div>
+            
+                <div class="why-section-text">
+                    <p class="text-base pt-2 text-neutral500 w-96">Le jeu est jouable en solo contre des ordinateurs avec plusieurs niveaux de difficulté ou en multijoueur en réseau. Les joueurs se déplacent tour à tour et peuvent soit avancer leur pion d'une case, soit placer une barrière.</p>
+                </div>
+            
+            </div>
+    
+        </div>
+    
+        
+    
+    </div>
+</div>
+
+<app-footer></app-footer>

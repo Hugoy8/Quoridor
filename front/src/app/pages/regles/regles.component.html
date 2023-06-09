@@ -1,0 +1,25 @@
+<app-header></app-header>
+
+<div class="pdf-section bg-[#132D44]" style="background-image: url(assets/hero_background.png);">
+
+    <div class="pdf-all py-36 px-60 max-[1080px]:px-10">
+        <div data-aos="fade-up" data-aos-duration="1000" class="category-title flex flex-col justify-center items-center">
+            <h1 class="text-4xl font-extrabold text-white text-center">Découvrez les <span class="text-primary600 text-center">règles</span>.</h1>
+            <p class="text-xl mt-4 text-neutral500 font-regular text-center">N'hésitez pas à consulter ou télécharger directement les règles officielles du passionnant jeu Quoridor sur notre site.            </p>
+        </div>
+
+        <div class="frame-pdf flex justify-center p-8 mt-24 max-[1080px]:hidden">
+            <iframe src="assets/regles.pdf" class="w-full h-[1080px] max-[1080px]:hidden" type="application/pdf">
+                <p>Il semble que votre navigateur ne supporte pas les PDF intégrés. <a href="assets/regles.pdf">Cliquez ici pour télécharger le PDF</a>.</p>
+            </iframe>
+        </div>
+
+        <div class="min-[1080px]:hidden p-8 mt-24">
+            <p class="text-center text-red-500">Votre appareil ne prend pas en charge la lecture de PDF, veuillez consulter les règles sur un ordinateur.</p>
+        </div>
+    </div>
+
+</div>
+
+
+<app-footer></app-footer>

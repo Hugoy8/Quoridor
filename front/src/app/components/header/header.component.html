@@ -1,0 +1,86 @@
+<div class="bg-[#062037]">
+
+    <div class="px-4 py-5 mx-auto sm:max-w-xl md:max-w-full lg:max-w-screen-xl md:px-24 lg:px-8">
+        
+        <div class="relative flex items-center justify-between h-12">
+            <div class="navleft flex justify-center mr-[88px]">
+                <a routerLink=""class="inline-flex items-center">
+                    <img src="assets/main_logo.png" class="pointer-events-none" alt="Image du logo de Quoridor" width="104px" height="32px">
+                </a>
+            </div>
+            <div class="navlinks flex items-center space-x-12 lg:flex max-[1023px]:hidden">
+                <a routerLink="/" routerLinkActive="text-white" [routerLinkActiveOptions]="{exact: true}" class="font-regular text-sm text-neutral400 transition-colors duration-200 hover:text-neutral200">Accueil</a>
+                <a routerLink="/regles" routerLinkActive="text-white" class="first-letter:font-regular text-sm text-neutral400 transition-colors duration-200 hover:text-neutral200">Règles</a>
+                <a routerLink="/classement" routerLinkActive="text-amber-500" class="font-medium text-base text-amber-400 transition-colors duration-300 hover:text-amber-300"><i class="fa-solid fa-crown mr-2"></i><span class="relative inline-block before:content-'' before:absolute before:inset-0 before:bg-amber-300 before:w-0 before:h-0.5 before:transition-all before:duration-500 before:ease-out before:transform before:origin-left before:hover:w-full before:top-6">Classement</span></a>
+                <a routerLink="/equipe" routerLinkActive="text-white" class="font-regular text-sm text-neutral400 transition-colors duration-200 hover:text-neutral200">Équipe</a>
+                <a routerLink="/boutique" routerLinkActive="text-white" class="font-regular text-sm text-neutral400 transition-colors duration-200 hover:text-neutral200">Boutique</a>
+            </div>
+            <div class="navright flex items-center space-x-4 lg:flex w-48 max-[1023px]:hidden">
+                <a routerLink="/download" class="inline-flex bg-[#007EEE] items-center justify-center h-10 w-32 px-6 font-regular text-base text-white transition duration-200 rounded-lg shadow-md bg-deep-purple-accent-400 hover:bg-deep-purple-accent-700 focus:shadow-outline focus:outline-none">Télécharger</a>
+                <button (click)="authOrPanel()" class="auth-or-panel" routerLink="/auth"><i [ngClass]="{'text-primary600': authenticated, 'text-primary100': !authenticated}" class="fa-solid fa-circle-user fa-xl"></i></button>
+            </div>
+
+            <div class="menu-open-btn flex lg:hidden right-24 max-[639px]:right-4">
+                <button (click)="openMenu()" type="button" class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-primary600">
+                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mobile menu, show/hide based on menu open state. -->
+            <div *ngIf="menuState">
+                
+                <!-- Background backdrop, show/hide based on slide-over state. -->
+                <div #dropdownmenu class="menu-dropdown fixed inset-0 z-100">
+
+                    <div class="menu-drop-down-content fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-[#062037] min-[1023px]:hidden px-6 py-2 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
+
+                        <div class="flex items-center justify-between">
+
+                            <a class="-m-1.5 p-1.5">
+                                <p class="h-4 w-auto mt-3 text-primary100">Menu de navigation</p>
+                            </a>
+
+                            <button (click)="closeMenu()" class="menu-close-btn -m-2.5 pt-6 rounded-md p-2.5 text-primary600">
+                                <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+
+                        </div>
+
+                        <div class="dropdown-nav mt-6 flow-root">
+
+                            <div class="-my-6 divide-y divide-gray-500/10">
+
+                                <div class="space-y-2 pt-10 pb-4">
+                                    <a routerLink="/" (click)="closeMenu()" class="-mx-3 block rounded-lg py-2 px-3 text-base font-medium text-primary100">Accueil</a>
+                                    <a routerLink="/regles" (click)="closeMenu()" class="-mx-3 block rounded-lg py-2 px-3 text-base font-medium text-primary100">Règles</a>
+                                    <a routerLink="/classement" (click)="closeMenu()" class="-mx-3 block rounded-lg py-2 px-3 text-base font-medium text-primary100">Classement</a>
+                                    <a routerLink="/equipe" (click)="closeMenu()" class="-mx-3 block rounded-lg py-2 px-3 text-base font-medium text-primary100">Équipe</a>
+                                    <a routerLink="/boutique" (click)="closeMenu()" class="-mx-3 block rounded-lg py-2 px-3 text-base font-medium text-primary100">Boutique</a>
+                                </div>
+                                
+                                <div class="my-8 flex items-center space-x-6 lg:flex w-48">
+                                    <a routerLink="/download" class="inline-flex bg-[#007EEE] items-center justify-center h-10 w-32 px-6 font-regular text-base text-white transition duration-200 rounded-lg shadow-md bg-deep-purple-accent-400 hover:bg-deep-purple-accent-700 focus:shadow-outline focus:outline-none">Télécharger</a>
+                                    <button (click)="authOrPanel()" class="auth-or-panel" routerLink="/auth"><i [ngClass]="{'text-primary600': authenticated, 'text-primary100': !authenticated}" class="fa-solid fa-circle-user fa-xl"></i></button>
+                                </div>
+
+                                <div class="dropdown-close py-2">
+                                    <button (click)="closeMenu()" class="-mx-3 block rounded-lg py-2.5 px-3 leading-7 text-red-500 text-base font-medium">Fermer</button>
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+            </div>
+        </div>
+
+    </div>

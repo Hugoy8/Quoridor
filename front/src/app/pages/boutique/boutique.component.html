@@ -1,0 +1,79 @@
+<app-header></app-header>
+
+<div class="boutique-container bg-[#132D44] py-36" style="background-image: url(assets/hero_background.png);">
+    <div data-aos="fade-up" data-aos-duration="1000" class="category-title flex flex-col justify-center items-center mb-32">
+        <h1 class="text-4xl font-extrabold text-white text-center">Découvrez notre <span class="text-primary600 text-center">boutique</span> !</h1>
+        <p class="text-xl mt-4 text-neutral500 font-regular text-center">Achetez nos différentes cartes toujours plus élaborées et toujours plus jolies !</p>
+    </div>
+
+    <div class="profile-information flex justify-center mb-12">
+        <div data-aos="fade-down" data-aos-duration="2000" class="container-info bg-[#062037] w-80 flex justify-between rounded-full px-2 py-2">
+            <div class="left-part flex items-center justify-center">
+                <img class="rounded-full w-12 h-12 object-cover border-primary400 border-2" [attr.src]="'https://avatar.oxro.io/avatar.svg?name=' + ((user?.username | uppercase) || '') + '&background=2DA6FF&caps=3&bold=true'" alt="">
+                <p class="text-primary100 font-medium text-lg ml-4">{{ user?.username }}</p>
+            </div>
+            <div class="right-part text-yellow-500 flex items-center pr-2">
+                <i class="fa-solid fa-coins"></i>
+                <p class="font-medium ml-2 mt-1">{{ user?.money }} Crédits</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="boutique-items-container flex justify-center items-center max-[1300px]:flex-col">
+        <div data-aos="fade-up" data-aos-duration="2000" class="boutique-item rounded-xl bg-[#062037] w-96 max-[1300px]:mr-0 max-[1300px]:mb-8 mr-8 flex justify-center flex-col p-4 hover:scale-105 transition duration-150 ease-linear cursor-pointer">
+            <img class="w-full h-full rounded-xl" src="https://images.unsplash.com/photo-1616538786635-824526b09102?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="">
+            <div class="mt-6 flex flex-col justify-center text-center">
+                <h3 class="text-bluePrimary text-3xl font-bold text-primary300">Glace</h3>
+                <p class="title text-sm text-primary100">Type : Carte</p>
+                <p class="mt-6 title text-base text-primary100 font-bold">Prix : 1000 Crédits</p>
+
+                <button *ngIf="!Ice" (click)="buyMap('Ice')" type="submit" class="purchase-button w-full mt-4 px-6 py-3 text-base font-medium tracking-wide text-white transition-colors duration-300 transform bg-blue-500 rounded-lg hover:bg-blue-400">
+                    Acheter
+                </button>
+                <button *ngIf="Ice" type="submit" class="already-purchased w-full mt-4 px-6 py-3 text-base font-medium tracking-wide text-white/75 transition-colors duration-300 transform bg-blue-500/50 rounded-lg cursor-not-allowed">
+                    Déjà achetée
+                </button>
+            </div>
+        </div>
+        <div data-aos="fade-up" data-aos-duration="2500" class="boutique-item rounded-xl bg-[#062037] w-96 max-[1300px]:mr-0 max-[1300px]:mb-8 mr-8 flex justify-center flex-col p-4 hover:scale-105 transition duration-150 ease-linear cursor-pointer">
+            <img class="w-full h-full rounded-xl" src="https://images.unsplash.com/photo-1533922115281-16a28dffcc2e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="">
+            <div class="mt-6 flex flex-col justify-center text-center">
+                <h3 class="text-bluePrimary text-3xl font-bold text-yellow-400">Électrique</h3>
+                <p class="title text-sm text-primary100">Type : Carte</p>
+                <p class="mt-6 title text-base text-primary100 font-bold">Prix : 2500 Crédits</p>
+
+                <button *ngIf="!Electricity" (click)="buyMap('Electricity')" type="submit" class="purchase-button w-full mt-4 px-6 py-3 text-base font-medium tracking-wide text-white transition-colors duration-300 transform bg-blue-500 rounded-lg hover:bg-blue-400">
+                    Acheter
+                </button>
+                <button *ngIf="Electricity" type="submit" class="already-purchased w-full mt-4 px-6 py-3 text-base font-medium tracking-wide text-white/75 transition-colors duration-300 transform bg-blue-500/50 rounded-lg cursor-not-allowed">
+                    Déjà achetée
+                </button>
+            </div>
+        </div>
+
+        <div data-aos="fade-up" data-aos-duration="3000" class="boutique-item rounded-xl bg-[#062037] w-96 flex justify-center flex-col p-4 hover:scale-105 transition duration-150 ease-linear cursor-pointer">
+            <img class="w-full h-full rounded-xl" src="https://plus.unsplash.com/premium_photo-1675033559148-0485e7f717a1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1528&q=80" alt="">
+            <div class="mt-6 flex flex-col justify-center text-center">
+                <h3 class="text-bluePrimary text-3xl font-bold text-pink-500">Sucre</h3>
+                <p class="title text-sm text-primary100">Type : Carte</p>
+                <p class="mt-6 title text-base text-primary100 font-bold">Prix : 5000 Crédits</p>
+
+                <button *ngIf="!Sugar" (click)="buyMap('Sugar')" type="submit" class="purchase-button w-full mt-4 px-6 py-3 text-base font-medium tracking-wide text-white transition-colors duration-300 transform bg-blue-500 rounded-lg hover:bg-blue-400">
+                    Acheter
+                </button>
+                <button *ngIf="Sugar" type="submit" class="already-purchased w-full mt-4 px-6 py-3 text-base font-medium tracking-wide text-white/75 transition-colors duration-300 transform bg-blue-500/50 rounded-lg cursor-not-allowed">
+                    Déjà achetée
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-center">
+        <div class="w-96">
+            <p *ngIf="displayError" class="mt-8 flex justify-center items-center w-full px-6 py-3 text-base font-regular tracking-wide text-red-100 transition-colors duration-300 transform bg-[#FF0000]/25 rounded-lg">Une erreur s'est produite, veuillez réessayer.</p>
+            <p *ngIf="displayGood" class="mt-8 flex justify-center items-center w-full px-6 py-3 text-base font-regular tracking-wide text-green-100 transition-colors duration-300 transform bg-[#00FF3A]/25 rounded-lg">Achat effectué avec succès, félicitations !</p>
+        </div>
+    </div>
+</div>
+
+<app-footer></app-footer>

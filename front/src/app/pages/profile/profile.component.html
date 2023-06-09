@@ -1,0 +1,44 @@
+<app-header></app-header>
+
+<div class="profile-container bg-[#132D44] py-36" style="background-image: url(assets/hero_background.png);">
+
+    <div data-aos="fade-up" data-aos-duration="1000" class="category-title flex flex-col justify-center items-center mb-24">
+        <h1 class="text-4xl font-extrabold text-white text-center">Bonjour <span class="text-primary600 text-center">{{ profile?.username }}</span> !</h1>
+        <p class="text-xl mt-4 text-neutral500 font-regular text-center">Explorez vos différentes statistiques de jeu sur Quoridor et comparez-les avec vos amis !</p>
+    </div>
+
+
+    <div data-aos="fade-up" data-aos-duration="2000" class="rounded-xl bg-[#062037] shadow-shadow-500 shadow-3xl rounded-primary relative mx-auto flex h-full w-full max-w-[650px] flex-col items-center bg-cover bg-clip-border p-[16px] dark:text-white dark:shadow-none pb-10">
+        <div class="relative mt-1 flex h-36 w-full justify-center rounded-xl bg-cover opacity-80 pointer-events-none" style='background-image: url("https://source.unsplash.com/random/900×700/?blue");'>
+            <div class="absolute -bottom-12 flex h-[128px] w-[128px] items-center justify-center rounded-full border-[3px] border-primary400 hover:scale-110 transition ease-linear duration-200">
+                <img class="h-full w-full rounded-full pointer-events-none" [attr.src]="'https://avatar.oxro.io/avatar.svg?name=' + ((profile?.username | uppercase) || '') + '&background=2DA6FF&caps=3&bold=true'" alt="" />
+            </div>
+        </div>
+        <div class="mt-16 flex flex-col items-center">
+            <h4 class="text-primary600 text-3xl font-bold">{{ profile?.username }}</h4>
+            <p class="text-neutral300 text-base font-normal">Joueur</p>
+        </div>
+        <div class="mt-8 mb-3 flex items-center justify-center gap-4 md:!gap-14">
+            <div class="game-played flex flex-col items-center justify-center w-32 hover:scale-110 transition ease-linear duration-200">
+                <h3 class="text-bluePrimary text-3xl font-bold text-primary300">{{ profile?.games }}</h3>
+                <p class="text-lightSecondary text-sm font-normal">Parties jouées</p>
+            </div>
+            <div class="flex flex-col items-center justify-center w-32 hover:scale-110 transition ease-linear duration-200">
+                <h3 class="text-bluePrimary text-3xl font-bold text-primary300">{{ profile?.win }}</h3>
+                <p class="text-lightSecondary text-sm font-normal">Victoire(s)</p>
+            </div>
+            <div class="flex flex-col items-center justify-center w-32 hover:scale-110 transition ease-linear duration-200">
+                <h3 class="text-bluePrimary text-3xl font-bold text-primary300">#{{ profile?.ranking | leadingZero }}</h3>
+                <p class="text-lightSecondary text-sm font-normal">sur {{ profile?.totalPlayers }} joueurs</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="back-btn flex justify-center mt-8">
+        <a routerLink="/classement" class="cursor-pointer text-base text-blue-500 hover:underline dark:text-blue-400">
+            Retour au classement
+        </a>
+    </div>
+</div>
+
+<app-footer></app-footer>
