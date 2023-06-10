@@ -635,10 +635,12 @@ class Board:
             case = self.board[self.__size-1][-1]
             case.set_player(4)
             self.players.append(Player(self.__size-1,(self.__size-1)*2,4,nb_fence_each_player,self.decideIALevel(4)))
-        if self.networkStatus == True:
-            self.current_player = self.players[0]
-        else :
-            self.current_player = self.bot.randomChoice(self.players)
+        # if self.networkStatus == True:
+        #     self.current_player = self.players[0]
+        # else :
+        #     self.current_player = self.bot.randomChoice(self.players)
+        self.current_player = self.players[0]
+        self.bot.updateNeighborsForEachFence()
         
         
     
@@ -823,7 +825,7 @@ class Board:
     
     def refreshPossibleCaseMovementForCurrentPlayer(self) -> None:
         position = self.current_player.displayPlace()
-        list_possible_move = self.allPossibleMoveForPlayer()
+        list_possible_move = self.allPossibleMoveForPlayer(self.current_player)
         for coord in list_possible_move :
             case = self.board[position[0]+coord[0]][position[1]+coord[1]]
             case.set_possibleMove([coord[0],coord[1]])
@@ -836,9 +838,9 @@ class Board:
                         case = self.board[i][j]
                         case.set_possibleMove(0)
             
-    def allPossibleMoveForPlayer(self) -> list:
+    def allPossibleMoveForPlayer(self, player : object) -> list:
         list2 = []
-        position = self.current_player.displayPlace()
+        position = player.displayPlace()
         self.bot.updateNeighborsForEachCase()
         for neighbor in self.board[position[0]][position[1]].get_neighbors():
             if neighbor.get_player() == 0 :

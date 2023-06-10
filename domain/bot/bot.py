@@ -27,7 +27,7 @@ class Bot :
         if difficulty ==  1 :
             action = self.botPlaysRandom()
         if difficulty == 2:
-            action = self.botPlaysGoodMove()
+            action = self.haveBestPathForPlayer(self.board.current_player)
         self.doAction(action)
         
             
@@ -127,34 +127,34 @@ class Bot :
         return self.algorithm(self.board.board, startCase, endCase)
     
     
-    def haveAllCasePositionWin(self) -> list:
+    def haveAllCasePositionWinForPlayer(self, player : object) -> list:
         list = []
-        if self.board.current_player.get_player() == 1 :
+        if player.get_player() == 1 :
             x = (self.board.get_size()-1)*2
             for y in range((self.board.get_size()-1)*2+1):
                 if y%2 == 0 :
                     list.append([x,y])
-        if self.board.current_player.get_player() == 2 :
+        if player.get_player() == 2 :
             x = 0
             for y in range((self.board.get_size()-1)*2+1):
                 if y%2 == 0 :
                     list.append([x,y])
-        if self.board.current_player.get_player() == 3 :
+        if player.get_player() == 3 :
             y = (self.board.get_size()-1)*2
             for x in range((self.board.get_size()-1)*2+1):
                 if x%2 == 0 :
                     list.append([x,y])
-        if self.board.current_player.get_player() == 4 :
+        if player.get_player() == 4 :
             y = 0
             for x in range((self.board.get_size()-1)*2+1):
                 if x%2 == 0 :
                     list.append([x,y])
         return list
     
-    def havePathForEachCase(self, listCase : list) -> list:
+    def havePathForEachCase(self, listCase : list, player : object) -> list:
         listPath = []
         for case in listCase:
-            path = self.calculatePath(self.board.board[self.board.current_player.displayPlace()[0]][self.board.current_player.displayPlace()[1]], self.board.board[case[0]][case[1]])
+            path = self.calculatePath(self.board.board[player.displayPlace()[0]][player.displayPlace()[1]], self.board.board[case[0]][case[1]])
             if path != False :
                 listPath.append(path)
         listPath.sort(key=lambda x: x[0])
@@ -169,12 +169,26 @@ class Bot :
                     if x + move[0] == element[0] and y + move[1] == element[1] :
                         return [move[0], move[1]]
                 
-    def botPlaysGoodMove(self) -> list :
-        listCase = self.haveAllCasePositionWin()
-        sumPath = self.havePathForEachCase(listCase)
-        movement = self.nextMove(sumPath, self.board.allPossibleMoveForPlayer())
+    def haveBestPathForPlayer(self, player : object) -> list :
+        listCase = self.haveAllCasePositionWinForPlayer(player)
+        sumPath = self.havePathForEachCase(listCase, player)
+        movement = self.nextMove(sumPath, self.board.allPossibleMoveForPlayer(player))
+        print("L : ", sumPath[0][0])
         if movement == None :
             return self.botPlaysRandom()
         return ["move", movement]
+    
+    def updateNeighborsForEachFence(self) -> None:
+        for i in range(self.board.get_size()*2-1):
+                for j in range(self.board.get_size()*2-1):
+                    if i%2 == 0 :
+                        if j%2 == 1 : 
+                            self.board.board[i][j].updateNeighborsPillars(self.board, i, j, self.board.get_size())
+                    else :
+                        if j%2 == 0 : 
+                            self.board.board[i][j].updateNeighborsPillars(self.board, i, j, self.board.get_size())
+    
+    # def botBuildInFrontOfPlayer(self):
+        
         
         
