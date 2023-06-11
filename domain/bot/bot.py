@@ -173,7 +173,7 @@ class Bot :
         listCase = self.haveAllCasePositionWinForPlayer(player)
         sumPath = self.havePathForEachCase(listCase, player)
         movement = self.nextMove(sumPath, self.board.allPossibleMoveForPlayer(player))
-        print("L : ", sumPath[0][0])
+        # print("L : ", sumPath[0][0])
         if movement == None :
             return self.botPlaysRandom()
         return ["move", movement]
@@ -188,7 +188,65 @@ class Bot :
                         if j%2 == 0 : 
                             self.board.board[i][j].updateNeighborsPillars(self.board, i, j, self.board.get_size())
     
-    # def botBuildInFrontOfPlayer(self):
+    
+    def playerDistanceToWin(self):
+        list = []
+        for player in self.board.players :
+            list.append([player, self.havePathForEachCase(self.haveAllCasePositionWinForPlayer(player), player)[0][0]])
+        return list
+
+    
+    def currentPlayerHaveShortestPath(self, pathDistance : list) -> bool :
+        pathCurrentPlayer = pathDistance[self.board.current_player.get_player()-1][1]
+        for path in pathDistance :
+            if path[1] < pathCurrentPlayer :
+                return False
+        return True
+    
+    
+    def haveFocusOnPlayerswithShortestPath(self, pathDistance : list):
+        currentPath = [[pathDistance[0][0], pathDistance[0][1]]]
+        for player, path in pathDistance :
+            if path < currentPath[0][1] :
+                currentPath = [[player, path]]
+            if path == currentPath[0][1] and player.get_player() != currentPath[-1][0].get_player() :
+                currentPath.append([player, path])
+        return currentPath
+    
+    def botWillMove(self, pathDistance : list):
+        if self.currentPlayerHaveShortestPath(pathDistance) == False :
+            return self.haveFocusOnPlayerswithShortestPath(pathDistance)
+        return False
+    
+    def play(self, listPlayerAndPath):
+        if listPlayerAndPath != False :
+            playerFocus = self.randomChoice(listPlayerAndPath)[0]
+            return self.botBuildInFrontOfPlayer(playerFocus)
+    
+    def botBuildInFrontOfPlayer(self, player : object):
+        position = player.displayPlace()
+        x = 0 
+        y = 0
+        if player.get_player() == 1 :
+            x+=1
+            self.board.fence_orientation = "horizontal"
+        if player.get_player() == 2 :
+            x-=1
+            self.board.fence_orientation = "horizontal"
+        if player.get_player() == 3 :
+            y+=1
+            self.board.fence_orientation = "vertical"
+        if player.get_player() == 4 :
+            y-=1
+            self.board.fence_orientation = "vertical"
+        if self.board.board[position[0] + x][position[1] + y].get_build() == 0:
+            canbuild = []
+            for pillar in self.board.board[position[0] + x][position[1] + y].get_neighborsPillar():
+                pillarPosition = pillar.get_position()
+                if self.board.isPossibleFence(pillarPosition[0],pillarPosition[1]):
+                    canbuild.append(pillarPosition)
+            return canbuild
+        return False
         
         
         

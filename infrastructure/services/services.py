@@ -194,13 +194,15 @@ class Board:
                     if j%2 == 0 :
                         tab2.append(Fence(0))
                     else :
-                        tab2.append(Pillar(0))
+                        tab2.append(Pillar(0,[i,j]))
                 self.board.append(tab2)
                 
     def get_size(self):
         return self.__size
     
     def caseClicked(self, event : int) -> None:
+        # print(self.current_player.get_player(), )
+        print(self.bot.play(self.bot.botWillMove(self.bot.playerDistanceToWin())))
         item_id = event.widget.find_closest(event.x, event.y)[0]
         tags = self.canvas.gettags(item_id)
         x = int(tags[0])

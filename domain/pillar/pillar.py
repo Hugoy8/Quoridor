@@ -1,7 +1,8 @@
 class Pillar:
     
-    def __init__(self, build : int) -> None:
+    def __init__(self, build : int, position :list) -> None:
         self.__build = build
+        self.__position = position
     
     
     def get_build(self) -> int:
@@ -21,3 +22,6 @@ class Pillar:
             return "B0"
         else : 
             return "B1"
+        
+    def get_position(self) -> list:
+        return self.__position
