@@ -94,6 +94,7 @@ class InitLauncher():
         self.launcher.pseudo = " "
         self.launcher.bg_not_connected = None
         self.launcher.delete_friend_popup_label = None
+    
         
         self.addProgressLaunchScreen()
         
@@ -251,12 +252,20 @@ class InitLauncher():
         self.launcher.menuNone = ImageTk.PhotoImage(menu_image_None)
         
         login_image = Image.open(f"./assets/images/launcher/connexion.png")
-        login_image = login_image.resize((300, 300))
+        login_image = login_image.resize((189, 39))
         self.launcher.login_image = ImageTk.PhotoImage(login_image)
         
+        login_false_image = Image.open(f"./assets/images/launcher/connexion_false.png")
+        login_false_image = login_false_image.resize((189, 39))
+        self.launcher.login_false_image = ImageTk.PhotoImage(login_false_image)
+        
         register_image = Image.open(f"./assets/images/launcher/inscription.png")
-        register_image = register_image.resize((300, 300))
+        register_image = register_image.resize((189, 39))
         self.launcher.register_image = ImageTk.PhotoImage(register_image)
+        
+        register_false_image = Image.open(f"./assets/images/launcher/inscription_false.png")
+        register_false_image = register_false_image.resize((189, 39))
+        self.launcher.register_false_image = ImageTk.PhotoImage(register_false_image)
         
         
         
@@ -372,6 +381,16 @@ class InitLauncher():
         display_ip_port = display_ip_port.resize((179, 140))
         self.launcher.display_ip_port = ImageTk.PhotoImage(display_ip_port)
         
+        login_button = Image.open(f"./assets/images/launcher/login_button.png")
+        login_button = login_button.resize((378, 45))
+        self.launcher.login_button = ImageTk.PhotoImage(login_button)
+        
+        register_button = Image.open(f"./assets/images/launcher/register_button.png")
+        register_button = register_button.resize((378, 45))
+        self.launcher.register_button = ImageTk.PhotoImage(register_button)
+        
+        from domain.launcher.authentification import Authentification
+        self.launcher.authentification = Authentification(self, self.launcher.window, self.launcher.statut, self.launcher.db)
         
         self.addProgressLaunchScreen()
         

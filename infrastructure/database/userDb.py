@@ -26,12 +26,12 @@ class UserDb:
             return (False, self)
 
     
-    def loginUser(self, launcher : object) -> None:
+    def loginUser(self, launcher : object, authentificationClass : object) -> None:
         launcher.db.connectDb()
         select_query = launcher.db.select()
         query = "SELECT * FROM users WHERE username = %s"
-        username = launcher.loginUsername.get().rstrip()
-        password = launcher.loginPassword.get().replace(" ", "")
+        username = authentificationClass.loginUsername.get().rstrip()
+        password = authentificationClass.loginPassword.get().replace(" ", "")
 
         select_query.execute(query, (username,))
         result = select_query.fetchone()
@@ -55,10 +55,10 @@ class UserDb:
             print("Utilisateur introuvable")
         
         
-    def createAccount(self, launcher : object) -> None:
-        username = launcher.registerUsername.get().rstrip()
-        password = launcher.registerPassword.get().replace(" ", "")
-        confirm_password = launcher.registerPasswordConfirm.get()
+    def createAccount(self, launcher : object, authentificationClass : object) -> None:
+        username = authentificationClass.registerUsername.get().rstrip()
+        password = authentificationClass.registerPassword.get().replace(" ", "")
+        confirm_password = authentificationClass.registerPasswordConfirm.get()
 
         if not username or not password or not confirm_password:
             print("Veuillez remplir tous les champs")
@@ -90,16 +90,15 @@ class UserDb:
 
                     # Vérifier si le label existe déjà, le mettre à jour sinon le créer
                     launcher.pseudo = username
-                    launcher.bg_not_connected.destroy()
-                    launcher.menuCreateGameSolo(event=None)
                     
                     passwordDataBaseReceived = Database().selectPassword(username)
-                    print(passwordDataBaseReceived)
                     
                     GetSetInformation().setUsername(username)
                     GetSetInformation().setPassword(passwordDataBaseReceived[0][0])
                     
                     self.statusConnection = True
+
+                    launcher.menuCreateGameSolo(event=None)
                 finally:
                     # Fermeture de la connexion à la base de données
                     launcher.db.close()

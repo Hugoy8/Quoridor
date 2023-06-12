@@ -23,7 +23,7 @@ class QuoridorLauncher:
             launchScreen.start()
         
         initGame.startInit()
-            
+        
         # Lancement de l'affichage du launcher.
         self.menuCreateGameSolo(event=None)
         
@@ -55,6 +55,8 @@ class QuoridorLauncher:
     
     def background(self, statut) -> None:
         self.statut = statut
+        from domain.launcher.authentification import Authentification
+        self.authentification = Authentification(self, self.window, self.statut, self.db)
         img_bg = getattr(self, f"bg_photo{statut}")
         self.bg_label = Label(self.window, image=img_bg)
         self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
@@ -440,7 +442,7 @@ class QuoridorLauncher:
         
     def addLogoAccount(self, label : Label, decalageX : int, decalageY : int, __configPictures : object) -> None:
         self.account_button = Label(label, image=self.account_image, bd=0, highlightthickness=0, cursor="hand2")
-        self.account_button.bind("<Button-1>", lambda event: self.displayAccount())
+        self.account_button.bind("<Button-1>", lambda event: self.authentification.displayAccount())
         
         __configPictures.labelConfigWidthHeight(self.account_button, 39, 43)
         __configPictures.labelPlaceXandYTopRight(self.account_button, decalageX, decalageY, self)
@@ -494,7 +496,7 @@ class QuoridorLauncher:
             from infrastructure.services.getSetInformation import GetSetInformation
             
             if GetSetInformation().isConnected("serverPseudo.txt"):
-                self.displayAccount()
+                self.authentification.displayAccount()
             else:
                 if map == "Ice":
                     x = 0.29
@@ -1186,101 +1188,8 @@ class QuoridorLauncher:
             self.window.destroy()
             GetSetInformation().setUsername(self.pseudo)
             startSession(port, nbr_player, grid_size, nbr_player, 0, nbr_fences, map)
-    
-    
-    def getStatut(self) -> int:
-        return self.statut
-    
-    
-    def displayAccount(self) -> None:
-        self.changeMode()
-        self.is_shop = False
-        statut = self.getStatut()
-        self.statut = 4
-        self.background(self.statut)
-        self.createMenu(statut, "")
-        self.connexion()
-        self.inscription()
-        self.leaveLauncher()
-    
-    
-    def connexion(self) -> None:
-        self.login_button = Button(self.window, image=self.login_image, bd=0, highlightthickness=0, cursor="hand2", command=self.addLogin)
-        self.login_button.place(relx=0.35, rely=0.8, anchor=CENTER)
-        
-        
-    def addLogin(self):
-        def addLoginUserFunc() -> None:
-            from infrastructure.services.verifConnection import VerifConnection
-            if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
-                from infrastructure.database.userDb import UserDb
-                UserDb().loginUser(self)
-            else:
-                self.errorClientNetwork("noNetwork")
-            
-        self.login_button.configure(state=DISABLED)
-        self.register_button.configure(state=NORMAL)
-        if len(self.widget_register) > 0:
-            for widget in self.widget_register:
-                widget.destroy()
-                
-        username = Label(self.window, text="Pseudo :", font=("Arial", 13), bg="#0F2234", fg="#E3F8FF")
-        username.place(relx=0.54, rely=0.68, anchor=CENTER)
-        self.loginUsername = Entry(self.login)
-        self.loginUsername.place(relx=0.54, rely=0.71, anchor=CENTER)
-
-        password = Label(self.window, text="Mot de passe :", font=("Arial", 13), bg="#0F2234", fg="#E3F8FF")
-        password.place(relx=0.54, rely=0.76, anchor=CENTER)
-        self.loginPassword = Entry(self.login, show="*")
-        self.loginPassword.place(relx=0.54, rely=0.79, anchor=CENTER)
-
-        self.loginButton =  Button(self.login, text="Se connecter", bg="#2BB0ED", fg="#FFF", font=("Arial", 13), width=20, height=2, cursor="hand2", activebackground="#035388", activeforeground="white", command=addLoginUserFunc)
-        self.loginButton.place(relx=0.54, rely=0.85, anchor=CENTER)
-        
-        self.widget_login = [username, self.loginUsername, password, self.loginPassword, self.loginButton]
 
 
-    def inscription(self) -> None:
-        self.register_button = Button(self.window, image=self.register_image, bd=0, highlightthickness=0, cursor="hand2", command=self.addRegister)
-        self.register_button.place(relx=0.73, rely=0.8, anchor=CENTER)
-        
-        
-    def addRegister(self):
-        def addAccountFunc() -> None:
-            from infrastructure.services.verifConnection import VerifConnection
-            if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
-                from infrastructure.database.userDb import UserDb
-                UserDb().createAccount(self)
-            else:
-                self.errorClientNetwork("noNetwork")
-            
-        self.register_button.configure(state=DISABLED)
-        self.login_button.configure(state=NORMAL)
-        
-        if len(self.widget_login) > 0:
-            for widget in self.widget_login:
-                widget.destroy()
-            
-        username = Label(self.window, text="Pseudo :", font=("Arial", 13), bg="#0F2234", fg="#E3F8FF")
-        username.place(relx=0.54, rely=0.6, anchor=CENTER)
-        self.registerUsername = Entry(self.register)
-        self.registerUsername.place(relx=0.54, rely=0.63, anchor=CENTER)
-
-        password = Label(self.window, text="Mot de passe :", font=("Arial", 13), bg="#0F2234", fg="#E3F8FF")
-        password.place(relx=0.54, rely=0.68, anchor=CENTER)
-        self.registerPassword = Entry(self.register, show="*")
-        self.registerPassword.place(relx=0.54, rely=0.71, anchor=CENTER)
-
-        passwordConfirm = Label(self.window, text="Confirmer le mot de passe :", font=("Arial", 13), bg="#0F2234", fg="#E3F8FF")
-        passwordConfirm.place(relx=0.54, rely=0.76, anchor=CENTER)
-        self.registerPasswordConfirm = Entry(self.register, show="*")
-        self.registerPasswordConfirm.place(relx=0.54, rely=0.79, anchor=CENTER)
-        
-        self.registerButton = Button(self.register, text="S'inscrire", bg="#2BB0ED", fg="#FFF", font=("Arial", 13), width=20, height=2, cursor="hand2", activebackground="#035388", activeforeground="white", command=addAccountFunc)
-        self.registerButton.place(relx=0.54, rely=0.85, anchor=CENTER)
-        self.widget_register = [username, self.registerUsername, password, self.registerPassword, passwordConfirm, self.registerPasswordConfirm, self.registerButton]
-        
-    
     def errorClientNetwork(self, errorStyle : str) -> None: 
         def destroyErrorClientNetwork(event=None) -> None:
             self.errorClientNetworkPopup.destroy()
