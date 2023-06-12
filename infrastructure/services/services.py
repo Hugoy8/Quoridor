@@ -240,7 +240,7 @@ class Board:
             self.displayBoard(False)
         while self.current_player.get_IALevel() != 0 :
             # self.bot.currentBotPlaysBasedOnDifficulty(self.current_player.get_IALevel())
-            self.bot.currentBotPlaysBasedOnDifficulty(3)
+            self.bot.currentBotPlaysBasedOnDifficulty(2)
             if self.victory() == True :
                 self.displayBoard(False)
                 self.canvas.unbind_all("<Button-1>")
@@ -549,7 +549,7 @@ class Board:
                         self.displayBoard(False)
                         while self.current_player.get_IALevel() != 0 :
                             # self.bot.currentBotPlaysBasedOnDifficulty(self.current_player.get_IALevel())
-                            self.bot.currentBotPlaysBasedOnDifficulty(3)
+                            self.bot.currentBotPlaysBasedOnDifficulty(2)
                             if self.victory() == True :
                                 self.displayBoard(False)
                                 self.canvas.unbind_all("<Button-1>")

@@ -11,7 +11,7 @@ class Bot :
         self.board = newBoard
         
         
-    def randomChoice(self, allPossibleChoice : list ):
+    def randomChoice(self, allPossibleChoice : list ) -> str or list:
         return random.choice(allPossibleChoice)
     
     def botPlaysRandom(self) -> list:
@@ -27,7 +27,7 @@ class Bot :
         if difficulty ==  1 :
             action = self.botPlaysRandom()
         if difficulty == 2:
-            action = self.haveBestPathForPlayer(self.board.current_player)
+            action = self.playDifficult2()
         if difficulty == 3 :
             action = self.playDifficult3(self.botWillMove(self.playerDistanceToWin()))
         self.doAction(action)
@@ -191,7 +191,7 @@ class Bot :
                             self.board.board[i][j].updateNeighborsPillars(self.board, i, j, self.board.get_size())
     
     
-    def playerDistanceToWin(self):
+    def playerDistanceToWin(self) -> list:
         list = []
         for player in self.board.players :
             list.append([player, self.havePathForEachCase(self.haveAllCasePositionWinForPlayer(player), player)[0][0]])
@@ -206,7 +206,7 @@ class Bot :
         return True
     
     
-    def haveFocusOnPlayerswithShortestPath(self, pathDistance : list):
+    def haveFocusOnPlayerswithShortestPath(self, pathDistance : list) -> list:
         currentPath = [[pathDistance[0][0], pathDistance[0][1]]]
         for player, path in pathDistance :
             if path < currentPath[0][1] :
@@ -220,7 +220,7 @@ class Bot :
             return self.haveFocusOnPlayerswithShortestPath(pathDistance)
         return False
     
-    def playDifficult3(self, listPlayerAndPath):
+    def playDifficult3(self, listPlayerAndPath : bool or list):
         if listPlayerAndPath != False :
             playerFocus = self.randomChoice(listPlayerAndPath)[0]
             build =  self.botWillBuildGoodFence(self.getPillarInFrontOfPlayer(playerFocus))
@@ -253,7 +253,7 @@ class Bot :
             return canbuild
         return False
     
-    def botWillBuildGoodFence(self, canbuild):
+    def botWillBuildGoodFence(self, canbuild : bool or list):
         if canbuild == False :
             return False
         possibleBuildFence = canbuild
@@ -261,13 +261,22 @@ class Bot :
             build = self.randomChoice(possibleBuildFence)
             self.board.buildFence(build[0],build[1])
             if self.board.fenceNotCloseAccesGoal()==False :
-                print("bug",build[0],build[1])
                 possibleBuildFence.remove([build[0],build[1]])
                 self.board.deBuildFence(build[0],build[1])
             else : 
                 self.board.deBuildFence(build[0],build[1])
                 return [build[0], build[1], self.board.fence_orientation]
         return False
+    
+    def playDifficult2(self):
+        random_number = random.randint(1, 4)
+        if random_number == 4 :
+            if self.board.playerHasFence() == True and self.board.allPossibleBuildFence() !=[]:
+                build = self.botBuildRandomFence(self.board.allPossibleBuildFence())
+                if build != False :
+                    return ["build", build]
+            return ["move",self.randomChoice(self.board.allPossibleMoveForPlayer(self.board.current_player))]
+        return self.haveBestPathForPlayer(self.board.current_player)
         
         
         
