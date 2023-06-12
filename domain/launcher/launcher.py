@@ -489,28 +489,32 @@ class QuoridorLauncher:
 
 
     def buy(self, price, map) -> None:
-        from infrastructure.services.getSetInformation import GetSetInformation
-        
-        if GetSetInformation().isConnected("serverPseudo.txt"):
-            self.displayAccount()
-        else:
-            if map == "Ice":
-                x = 0.29
-            elif map == "Electricity":
-                x = 0.55
-            elif map == "Sugar":
-                x = 0.81
-            pseudo = GetSetInformation().get_username("serverPseudo.txt")
-            money = self.db.getMoney(pseudo)
-            if money >= price:
-                self.db.removeMoney(pseudo, price)
-                self.db.addMap(pseudo, map)
-                id = self.db.getUserIdByUsername(pseudo)
-                self.db.addPurchase(id, map)
-                self.displayShop()
+        from infrastructure.services.verifConnection import VerifConnection
+        if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
+            from infrastructure.services.getSetInformation import GetSetInformation
+            
+            if GetSetInformation().isConnected("serverPseudo.txt"):
+                self.displayAccount()
             else:
-                label_buying_fail = Label(self.window, image=self.buying_fail, bd=0, highlightthickness=0)
-                label_buying_fail.place(relx=x, rely=0.5, anchor=CENTER)
+                if map == "Ice":
+                    x = 0.29
+                elif map == "Electricity":
+                    x = 0.55
+                elif map == "Sugar":
+                    x = 0.81
+                pseudo = GetSetInformation().get_username("serverPseudo.txt")
+                money = self.db.getMoney(pseudo)
+                if money >= price:
+                    self.db.removeMoney(pseudo, price)
+                    self.db.addMap(pseudo, map)
+                    id = self.db.getUserIdByUsername(pseudo)
+                    self.db.addPurchase(id, map)
+                    self.displayShop()
+                else:
+                    label_buying_fail = Label(self.window, image=self.buying_fail, bd=0, highlightthickness=0)
+                    label_buying_fail.place(relx=x, rely=0.5, anchor=CENTER)
+        else:
+            self.errorClientNetwork("noNetwork")
             
             
     def displayFriends(self) -> None:
@@ -765,17 +769,13 @@ class QuoridorLauncher:
 
 
     def displayShop(self) -> None:
-        from infrastructure.services.verifConnection import VerifConnection
-        if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
-            self.changeMode()
-            self.statut = 5
-            self.is_shop = True
-            self.background(self.statut)
-            self.createMenu(None, "shop")
-            self.createButtonShop()
-            self.leaveLauncher()
-        else:
-            self.errorClientNetwork("noNetwork")
+        self.changeMode()
+        self.statut = 5
+        self.is_shop = True
+        self.background(self.statut)
+        self.createMenu(None, "shop")
+        self.createButtonShop()
+        self.leaveLauncher()
             
             
     def numberIA(self) -> None:
