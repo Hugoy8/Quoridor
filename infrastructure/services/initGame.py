@@ -218,29 +218,22 @@ class InitGame:
         self.board.restart_game_victory = ImageTk.PhotoImage(restart_game_victory)
         
         popup_escape_game = Image.open(f"./assets/images/pauseMenu/popup_escape_game.png")
-        popup_escape_game = popup_escape_game.resize((662, 670))
+        popup_escape_game = popup_escape_game.resize((454, self.board.window.winfo_screenheight()))
         self.board.popup_escape_game = ImageTk.PhotoImage(popup_escape_game)
         
         button_popup_resumegame = Image.open(f"./assets/images/pauseMenu/button_popup_resume_game.png")
-        button_popup_resumegame = button_popup_resumegame.resize((155, 40))
+        button_popup_resumegame = button_popup_resumegame.resize((204, 27))
         self.board.button_popup_resumegame = ImageTk.PhotoImage(button_popup_resumegame)
         
         button_popup_quitgame = Image.open(f"./assets/images/pauseMenu/button_popup_quitgame.png")
-        button_popup_quitgame = button_popup_quitgame.resize((155, 40))
+        button_popup_quitgame = button_popup_quitgame.resize((168 , 27))
         self.board.button_popup_quitgame = ImageTk.PhotoImage(button_popup_quitgame)
-        
-        bind_changing = Image.open(f"./assets/images/launcher/bind_changing.png")
-        bind_changing = bind_changing.resize((48, 48))
-        self.board.bind_changing = ImageTk.PhotoImage(bind_changing)
 
-        bind = Image.open(f"./assets/images/launcher/bind.png")
-        bind = bind.resize((48, 48))
-        self.board.bind = ImageTk.PhotoImage(bind)
         
         self.board.display_current_player = None
         
         from infrastructure.services.settingsGame import SettingsGame
-        self.board.settings = SettingsGame(self.board.window, self.board.popup_escape_game, self.board.button_popup_resumegame, self.board.button_popup_quitgame, self.board.bind, self.board.bind_changing, self.board)
+        self.board.settings = SettingsGame(self.board.window, self.board.popup_escape_game, self.board.button_popup_resumegame, self.board.button_popup_quitgame)
         
         self.board.loadVolumeSettings()
         self.board.window.bind("<KeyPress-Escape>", lambda event: self.board.settings.displayBreakGame(event))
