@@ -41,6 +41,7 @@ class InitGame:
             self.board.networkStatus = False
             
         self.board.bot = Bot()
+        self.board.bot.setBoard(self.board)
             
         self.board.window = Tk()
         self.board.window.title("Quoridor")
@@ -249,7 +250,7 @@ class InitGame:
                 tab2 = []
                 for j in range(self.board.size*2-1):
                     if j%2 == 0 : 
-                        tab2.append(Case(0,0))
+                        tab2.append(Case(0,0,[i,j]))
                         
                     else :
                         tab2.append(Fence(0))
@@ -260,6 +261,6 @@ class InitGame:
                     if j%2 == 0 :
                         tab2.append(Fence(0))
                     else :
-                        tab2.append(Pillar(0))
+                        tab2.append(Pillar(0,[i,j]))
                 self.board.board.append(tab2)
         

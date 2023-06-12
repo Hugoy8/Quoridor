@@ -950,6 +950,7 @@ class QuoridorLauncher:
             nbr_fences = self.selectFence
             nb_ia = self.selectIA
             nb_player = self.selectPlayer + self.selectIA
+            
             if nb_player > 4 or nb_player < 2 or nb_player == 3:
                 self.error_label = Label(self.window, text=f"Le nombre de joueurs ({nb_player}) est incorrect (2 ou 4).", font=("Arial", 13), bg="#0F2234", fg="red")
                 self.error_label.place(relx=0.5, rely=0.9, anchor=CENTER)
@@ -959,7 +960,7 @@ class QuoridorLauncher:
             else:
                 map = self.selectMap
                 self.window.destroy()
-                restartGame(grid_size, nb_player, nb_ia, nbr_fences, map)
+                restartGame(grid_size, nb_player, nb_ia, nbr_fences, map, self.selectIaDifficulty)
 
         start = Button(self.window, image=self.start_game, command=start_game, cursor="hand2", bd=0, highlightthickness=0, activebackground="#035388",  activeforeground="white")
         start.place(relx=0.25, rely=0.8, anchor=CENTER)

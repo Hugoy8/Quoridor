@@ -1,8 +1,10 @@
 class Case:
     
-    def __init__(self, player : str, possibleMove : list) -> None:
+    def __init__(self, player : str, possibleMove : list, position :list) -> None:
         self.__player = player
         self.__possibleMove = possibleMove
+        self.neighbors = []
+        self.position = position
 
 
     def get_player(self) -> str:
@@ -30,3 +32,23 @@ class Case:
             return 'P4'
         elif self.__player == 0:
             return 'P0'
+        
+    def updateNeighbors(self, board, i, j, size) -> None:
+        self.neighbors = []
+        if i < (size-1)*2 and board.board[i + 1][j].get_build() == 0 : # DOWN
+            self.neighbors.append(board.board[i + 2][j])
+
+        if i > 0 and board.board[i - 1][j].get_build() == 0 : # UP
+            self.neighbors.append(board.board[i - 2][j])
+
+        if j < (size-1)*2 and board.board[i][j + 1].get_build() == 0 : # RIGHT
+            self.neighbors.append(board.board[i][j + 2])
+
+        if j > 0 and board.board[i][j - 1].get_build() == 0 : # LEFT
+            self.neighbors.append(board.board[i][j - 2])
+        
+    def get_neighbors(self):
+        return self.neighbors
+    
+    def get_position(self):
+        return self.position

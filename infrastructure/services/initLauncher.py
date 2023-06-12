@@ -57,7 +57,7 @@ class InitLauncher():
         self.launcher.selectSize = 5
         self.launcher.selectFence = 4
         self.launcher.selectMap = 1
-        self.launcher.selectIaDifficulty = 0
+        self.launcher.selectIaDifficulty = 1
         self.launcher.statut = 0
         self.launcher.db = self.db
         self.launcher.selectFavoriteMap = self.launcher.loadFavoriteMap()

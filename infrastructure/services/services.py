@@ -31,6 +31,13 @@ class Board:
         self.sound_map.play(loops=-1)
         self.sound_map.set_volume(self.volume_map)
     
+
+    def setLevelIa(self, newDificultyIA : int) -> None:
+        self.dificultyIA = newDificultyIA
+        
+        
+    def get_size(self):
+        return self.size
     
     def caseClicked(self, event : int) -> None:
         if self.settings.popup != None:
@@ -73,7 +80,7 @@ class Board:
 
             self.displayBoard(False)
         while self.current_player.get_IALevel() != 0 :
-            self.currentBotPlaysBasedOnDifficulty(self.current_player.get_IALevel())
+            self.bot.currentBotPlaysBasedOnDifficulty(self.current_player.get_IALevel())
             if self.victory() == True :
                 self.displayBoard(False)
                 self.canvas.unbind_all("<Button-1>")
@@ -87,42 +94,7 @@ class Board:
                 self.refreshCurrentPlayer()
                 self.refreshPossibleCaseMovementForCurrentPlayer()
                 self.displayBoard(False)
-    
-    
-    def botBuildRandomFence(self,allPossibleBuildFence):
-        can_build = False
-        possibleBuildFence = allPossibleBuildFence
-        while can_build == False and possibleBuildFence !=[]:
-            build = self.bot.randomChoice(possibleBuildFence)
-            x_co_fence = build[0]
-            y_co_fence = build[1]
-            orientation = build[2]
-            if orientation == 0 :
-                self.fence_orientation = "vertical"
-            else :
-                self.fence_orientation = "horizontal"
-            self.buildFence(x_co_fence,y_co_fence)
-            if self.fenceNotCloseAccesGoal()==False :
-
-                possibleBuildFence.remove(build)
-                self.deBuildFence(x_co_fence,y_co_fence)
-                self.displayBoard(False) 
-            else : 
-                can_build = True
-                    
-    def botPlaysRandom(self):
-        action = self.bot.randomChoice(["move","build"])
-        if action == "build"  and self.playerHasFence() == True and self.allPossibleBuildFence() !=[]:
-            self.botBuildRandomFence(self.allPossibleBuildFence())
-        else :
-            movement = self.bot.randomChoice(self.allPossibleMoveForPlayer())
-            self.move(movement[0],movement[1])
-        
-    
-    def currentBotPlaysBasedOnDifficulty(self, difficulty):
-        if difficulty ==  1 :
-            self.botPlaysRandom()                     
-        
+                
         
     def windowVictory(self) -> None:
         self.sound_map.stop()
@@ -412,9 +384,7 @@ class Board:
             self.settings.popup.destroy()
             self.settings.popup = None
             
-        if self.playerHasFence() == False :
-            print("")
-        else :
+        if self.playerHasFence() == True :
             item_id = event.widget.find_withtag("current")[0], 
             tags = self.canvas.gettags(item_id)
             if len(tags) >= 2 :
@@ -460,7 +430,7 @@ class Board:
                             
                         self.displayBoard(False)
                         while self.current_player.get_IALevel() != 0 :
-                            self.currentBotPlaysBasedOnDifficulty(self.current_player.get_IALevel())
+                            self.bot.currentBotPlaysBasedOnDifficulty(self.current_player.get_IALevel())
                             if self.victory() == True :
                                 self.displayBoard(False)
                                 self.canvas.unbind_all("<Button-1>")
@@ -527,7 +497,7 @@ class Board:
 
     def decideIALevel(self, player : int) -> bool:
         if player > self.nb_players - self.nb_IA:
-            return 1
+            return self.dificultyIA
         return False
 
 
@@ -547,6 +517,7 @@ class Board:
             case.set_player(4)
             self.players.append(Player(self.size-1,(self.size-1)*2,4,nb_fence_each_player,self.decideIALevel(4)))
         self.current_player = self.players[0]
+        self.bot.updateNeighborsForEachFence()
         
     
     def refreshCurrentPlayer(self) -> None:
@@ -676,139 +647,39 @@ class Board:
                         return True
         return False
     
+    
     def thereIsFence(self, x : int, y : int) -> bool:
         fence = self.board[x][y]
         if fence.get_build() == 1:
             return True
         return False
         
-    def isPossibleWay(self, x : int, y : int, player : str) -> bool:
-        self.list_case_check.append([x, y])
-        if x == (self.size-1)*2 and player == 1:
-            return True
-        elif x == 0 and player == 2:
-            return True
-        elif y == (self.size-1)*2 and player == 3:
-            return True
-        elif y == 0 and player == 4:
-            return True
-        if x == 0:
-            if y == 0: #coin haut gauche
-                if self.alreadyChecked(0, 2) == False and self.thereIsFence(0, 1) == False:
-                    if self.isPossibleWay(0, 2, player) == True :
-                        return True
-                        
-                if self.alreadyChecked(2, 0) == False and self.thereIsFence(1, 0) == False:
-                    if self.isPossibleWay(2, 0, player) == True :
-                        return True
-                        
-            elif y==(self.size-1)*2: #coin haut droite
-                if self.alreadyChecked(0, y-2) == False and self.thereIsFence(0, y-1) == False:
-                    if self.isPossibleWay(0, y-2, player) == True :
-                        return True
-                        
-                if self.alreadyChecked(2, y) == False and self.thereIsFence(1, y) == False:
-                    if self.isPossibleWay(2, y, player) == True :
-                        return True
-                        
-            else: #ligne haut
-                if self.alreadyChecked(x, y-2) == False and self.thereIsFence(x, y-1) == False:
-                    if self.isPossibleWay(x, y-2, player) == True :
-                        return True 
-                        
-                if self.alreadyChecked(x, y+2) == False and self.thereIsFence(x, y+1) == False:
-                    if self.isPossibleWay(x, y+2, player) == True :
-                        return True 
-                        
-                if self.alreadyChecked(x+2, y) == False and self.thereIsFence(x+1, y) == False:
-                    if self.isPossibleWay(x+2, y, player) == True :
-                        return True 
-                        
-        elif y==0: 
-            if x == (self.size-1)*2: #coin bas gauche
-                if self.alreadyChecked(x-2, y) == False and self.thereIsFence(x-1, y) == False:
-                    if self.isPossibleWay(x-2, y, player) == True :
-                        return True
-                        
-                if self.alreadyChecked(x, y+2) == False and self.thereIsFence(x,y+1) == False:
-                    if self.isPossibleWay(x, y+2, player) == True :
-                        return True 
-                        
-            else : #colonne gauche
-                if self.alreadyChecked(x-2, y) == False and self.thereIsFence(x-1, y) == False:
-                    if self.isPossibleWay(x-2, y, player) == True :
-                        return True 
-                        
-                if self.alreadyChecked(x+2, y) == False and self.thereIsFence(x+1, y) == False:
-                    if self.isPossibleWay(x+2, y, player) == True :
-                        return True 
-                        
-                if self.alreadyChecked(x, y+2) == False and self.thereIsFence(x, y+1) == False:
-                    if self.isPossibleWay(x, y+2, player) == True :
-                        return True 
-                        
-        elif y==(self.size-1)*2: 
-            if x == (self.size-1)*2: #coin bas droite
-                if self.alreadyChecked(x-2, y) == False and self.thereIsFence(x-1, y) == False:
-                    if self.isPossibleWay(x-2, y, player) == True :
-                        return True 
-                        
-                if self.alreadyChecked(x, y-2) == False and self.thereIsFence(x, y-1) == False:
-                    if self.isPossibleWay(x, y-2, player) == True :
-                        return True 
-                        
-            else: #colonne droite
-                if self.alreadyChecked(x-2, y) == False and self.thereIsFence(x-1, y) == False:
-                    if self.isPossibleWay(x-2, y, player) == True :
-                        return True 
-                        
-                if self.alreadyChecked(x+2, y) == False and self.thereIsFence(x+1, y) == False:
-                    if self.isPossibleWay(x+2, y, player) == True :
-                        return True 
-                        
-                if self.alreadyChecked(x, y-2) == False  and self.thereIsFence(x, y-1) == False:
-                    if self.isPossibleWay(x, y-2, player) == True :
-                        return True 
-                    
-        elif x == (self.size-1)*2: #ligne bas 
-            if self.alreadyChecked(x, y-2) == False and self.thereIsFence(x, y-1) == False:
-                if self.isPossibleWay(x, y-2, player) == True :
-                    return True 
-            if self.alreadyChecked(x, y+2) == False and self.thereIsFence(x, y+1) == False:
-                if self.isPossibleWay(x, y+2, player) == True :
-                    return True 
-                    
-            if self.alreadyChecked(x-2, y) == False and self.thereIsFence(x-1, y) == False:
-                if self.isPossibleWay(x-2, y, player) == True :
-                    return True
-                
-        else: #middle
-            if self.alreadyChecked(x-2, y) == False and self.thereIsFence(x-1, y) == False:
-                if self.isPossibleWay(x-2, y, player) == True :
-                    return True 
-                        
-            if self.alreadyChecked(x+2, y) == False and self.thereIsFence(x+1, y) == False:
-                if self.isPossibleWay(x+2, y, player) == True :
-                    return True 
-                        
-            if self.alreadyChecked(x, y-2) == False and self.thereIsFence(x, y-1) == False:
-                if self.isPossibleWay(x, y-2, player) == True :
-                    return True 
-                        
-            if self.alreadyChecked(x, y+2) == False and self.thereIsFence(x, y+1) == False:
-                if self.isPossibleWay(x, y+2, player) == True :
-                    return True 
-                        
         
-    
+    def isPossibleWay2(self, case : object, player : object):
+        self.list_case_check.append(case.get_position())
+        if case.get_position()[0] == (self.size-1)*2 and player == 1:
+            return True
+        elif case.get_position()[0] == 0 and player == 2:
+            return True
+        elif case.get_position()[1] == (self.size-1)*2 and player == 3:
+            return True
+        elif case.get_position()[1] == 0 and player == 4:
+            return True
+        for neighbor in case.get_neighbors() :
+            if self.alreadyChecked(neighbor.get_position()[0], neighbor.get_position()[1]) == False and self.isPossibleWay2(neighbor, player) == True :
+                return True
+            
+            
     def seachPossibleWayForPlayer(self, player : str) -> bool:
         self.list_case_check = []
-        position = self.players[player-1].displayPlace()
-        if self.isPossibleWay(position[0], position[1], player) !=True :
+        if self.isPossibleWay2(self.board[self.players[player-1].displayPlace()[0]][self.players[player-1].displayPlace()[1]], player) !=True :
             return False
-        return True
+        else :
+            return True
+        
         
     def fenceNotCloseAccesGoal(self) -> bool:
+        self.bot.updateNeighborsForEachCase()
         for i in range(self.nb_players):
             if self.seachPossibleWayForPlayer(i+1) == False :
                 return False
@@ -834,7 +705,7 @@ class Board:
     
     def refreshPossibleCaseMovementForCurrentPlayer(self) -> None:
         position = self.current_player.displayPlace()
-        list_possible_move = self.allPossibleMoveForPlayer()
+        list_possible_move = self.allPossibleMoveForPlayer(self.current_player)
         for coord in list_possible_move :
             case = self.board[position[0]+coord[0]][position[1]+coord[1]]
             case.set_possibleMove([coord[0],coord[1]])
@@ -847,89 +718,26 @@ class Board:
                         case = self.board[i][j]
                         case.set_possibleMove(0)
                     
-
-    #partie IA
-    # def game(self) :
-    #     jeu.start()
-    #     self.refreshPossibleCaseMovementForCurrentPlayer()
-    #     jeu.displayBoard(False)
-    def isPossibleMoveOnLeftSizePlayer(self, position : list, x : int, y : int) -> bool:
-        if x != 0 :
-            if position[0] != 0 :
-                if self.board[position[0]+int(x*1.5)][position[1]].get_build() != 0 or self.board[position[0]+x*2][position[1]].get_player() !=0 :
-                    if self.board[position[0]+x][position[1]-1].get_build() == 0 and self.board[position[0]+x][position[1]-2].get_player() ==0 :
-                        return True
-                
-        else :
-            if position[1] != 0 :
-                if self.board[position[0]][position[1]+int(y*1.5)].get_build() != 0 or self.board[position[0]][position[1]+y*2].get_player() !=0 :
-                        if self.board[position[0]-1][position[1]+y].get_build() == 0 and self.board[position[0]-2][position[1]+y].get_player() ==0 :
-                            return True
-        return False
+                    
+    def allPossibleMoveForPlayer(self, player : object) -> list:
+        list2 = []
+        position = player.displayPlace()
+        self.bot.updateNeighborsForEachCase()
+        for neighbor in self.board[position[0]][position[1]].get_neighbors():
+            if neighbor.get_player() == 0 :
+                list2.append([neighbor.get_position()[0] - position[0], neighbor.get_position()[1] - position[1]])
+            else :
+                can_jump = False
+                for neighbor2 in neighbor.get_neighbors():
+                    if neighbor2.get_player() == 0 and neighbor2.get_position()[0] == position[0] + (neighbor.get_position()[0] - position[0])*2 and neighbor2.get_position()[1] == position[1] + (neighbor.get_position()[1] - position[1])*2 :
+                        list2.append([(neighbor.get_position()[0] - position[0])*2, (neighbor.get_position()[1] - position[1])*2])
+                        can_jump = True
+                if can_jump == False :
+                    for neighbor2 in neighbor.get_neighbors():
+                        if neighbor2.get_player() == 0 :
+                            list2.append([neighbor2.get_position()[0] - position[0], neighbor2.get_position()[1] - position[1]])
+        return list2
     
-    def isPossibleMoveOnRightSizePlayer(self,position : list, x : int, y : int) -> bool:
-        if x != 0 :
-            if position[0] != (self.size-1)*2 :
-                if self.board[position[0]+int(x*1.5)][position[1]].get_build() != 0 or self.board[position[0]+x*2][position[1]].get_player() !=0 :
-                    if self.board[position[0]+x][position[1]+1].get_build() == 0 and self.board[position[0]+x][position[1]+2].get_player() ==0 :
-                        return True
-                
-        else :
-            if position[1] != (self.size-1)*2 :
-                if self.board[position[0]][position[1]+int(y*1.5)].get_build() != 0 or self.board[position[0]][position[1]+y*2].get_player() !=0 :
-                        if self.board[position[0]+1][position[1]+y].get_build() == 0 and self.board[position[0]+2][position[1]+y].get_player() ==0 :
-                            return True
-        return False
-
-            
-    def allPossibleMoveForPlayer(self) -> list:
-        list = []
-        position = self.current_player.displayPlace()
-        if self.isPossibleMove(-2,0) == True :
-            if self.board[position[0]-2][position[1]].get_player() !=0:
-                if position[0] != 2 :
-                    if self.board[position[0]-3][position[1]].get_build() == 0 and self.board[position[0]-4][position[1]].get_player() == 0:
-                        list.append([-4,0])
-                    if self.isPossibleMoveOnLeftSizePlayer(position,-2,0) == True :
-                        list.append([-2,-2])
-                    if self.isPossibleMoveOnRightSizePlayer(position,-2,0) == True :
-                        list.append([-2,2])
-            else:
-                list.append([-2,0])
-        if self.isPossibleMove(2,0) == True :
-            if self.board[position[0]+2][position[1]].get_player() !=0:
-                if position[0] != (self.size-1)*2-2 :
-                    if self.board[position[0]+3][position[1]].get_build() ==0:
-                        list.append([4,0])
-                    if self.isPossibleMoveOnLeftSizePlayer(position,2,0) == True :
-                        list.append([2,-2])
-                    if self.isPossibleMoveOnRightSizePlayer(position,2,0) == True :
-                        list.append([2,2])
-            else:
-                list.append([2,0])
-        if self.isPossibleMove(0,-2) == True :
-            if self.board[position[0]][position[1]-2].get_player() !=0:
-                if position[1] != 2 :
-                    if self.board[position[0]][position[1]-3].get_build() ==0:
-                        list.append([0,-4])
-                    if self.isPossibleMoveOnLeftSizePlayer(position,0,-2) == True :
-                        list.append([-2,-2])
-                    if self.isPossibleMoveOnRightSizePlayer(position,0,-2) == True :
-                        list.append([2,-2])
-            else:
-                list.append([0,-2])
-        if self.isPossibleMove(0,2) == True :
-            if self.board[position[0]][position[1]+2].get_player() !=0:
-                if position[1] != (self.size-1)*2-2 :
-                    if self.board[position[0]][position[1]+3].get_build() ==0:
-                        list.append([0,4])
-                    if self.isPossibleMoveOnLeftSizePlayer(position,0,2) == True :
-                        list.append([-2,2])
-                    if self.isPossibleMoveOnRightSizePlayer(position,0,2) == True :
-                        list.append([2,2])
-            else:
-                list.append([0,2])
-        return list
     
     def allPossibleBuildFence(self) -> list:
         list = [] 
@@ -966,8 +774,9 @@ def SendBoardClient(x : int, y : int, typeClick : int, client : socket, orientat
         exit()
     
 
-def restartGame(size : int, nb_players : int, nb_IA : int, nb_fences : int, select_map : int) -> None:
+def restartGame(size : int, nb_players : int, nb_IA : int, nb_fences : int, select_map : int, dificultyIA : int) -> None:
     jeu = Board(size, nb_players , nb_IA, nb_fences, select_map, False, "", "", 0, "")
+    jeu.setLevelIa(dificultyIA)
     jeu.start()
     jeu.refreshPossibleCaseMovementForCurrentPlayer()
     jeu.displayBoard(False)
