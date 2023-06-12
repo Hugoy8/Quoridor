@@ -1193,19 +1193,15 @@ class QuoridorLauncher:
     
     
     def displayAccount(self) -> None:
-        from infrastructure.services.verifConnection import VerifConnection
-        if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
-            self.changeMode()
-            self.is_shop = False
-            statut = self.getStatut()
-            self.statut = 4
-            self.background(self.statut)
-            self.createMenu(statut, "")
-            self.connexion()
-            self.inscription()
-            self.leaveLauncher()
-        else:
-            self.errorClientNetwork("noNetwork")
+        self.changeMode()
+        self.is_shop = False
+        statut = self.getStatut()
+        self.statut = 4
+        self.background(self.statut)
+        self.createMenu(statut, "")
+        self.connexion()
+        self.inscription()
+        self.leaveLauncher()
     
     
     def connexion(self) -> None:
@@ -1215,8 +1211,12 @@ class QuoridorLauncher:
         
     def addLogin(self):
         def addLoginUserFunc() -> None:
-            from infrastructure.database.userDb import UserDb
-            UserDb().loginUser(self)
+            from infrastructure.services.verifConnection import VerifConnection
+            if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
+                from infrastructure.database.userDb import UserDb
+                UserDb().loginUser(self)
+            else:
+                self.errorClientNetwork("noNetwork")
             
         self.login_button.configure(state=DISABLED)
         self.register_button.configure(state=NORMAL)
@@ -1247,8 +1247,12 @@ class QuoridorLauncher:
         
     def addRegister(self):
         def addAccountFunc() -> None:
-            from infrastructure.database.userDb import UserDb
-            UserDb().createAccount(self)
+            from infrastructure.services.verifConnection import VerifConnection
+            if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
+                from infrastructure.database.userDb import UserDb
+                UserDb().createAccount(self)
+            else:
+                self.errorClientNetwork("noNetwork")
             
         self.register_button.configure(state=DISABLED)
         self.login_button.configure(state=NORMAL)
