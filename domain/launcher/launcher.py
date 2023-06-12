@@ -35,10 +35,9 @@ class QuoridorLauncher:
         
         if errorStyle == "errorClientOfServer" or errorStyle == "errorServerOfClient" or errorStyle == "errorConnectClientOfServer" or errorStyle == "errorServerFull" or errorStyle == "errorLaunchServer":
             self.errorClientNetwork(errorStyle)
-        else:
-            from infrastructure.services.verifConnection import VerifConnection
-            if VerifConnection("").isConnectDatabase() == False or VerifConnection("https://google.com").isConnectInternet() == False:
-                self.errorClientNetwork("noNetwork")
+        elif hasattr(self, 'networkStatus'):
+            if self.networkStatus == "noNetwork":
+                self.errorClientNetwork(self.networkStatus)
                 
         self.window.mainloop()
         
@@ -996,6 +995,16 @@ class QuoridorLauncher:
         
         
     def create_entries(self) -> None:
+        def clickButtonVerifConnection(typeButton : str, event=None) -> None:
+            from infrastructure.services.verifConnection import VerifConnection
+            if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
+                if typeButton == "JoinGame":
+                    self.joinGameNetwork()
+                elif typeButton == "ScanGames":
+                    self.displayIp()
+            else:
+                self.errorClientNetwork("noNetwork")
+                
         ip = Label(self.window, text="Adresse IP :", font=("Arial", 10), bg="#0F2234", fg="#E3F8FF")
         ip.place(relx=0.25, rely=0.7, anchor=CENTER)
         self.entryIp = Entry(self.window, bd=3, width=15, font=("Arial", 13), background="#102A43", foreground="white", insertbackground="white", highlightbackground="#2BB0ED", highlightcolor="#2BB0ED", highlightthickness=1, relief=FLAT)
@@ -1006,13 +1015,8 @@ class QuoridorLauncher:
         map = Label(self.window, text="Thème de la carte :", font=("Arial", 10), bg="#0F2234", fg="#E3F8FF")
         map.place(relx=0.45, rely=0.7, anchor=CENTER)
         
-        from infrastructure.services.verifConnection import VerifConnection
-        if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
-            start = Button(self.window, image=self.join_game, cursor="hand2", activebackground="#035388", bd=0, highlightthickness=0, activeforeground="white", command=self.joinGameNetwork)
-            search_game_button = Button(self.window, image=self.search_game,  cursor="hand2", bd=0, highlightthickness=0, command=self.displayIp, activebackground="#486581",  activeforeground="white")
-        else:
-            start = Button(self.window, image=self.join_game, cursor="hand2", activebackground="#035388", bd=0, highlightthickness=0, activeforeground="white", command=lambda: self.errorClientNetwork("noNetwork"))
-            search_game_button = Button(self.window, image=self.search_game,  cursor="hand2", bd=0, highlightthickness=0, command=lambda: self.errorClientNetwork("noNetwork"), activebackground="#486581",  activeforeground="white")
+        start = Button(self.window, image=self.join_game, cursor="hand2", activebackground="#035388", bd=0, highlightthickness=0, activeforeground="white", command=lambda: clickButtonVerifConnection("JoinGame"))
+        search_game_button = Button(self.window, image=self.search_game,  cursor="hand2", bd=0, highlightthickness=0, command=lambda: clickButtonVerifConnection("ScanGames"), activebackground="#486581",  activeforeground="white")
         
         start.place(relx=0.25, rely=0.8, anchor=CENTER)
         search_game_button.place(relx=0.4, rely=0.8, anchor=CENTER)
@@ -1059,26 +1063,46 @@ class QuoridorLauncher:
         if len(listip) == 0:
             self.statut = 3
             self.menuJoinGameNetwork(event=None)
-        for i, address in enumerate(listip):
-            ip, port = address.split(":")
-            frame = tk.LabelFrame(self.window, text=ip, fg="white", bg="blue", width=200)
-            x = self.window.winfo_screenwidth() - 200 - 10  
-            y = (i+1)/(len(listip)+1) * self.window.winfo_screenheight()
-            frame.place(x=x, y=y, anchor='ne')
-            label = tk.Label(frame, text="Port: " + port, fg="white", bg="blue")
-            label.pack(padx=5, pady=5)
-            frame.bind("<Button-1>", lambda event, ip=ip, port=port: self.onIpClick(event, port))
-            
-            
-    def onIpClick(self, event, port):
+        else:
+            relyDisplay = 0.4
+            relyLabel = 0.51
+            for i, address in enumerate(listip):
+                if i > 2:
+                    break
+                
+                ip, port = address.split(":")
+                
+                ip_port_display = Label(self.window, image=self.display_ip_port, bd=0, highlightthickness=0)
+                
+                if i == 0:
+                    ip_port_display.place(relx=0.83, rely=relyDisplay, anchor=CENTER)
+                elif i == 1:
+                    ip_port_display.place(relx=0.83, rely=(relyDisplay + (((140 * 100) / self.window.winfo_screenheight())/100) + (((31 * 100) / self.window.winfo_screenheight())/100) + 0.05), anchor=CENTER)
+                    
+                ip_text = Label(ip_port_display, text=ip, bd=0, highlightthickness=0, bg="#101D2C", fg="white", font=("Arial", 10))
+                ip_text.place(relx=0.5, rely=0.33, anchor=CENTER)
+                port_text = Label(ip_port_display, text=port, bd=0, highlightthickness=0, bg="#101D2C", fg="white", font=("Arial", 10))
+                port_text.place(relx=0.5, rely=0.88, anchor=CENTER)
+                
+                join_game_label = Label(self.window, image=self.join_game_button, bd=0, highlightthickness=0, cursor="hand2")
+                
+                if i == 0:
+                    join_game_label.place(relx=0.83, rely=relyLabel, anchor=CENTER)
+                elif i == 1:
+                    join_game_label.place(relx=0.83, rely=(relyDisplay + (((140 * 100) / self.window.winfo_screenheight())/100) + (((31 * 100) / self.window.winfo_screenheight())/100) + 0.05 + 0.11), anchor=CENTER)
+                    
+                join_game_label.bind("<Button-1>", lambda event: self.onIpClick(ip, port))
+
+
+    def onIpClick(self, ip: str, port: int, event=None) -> None:
         from infrastructure.services.getSetInformation import GetSetInformation
-        
-        ip = event.widget['text']
+
+        ip = str(ip)
         port = int(port)
         self.window.destroy()
         GetSetInformation().setUsername(self.pseudo)
         joinSession(ip, port, self.selectMap)
-        
+            
         
     """CREER UNE GAME EN LOCAL"""
         
@@ -1118,11 +1142,15 @@ class QuoridorLauncher:
     
     
     def startButtonNetwork(self) -> None:
-        from infrastructure.services.verifConnection import VerifConnection
-        if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
-            start = Button(self.window, image=self.create_game, bd=0, highlightthickness=0, cursor="hand2", activebackground="#035388",  activeforeground="white", command=self.startGame)
-        else:
-            start = Button(self.window, image=self.create_game, bd=0, highlightthickness=0, cursor="hand2", activebackground="#035388",  activeforeground="white", command=lambda: self.errorClientNetwork("noNetwork"))
+        def clickButtonVerifConnection(typeButton : str, event=None) -> None:
+            from infrastructure.services.verifConnection import VerifConnection
+            if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
+                if typeButton == "startGame":
+                    self.startGame
+            else:
+                self.errorClientNetwork("noNetwork")
+                
+        start = Button(self.window, image=self.create_game, bd=0, highlightthickness=0, cursor="hand2", activebackground="#035388",  activeforeground="white", command=lambda: clickButtonVerifConnection("startGame"))
             
         start.place(relx=0.25, rely=0.8, anchor=CENTER)
     

@@ -1,19 +1,4 @@
 class GetSetInformation:
-    def getInfos(fichier1: str) -> tuple:
-        try:
-            with open(fichier1, 'r') as f1:
-                valeurs_fichier1 = f1.read().strip()
-                
-                if not valeurs_fichier1: 
-                    valeurs_fichier1 = " "
-                else:
-                    pass
-                
-            return valeurs_fichier1
-        except IOError:
-            print("Erreur : impossible de lire les fichiers.")
-            
-            
     def setUsername(self, username: str) -> None:
         try:
             with open('serverPseudo.txt', 'w') as fichier:
@@ -41,7 +26,7 @@ class GetSetInformation:
     def isConnected(self, file_path : str) -> str or False:
         try:
             with open(file_path, 'r') as file:
-                content = file.read().strip()
+                content = file.readline().strip()
                 return len(content) == 0
         except IOError:
             print("Erreur : impossible de lire le fichier.")

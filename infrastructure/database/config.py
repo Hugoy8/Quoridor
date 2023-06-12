@@ -319,16 +319,6 @@ class Database(threading.Thread):
             self.db.close()
         else:
             print("User not found.")
-
-
-    # def deconnexionUser(self, ip: str, port: int, id: int):
-    #     self.connectDb()
-    #     delete_query = self.delete()
-    #     delete_query.execute(f"DELETE FROM Game{ip.replace('.', '_')}{port} WHERE ID = {id}")
-
-    #     self.db.commit()
-    #     delete_query.close()
-    #     self.db.close()
     
     
     def refreshTabel(self, ip: str, port: int):

@@ -175,33 +175,6 @@ class Board:
                 self.db.addMoney(username)
     
     
-    def getIpPortUsername(self, fichier1: str, fichier2: str, fichier3: str) -> tuple:
-        try:
-            with open(fichier1, 'r') as f1, open(fichier2, 'r') as f2, open(fichier3, 'r') as f3:
-                valeurs_fichier1 = f1.read().strip()
-                valeurs_fichier2 = f2.read().strip()
-                valeurs_fichier3 = f3.read().strip()
-                
-                if not valeurs_fichier3: 
-                    valeurs_fichier3 = " "
-                else:
-                    pass
-                    
-            return valeurs_fichier1, valeurs_fichier2, valeurs_fichier3
-        except IOError:
-            print("Erreur : impossible de lire les fichiers.")
-    
-    
-    def resetFile(self, nom_fichier1: str, nom_fichier2: str) -> None:
-        try:
-            with open(nom_fichier1, 'w') as fichier1, open(nom_fichier2, 'w') as fichier2:
-                fichier1.truncate(0)
-                fichier2.truncate(0)
-            print("Les fichiers", nom_fichier1, "et", nom_fichier2, "ont été réinitialisés avec succès.")
-        except IOError:
-            print("Erreur : impossible de réinitialiser les fichiers", nom_fichier1, "et", nom_fichier2)
-    
-    
     def popUpNoFence(self, player_name):
         #PopUp plus de barrière
         leavepopup = Image.open(f"./assets/images/{self.map}/no_fence{player_name}.png")

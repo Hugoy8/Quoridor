@@ -27,6 +27,7 @@ class InitLauncher():
                 GetSetInformation().deleteFile("serverPseudo.txt")
         else:
             GetSetInformation().deleteFile("serverPseudo.txt")
+            self.launcher.networkStatus = "noNetwork"
             
         self.addProgressLaunchScreen()
                 
@@ -34,7 +35,7 @@ class InitLauncher():
         
         (self.widthWindow, self.heightWindow) = (self.launcher.window.winfo_screenwidth(), self.launcher.window.winfo_screenheight())
         
-        # self.launcher.window.attributes("-topmost", True)
+        self.launcher.window.attributes("-topmost", True)
         
         self.launcher.window.title("Mon Launcher")
         
@@ -158,20 +159,8 @@ class InitLauncher():
         back_list_friends = back_list_friends.resize((29, 29))
         self.launcher.back_list_friends = ImageTk.PhotoImage(back_list_friends)
         
-        friend_online = Image.open(f"./assets/images/launcher/friend_online.png")
-        friend_online = friend_online.resize((12, 13))
-        self.launcher.statut_online = ImageTk.PhotoImage(friend_online)
         
         self.addProgressLaunchScreen()
-        
-        friend_offlive = Image.open(f"./assets/images/launcher/friend_offline.png")
-        friend_offlive = friend_offlive.resize((12, 13))
-        self.launcher.statut_offline = ImageTk.PhotoImage(friend_offlive)
-        
-        background_not_connect = Image.open(f"./assets/images/launcher/background_not_connect.png")
-        background_not_connect = background_not_connect.resize((203, 93))
-        self.launcher.background_not_connect = ImageTk.PhotoImage(background_not_connect)
-        
         
         account_image = Image.open(f"./assets/images/launcher/account.png")
         account_image = account_image.resize((39, 43))
@@ -374,6 +363,15 @@ class InitLauncher():
         no_delete_friend_button = Image.open(f"./assets/images/launcher/no_delete_friend_button.png")
         no_delete_friend_button = no_delete_friend_button.resize((155, 40))
         self.launcher.no_delete_friend_button = ImageTk.PhotoImage(no_delete_friend_button)
+        
+        join_game_button = Image.open(f"./assets/images/launcher/join_game_search.png")
+        join_game_button = join_game_button.resize((177, 31))
+        self.launcher.join_game_button = ImageTk.PhotoImage(join_game_button)
+        
+        display_ip_port = Image.open(f"./assets/images/launcher/display_ip_port.png")
+        display_ip_port = display_ip_port.resize((179, 140))
+        self.launcher.display_ip_port = ImageTk.PhotoImage(display_ip_port)
+        
         
         self.addProgressLaunchScreen()
         
