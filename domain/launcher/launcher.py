@@ -4,10 +4,11 @@ from tkinter import ttk
 from infrastructure.services.services import restartGame
 from domain.network.network import joinSession, startSession
 from domain.network.scanNetwork import ScanNetwork
-import hashlib
+import os
+
 
 class QuoridorLauncher:
-    def __init__(self) -> None:
+    def __init__(self, errorStyle : str) -> None:
         # Page de lancement.
         from domain.launcher.launchScreen import LaunchScreen
         launchScreen = LaunchScreen()
@@ -15,21 +16,30 @@ class QuoridorLauncher:
         # Lancement de la class d'initialisation des variables, images, sons...
         from infrastructure.services.initLauncher import InitLauncher
         from infrastructure.database.config import Database
-        initGame = InitLauncher(self, launchScreen)
+        initGame = InitLauncher(self, launchScreen, Database())
         
         # Lancement de l'affichage du chargement.
-        launchScreen.start()
+        if os.name == "nt":
+            launchScreen.start()
         
-        initGame.startInit(Database())
+        initGame.startInit()
             
         # Lancement de l'affichage du launcher.
         self.menuCreateGameSolo(event=None)
         
-        launchScreen.status = False
+        if os.name == "nt":
+            launchScreen.status = False
+            
+            if launchScreen.is_alive():
+                launchScreen.join()
         
-        if launchScreen.is_alive():
-            launchScreen.join()
-        
+        if errorStyle == "errorClientOfServer" or errorStyle == "errorServerOfClient" or errorStyle == "errorConnectClientOfServer" or errorStyle == "errorServerFull" or errorStyle == "errorLaunchServer":
+            self.errorClientNetwork(errorStyle)
+        else:
+            from infrastructure.services.verifConnection import VerifConnection
+            if VerifConnection("").isConnectDatabase() == False or VerifConnection("https://google.com").isConnectInternet() == False:
+                self.errorClientNetwork("noNetwork")
+                
         self.window.mainloop()
         
         
@@ -43,6 +53,7 @@ class QuoridorLauncher:
                     print("Error: Invalid value for favorite map")
         return 1
     
+    
     def background(self, statut) -> None:
         self.statut = statut
         img_bg = getattr(self, f"bg_photo{statut}")
@@ -55,8 +66,21 @@ class QuoridorLauncher:
             if child.winfo_exists():
                 child.destroy()
         
+    
+    def leaveLauncher(self) -> None:
+        def leaveAll(event=None) -> None:
+            from infrastructure.services.deletePycache import deletePycache
+            
+            self.window.destroy()
+            deletePycache()
+            exit()
+            
+        self.leave_button = Label(self.window, image=self.leave_game_network, cursor="hand2", bd=0, highlightthickness=0)
+        self.leave_button.place(relx=0.95, rely=0.92, anchor=CENTER)
+        self.leave_button.bind("<Button-1>", lambda event: leaveAll())
         
-    def createMenu(self, statut) -> None:
+        
+    def createMenu(self, statut : None or int, btnCliked : str) -> None:
         self.statut = statut
         
         self.menu = getattr(self, f"menu{self.statut}")
@@ -66,40 +90,122 @@ class QuoridorLauncher:
         canvas.create_image(0, 0, anchor=NW, image=self.menu)
         canvas.bind("<Button-1>", lambda event: self.clickMenu(event, self.menuCreateGameSolo, self.menuJoinGameNetwork, self.menuCreateGameNetwork))
         
-        parameters_x = 52
-        
-        settings = Canvas(self.window, width=self.parameters.width(), height=self.parameters.height(), bd=0, highlightthickness=0, cursor="hand2")
-        settings.place(x=parameters_x, rely=0.85)
-        settings.create_image(0, 0, anchor=NW, image=self.parameters)
-        
-        
+        if btnCliked == "settings":
+            settingsPicture = self.parametersOn
+        else:
+            settingsPicture = self.parameters
+        settings = Canvas(self.window, width=settingsPicture.width(), height=settingsPicture.height(), bd=0, highlightthickness=0, cursor="hand2")
+        settings.place(x=(int(self.window.winfo_screenwidth() * 0.023) + 20), rely=0.85)
+        settings.create_image(0, 0, anchor=NW, image=settingsPicture)
         settings.bind("<Button-1>", self.displayParameters)
 
-        shop_x = 52 
-        
-        shops = Canvas(self.window, width=self.shop.width(), height=self.shop.height(), bd=0, highlightthickness=0, cursor="hand2")
-        shops.place(x=shop_x, rely=0.72)
-        shops.create_image(0, 0, anchor=NW, image=self.shop)
-        
+        if btnCliked == "shop":
+            shopPicture = self.shopOn
+        else:
+            shopPicture = self.shop
+        shops = Canvas(self.window, width=shopPicture.width(), height=shopPicture.height(), bd=0, highlightthickness=0, cursor="hand2")
+        shops.place(x=(int(self.window.winfo_screenwidth() * 0.023) + 20), rely=0.72)
+        shops.create_image(0, 0, anchor=NW, image=shopPicture)
         shops.bind("<Button-1>", lambda event: self.displayShop())
+        
         self.createAccountMenu()
     
     
+    
+    
+    ''' Zone de création des menus de settings et gestion des changement en temps réel '''
     def displayParameters(self, event):
+        from infrastructure.services.settings import Settings
+        
+        __settingsClass = Settings(self)
+        
         self.changeMode()
-        statut = self.getStatut()
-        self.statut = 2
+        self.statut = 6
         self.background(self.statut)
-        self.createMenu(statut)
+        self.createMenu(None, "settings")
         self.settingsActiveNotificationsSond()
-        self.settingsSoundMap()
-        self.settingsSoundVictory()
-        self.settingsPionVolume()
-        self.settingsFenceVolume()
-        self.settingsNoFenceVolume()
+        self.settingsSoundMap(__settingsClass)
+        self.settingsSoundVictory(__settingsClass)
+        self.settingsPionVolume(__settingsClass)
+        self.settingsFenceVolume(__settingsClass)
+        self.settingsNoFenceVolume(__settingsClass)
         self.choiceFavoriteMap()
+        self.displayButtonChangeBind()
+        self.settingsNotificationVolume(__settingsClass)
+        self.leaveLauncher()
         
-        
+
+    def setBind(self, event=None):
+        if self.changeButton:
+            touche = event.keysym
+            if touche == "space":
+                touche_affichee = "space"
+            else:
+                touche_affichee = touche[0]
+
+            self.addBindToFile(touche_affichee)
+            self.changeButton = False
+            self.wait_bind.destroy()  # Détruire le label wait_bind
+
+
+    def modifyBind(self):
+        self.wait_bind = Label(image=self.bind_changing, bd=0, highlightthickness=0)
+        self.wait_bind.place(relx=0.6, rely=0.8, anchor=CENTER)
+        self.wait_bind.bind("<Button-1>", lambda event: self.setBind(event))
+        self.changeButton = True
+        self.window.unbind("<Key>")
+        self.window.bind("<Key>", self.setBind)
+        self.bindActual()
+        self.label_touche.destroy()
+
+
+    def displayButtonChangeBind(self):
+        bind_actual = Label(self.window, image=self.bind, cursor="hand2", bd=0, highlightthickness=0)
+        bind_actual.place(relx=0.6, rely=0.8, anchor=CENTER)
+        bind_actual.bind("<Button-1>", lambda event: self.modifyBind())
+
+        self.bindActual()
+    
+    
+    def addBindToFile(self, touche):
+        with open("settings.txt", "r") as file:
+            lignes = file.readlines()
+
+        if len(lignes) >= 8:
+            lignes[7] = f"<{touche}>\n" 
+            with open("settings.txt", "w") as file:
+                file.writelines(lignes)
+            
+            self.bindActual()  
+        else:
+            print("Le fichier settings.txt ne contient pas suffisamment de lignes.")
+    
+    
+    def bindActual(self):
+        with open("settings.txt", "r") as file:
+            lignes = file.readlines()
+
+        if len(lignes) >= 8:
+            touche = lignes[7].strip()
+            texte = f"{touche.upper().replace('<', '').replace('>', '')}"
+            if texte == "SPACE":
+                texte = "ESPACE"
+                size_font = 9
+            else:
+                size_font = 15
+
+            if hasattr(self, "label_touche"): 
+                self.label_touche.destroy()  
+
+            text_bind_actual = Label(self.window, text="Direction des barrières :", background="#0F2234", bd=0, highlightthickness=0, fg="white", font=("Arial", 13))
+            text_bind_actual.place(relx=0.6, rely=0.75, anchor=CENTER)
+            self.label_touche = Label(self.window, text=texte, background="#102C42", bd=0, highlightthickness=0, fg="white", font=("Arial", size_font), cursor="hand2")
+            self.label_touche.place(relx=0.6, rely=0.8, anchor=CENTER)
+            self.label_touche.bind("<Button-1>", lambda event: self.modifyBind())
+        else:
+            print("Le fichier settings.txt ne contient pas suffisamment de lignes.")
+            
+            
     def choiceFavoriteMap(self) -> None:
         def action(event) -> None:
             selected_value = listMap.get()
@@ -116,8 +222,7 @@ class QuoridorLauncher:
                     self.selectFavoriteMap = 5
                 elif selected_value == "Sugar":
                     self.selectFavoriteMap = 6
-                
-                # Ajouter la valeur de self.selectFavoriteMap à la 7e ligne de settings.txt
+        
                 with open("settings.txt", "r") as file:
                     lines = file.readlines()
                 if len(lines) >= 7:
@@ -128,23 +233,25 @@ class QuoridorLauncher:
             except ValueError:
                 print(f"Error: '{selected_value}' is not a valid map")
 
-        if self.isConnected("serverPseudo.txt") == False:
-            username = self.get_username("serverPseudo.txt")
+        from infrastructure.services.getSetInformation import GetSetInformation
+        __getSetInformation = GetSetInformation()
+        
+        if __getSetInformation.isConnected("serverPseudo.txt") == False:
+            username = __getSetInformation.get_username("serverPseudo.txt")
             listMaps = self.db.getMapByUsername(username)
         else:
             listMaps = ["Jungle", "Space", "Hell"]
         
-        self.selectFavoriteMap = min(self.selectFavoriteMap, len(listMaps))  # Assure un index valide
+        self.selectFavoriteMap = min(self.selectFavoriteMap, len(listMaps))  
         
         listMap = ttk.Combobox(self.window, values=listMaps, state="readonly")
         listMap.current(self.selectFavoriteMap - 1)
             
-        listMap.place(relx=0.25, rely=0.8, anchor=CENTER)
+        listMap.place(relx=0.6, rely=0.68, anchor=CENTER)
         listMap.bind("<<ComboboxSelected>>", action)
         
-        nameMap = Label(self.window, text="Votre carte favorite:", font=("Arial", 10), bg="#0F2234", fg="#E3F8FF")
-        nameMap.place(relx=0.25, rely=0.73, anchor=CENTER)
-
+        nameMap = Label(self.window, text="Votre carte favorite:", font=("Arial", 13), bg="#0F2234", fg="#E3F8FF")
+        nameMap.place(relx=0.6, rely=0.65, anchor=CENTER)
 
     
     # Activer ou désactiver le son des notifications de demande d'amis
@@ -160,212 +267,186 @@ class QuoridorLauncher:
             else:
                 self.active_sound_notification = True
             update_statut()
-            lines[0] = str(self.active_sound_notification) + "\n"  # Mettre à jour la première ligne
+            lines[0] = str(self.active_sound_notification) + "\n"  
 
             with open("settings.txt", "w") as file:
-                file.writelines(lines)  # Réécrire toutes les lignes dans le fichier
+                file.writelines(lines)  
 
         def update_statut():
             if self.active_sound_notification:
-                value = "Activé"
+                self.image_statut_notification = self.yes_sound_notifications_image
             else:
-                value = "Désactivé"
-            statut_sound_notification.config(text=value)
+                self.image_statut_notification = self.no_sound_notifications_image
+            statut_sound_notification.config(image=self.image_statut_notification)
 
-        sound_notification = Label(self.window, text="Son des notifications", bd=0, highlightthickness=0, cursor="hand2")
-        sound_notification.place(relx=0.5, rely=0.5, anchor=CENTER)
+        sound_notification = Label(self.window, text="Notifications", bd=0, highlightthickness=0, cursor="hand2", bg="#0F2538", fg="#FFFFFF", font=("Helvetica", 13))
+        sound_notification.place(relx=0.6, rely=0.5, anchor=CENTER)
 
-        statut_sound_notification = Label(self.window, text="", bd=0, highlightthickness=0, cursor="hand2")
-        statut_sound_notification.place(relx=0.5, rely=0.55, anchor=CENTER)
+        statut_sound_notification = Label(self.window, image=self.yes_sound_notifications_image, bd=0, highlightthickness=0, cursor="hand2")
+        statut_sound_notification.place(relx=0.6, rely=0.54, anchor=CENTER)
         update_statut()
         statut_sound_notification.bind("<Button-1>", changeStatutSoundNotification)
     
     
     # Modifier le son de la map
-    def settingsSoundMap(self) -> None:
+    def settingsSoundMap(self, settingClass : object) -> None:
         with open("settings.txt", "r") as file:
             lines = file.readlines()
             if len(lines) >= 2:
                 self.sound_map = float(lines[1].strip())
-
-        sound_map_texte = Label(self.window, text="Son de la map", bd=0, highlightthickness=0, cursor="hand2")
-        sound_map_texte.place(relx=0.7, rely=0.75, anchor=CENTER)
-        self.slider = Scale(self.window, from_=0, to=1, resolution=0.01, orient=tk.HORIZONTAL, length=200, bg="#2C2F33", fg="#FFFFFF", troughcolor="#99AAB5", highlightthickness=0, cursor="hand2")
-        self.slider.set(self.sound_map)  # Valeur initiale du slider
-        self.slider.place(relx=0.7, rely=0.8, anchor=CENTER)
-        self.slider.config(command=self.updateValue)
-
-    def updateValue(self, value):
-        value = float(value)
-        self.saveValueToFile(value)
-
-    def saveValueToFile(self, value):
-        # Modifier la deuxième ligne du fichier "settings.txt" avec la nouvelle valeur
-        with open("settings.txt", "r") as file:
-            lines = file.readlines()
+                
+        sound_map_texte = Label(self.window, text="Volume du son d'ambiance", bd=0, highlightthickness=0, cursor="hand2",  bg="#0F2538", fg="#FFFFFF", font=("Helvetica", 13))
+        sound_map_texte.place(relx=0.25, rely=0.5, anchor=CENTER)
+        self.slider = Scale(self.window, from_=0, to=1, resolution=0.1, orient=tk.HORIZONTAL, length=200, bg="#0F2538", fg="#FFFFFF", troughcolor="#2BB1ED", highlightthickness=0, cursor="hand2")
+        self.slider.set(self.sound_map)  
+        self.slider.place(relx=0.25, rely=0.54, anchor=CENTER)
+        self.slider.config(command=settingClass.saveValueToFile)
         
-        if len(lines) >= 2:
-            lines[1] = str(value) + "\n"
         
-        with open("settings.txt", "w") as file:
-            file.writelines(lines)
-    
-    # modifier le son de la victoire 
-    def settingsSoundVictory(self) -> None:
+    # Modifier le son de la victoire 
+    def settingsSoundVictory(self, settingClass : object) -> None:
         with open("settings.txt", "r") as file:
             lines = file.readlines()
             if len(lines) >= 3:
                 self.sound_victory = float(lines[2].strip())
-
-        sound_victory_texte = Label(self.window, text="Son de la victoire", bd=0, highlightthickness=0, cursor="hand2")
-        sound_victory_texte.place(relx=0.5, rely=0.75, anchor=CENTER)
-        self.slider_victory = Scale(self.window, from_=0, to=1, resolution=0.01, orient=tk.HORIZONTAL, length=200, bg="#2C2F33", fg="#FFFFFF", troughcolor="#99AAB5", highlightthickness=0, cursor="hand2")
-        self.slider_victory.set(self.sound_victory)  # Valeur initiale du slider
-        self.slider_victory.place(relx=0.5, rely=0.8, anchor=CENTER)
-        self.slider_victory.config(command=self.updateVictoryValue)
-
-    def updateVictoryValue(self, value):
-        value = float(value)
-        self.saveVictoryValueToFile(value)
-
-    def saveVictoryValueToFile(self, value):
-        # Modifier la troisième ligne du fichier "settings.txt" avec la nouvelle valeur
-        with open("settings.txt", "r") as file:
-            lines = file.readlines()
-
-        if len(lines) >= 3:
-            lines[2] = str(value) + "\n"
-
-        with open("settings.txt", "w") as file:
-            file.writelines(lines)
-
+                
+        sound_victory_texte = Label(self.window, text="Son de la victoire", bd=0, highlightthickness=0, cursor="hand2", bg="#0F2538", fg="#FFFFFF", font=("Helvetica", 13))
+        sound_victory_texte.place(relx=0.43, rely=0.5, anchor=CENTER)
+        self.slider_victory = Scale(self.window, from_=0, to=1, resolution=0.1, orient=tk.HORIZONTAL, length=200, bg="#0F2538", fg="#FFFFFF", troughcolor="#2BB1ED", highlightthickness=0, cursor="hand2")
+        self.slider_victory.set(self.sound_victory) 
+        self.slider_victory.place(relx=0.43, rely=0.54, anchor=CENTER)
+        self.slider_victory.config(command=settingClass.saveVictoryValueToFile)
+        
+        
     # Modifier le volume du pion
-    def settingsPionVolume(self) -> None:
+    def settingsPionVolume(self, settingClass : object) -> None:
         with open("settings.txt", "r") as file:
             lines = file.readlines()
             if len(lines) >= 4:
                 self.pion_volume = float(lines[3].strip())
-
-        pion_volume_texte = Label(self.window, text="Volume du pion", bd=0, highlightthickness=0, cursor="hand2")
-        pion_volume_texte.place(relx=0.5, rely=0.9, anchor=CENTER)
-        self.slider_pion_volume = Scale(self.window, from_=0, to=1, resolution=0.01, orient=tk.HORIZONTAL, length=200, bg="#2C2F33", fg="#FFFFFF", troughcolor="#99AAB5", highlightthickness=0, cursor="hand2")
-        self.slider_pion_volume.set(self.pion_volume)  # Valeur initiale du slider
-        self.slider_pion_volume.place(relx=0.5, rely=0.95, anchor=CENTER)
-        self.slider_pion_volume.config(command=self.updatePionVolume)
-
-    def updatePionVolume(self, value):
-        value = float(value)
-        self.savePionVolumeToFile(value)
-
-    def savePionVolumeToFile(self, value):
-        # Modifier la quatrième ligne du fichier "settings.txt" avec la nouvelle valeur
-        with open("settings.txt", "r") as file:
-            lines = file.readlines()
-
-        if len(lines) >= 4:
-            lines[3] = str(value) + "\n"
-
-        with open("settings.txt", "w") as file:
-            file.writelines(lines)
-            
-            
+                
+        pion_volume_texte = Label(self.window, text="Volume de la pose du pion", bd=0, highlightthickness=0, cursor="hand2", bg="#0F2538", fg="#FFFFFF", font=("Helvetica", 13))
+        pion_volume_texte.place(relx=0.25, rely=0.65, anchor=CENTER)
+        self.slider_pion_volume = Scale(self.window, from_=0, to=1, resolution=0.1, orient=tk.HORIZONTAL, length=200, bg="#0F2538", fg="#FFFFFF", troughcolor="#2BB1ED", highlightthickness=0, cursor="hand2")
+        self.slider_pion_volume.set(self.pion_volume)  
+        self.slider_pion_volume.place(relx=0.25, rely=0.68, anchor=CENTER)
+        self.slider_pion_volume.config(command=settingClass.savePionVolumeToFile)
+        
+        
     # Modifier le volume des clôtures
-    def settingsFenceVolume(self) -> None:
+    def settingsFenceVolume(self, settingClass : object) -> None:
         with open("settings.txt", "r") as file:
             lines = file.readlines()
             if len(lines) >= 5:
                 self.fence_volume = float(lines[4].strip())
-
-        fence_volume_texte = Label(self.window, text="Volume des clôtures", bd=0, highlightthickness=0, cursor="hand2")
-        fence_volume_texte.place(relx=0.3, rely=0.8, anchor=CENTER)
-        self.slider_fence_volume = Scale(self.window, from_=0, to=1, resolution=0.01, orient=tk.HORIZONTAL, length=200, bg="#2C2F33", fg="#FFFFFF", troughcolor="#99AAB5", highlightthickness=0, cursor="hand2")
-        self.slider_fence_volume.set(self.fence_volume)  # Valeur initiale du slider
-        self.slider_fence_volume.place(relx=0.3, rely=0.85, anchor=CENTER)
-        self.slider_fence_volume.config(command=self.updateFenceVolume)
-
-    def updateFenceVolume(self, value):
-        value = float(value)
-        self.saveFenceVolumeToFile(value)
-
-    def saveFenceVolumeToFile(self, value):
-        # Modifier la cinquième ligne du fichier "settings.txt" avec la nouvelle valeur
-        with open("settings.txt", "r") as file:
-            lines = file.readlines()
-
-        if len(lines) >= 5:
-            lines[4] = str(value) + "\n"
-
-        with open("settings.txt", "w") as file:
-            file.writelines(lines)
-    
+                
+        fence_volume_texte = Label(self.window, text="Volume des barrières", bd=0, highlightthickness=0, cursor="hand2",  bg="#0F2538", fg="#FFFFFF", font=("Helvetica", 13))
+        fence_volume_texte.place(relx=0.25, rely=0.78, anchor=CENTER)
+        self.slider_fence_volume = Scale(self.window, from_=0, to=1, resolution=0.1, orient=tk.HORIZONTAL, length=200, bg="#0F2538", fg="#FFFFFF", troughcolor="#2BB1ED", highlightthickness=0, cursor="hand2")
+        self.slider_fence_volume.set(self.fence_volume)  
+        self.slider_fence_volume.place(relx=0.25, rely=0.82, anchor=CENTER)
+        self.slider_fence_volume.config(command=settingClass.saveFenceVolumeToFile)
+        
         
     # Modifier le volume du son "no fence"
-    def settingsNoFenceVolume(self) -> None:
+    def settingsNoFenceVolume(self, settingClass : object) -> None:
         with open("settings.txt", "r") as file:
             lines = file.readlines()
             if len(lines) >= 6:
                 self.no_fence_volume = float(lines[5].strip())
-
-        no_fence_volume_texte = Label(self.window, text="Volume du son 'No Fence'", bd=0, highlightthickness=0, cursor="hand2")
-        no_fence_volume_texte.place(relx=0.4, rely=0.45, anchor=CENTER)
-        self.slider_no_fence_volume = Scale(self.window, from_=0, to=1, resolution=0.01, orient=tk.HORIZONTAL, length=200, bg="#2C2F33", fg="#FFFFFF", troughcolor="#99AAB5", highlightthickness=0, cursor="hand2")
-        self.slider_no_fence_volume.set(self.no_fence_volume)  # Valeur initiale du slider
-        self.slider_no_fence_volume.place(relx=0.4, rely=0.5, anchor=CENTER)
-        self.slider_no_fence_volume.config(command=self.updateNoFenceVolume)
-
-    def updateNoFenceVolume(self, value):
-        value = float(value)
-        self.saveNoFenceVolumeToFile(value)
-
-    def saveNoFenceVolumeToFile(self, value):
-        # Modifier la sixième ligne du fichier "settings.txt" avec la nouvelle valeur
+                
+        no_fence_volume_texte = Label(self.window, text="Volume du son barrière incorrecte", bd=0, highlightthickness=0, cursor="hand2",  bg="#0F2538", fg="#FFFFFF", font=("Helvetica", 13))
+        no_fence_volume_texte.place(relx=0.43, rely=0.65, anchor=CENTER)
+        self.slider_no_fence_volume = Scale(self.window, from_=0, to=1, resolution=0.1, orient=tk.HORIZONTAL, length=200, bg="#0F2538", fg="#FFFFFF", troughcolor="#2BB1ED", highlightthickness=0, cursor="hand2")
+        self.slider_no_fence_volume.set(self.no_fence_volume) 
+        self.slider_no_fence_volume.place(relx=0.43, rely=0.68, anchor=CENTER)
+        self.slider_no_fence_volume.config(command=settingClass.saveNoFenceVolumeToFile)
+        
+        
+    def settingsNotificationVolume(self, settingClass : object) -> None:
         with open("settings.txt", "r") as file:
             lines = file.readlines()
+            if len(lines) >= 9:
+                self.notification_volume = float(lines[8].strip())
 
-        if len(lines) >= 6:
-            lines[5] = str(value) + "\n"
-
-        with open("settings.txt", "w") as file:
-            file.writelines(lines)
+        notification_volume_texte = Label(self.window, text="Volume des notifications", bd=0, highlightthickness=0, cursor="hand2", bg="#0F2538", fg="#FFFFFF", font=("Helvetica", 13))
+        notification_volume_texte.place(relx=0.43, rely=0.78, anchor=CENTER)
+        self.slider_notification_volume = Scale(self.window, from_=0, to=1, resolution=0.1, orient=tk.HORIZONTAL, length=200, bg="#0F2538", fg="#FFFFFF", troughcolor="#2BB1ED", highlightthickness=0, cursor="hand2")
+        self.slider_notification_volume.set(self.notification_volume)
+        self.slider_notification_volume.place(relx=0.43, rely=0.82, anchor=CENTER)
+        self.slider_notification_volume.config(command=settingClass.saveNotificationVolumeToFile)
+    
         
+    ''' Zone de création des menu pour compte, deconnexion, amis '''
     def createAccountMenu(self) -> None:
-        if self.isConnected("serverPseudo.txt") == False:
-            self.bg_connect = Label(self.window, image=self.background_connect, bd=0, highlightthickness=0, cursor="hand2")
-            self.bg_connect.place(relx=1, rely=0, anchor=NE)
-            self.addLogoFriends(self.bg_connect)
-            self.addLogoDeconnexion(self.bg_connect)
-            self.displayPseudo(self.bg_connect)
+        from infrastructure.services.getSetInformation import GetSetInformation
+        from infrastructure.services.configPictures import ConfigPictures
+        
+        __configPictures = ConfigPictures()
+        
+        if GetSetInformation().isConnected("serverPseudo.txt") == False:
+            self.addLogoFriends(self.window, 80, 20, __configPictures)
+            self.addLogoDeconnexion(self.window, 15, 20, __configPictures)
+            self.addSectionPseudo(self.window, 0, 80, GetSetInformation().get_username("serverPseudo.txt"), __configPictures)
         else:
-            self.bg_not_connected = Label(self.window, image=self.background_not_connect, bd=0, highlightthickness=0, cursor="hand2")
-            self.bg_not_connected.bind("<Button-1>", lambda event: self.displayAccount())
-            self.bg_not_connected.place(relx=1, rely=0, anchor=NE)
-            self.addLogoAccount(self.bg_not_connected)
+            self.addLogoAccount(self.window, 20, 20, __configPictures)
     
-    def displayPseudo(self, label) -> None:
-        username = self.get_username("serverPseudo.txt")
-        username = username[:7] + ".." if len(username) > 7 else username
-        pseudo = Label(label, text=f"{username}", font=("Arial", 15), bg="#00172D", fg="white")
-        pseudo.place(relx=0.53, rely=0.62, anchor=NW)
+    
+    def addSectionPseudo(self, label : Label, decalageX : int, decalageY : int, username : str, __configPictures : object) -> None:
+        self.profile_account_label = Label(label, image=self.profile_account, bd=0, highlightthickness=0)
         
-        statut = Label(label, text=f"Online", font=("Arial", 11), bg="#00172D", fg="#0D860A")
-        statut.place(relx=0.53, rely=0.76, anchor=NW)
+        __configPictures.labelPlaceXandYTopRight(self.profile_account_label, decalageX, decalageY, self)
+        
+        username = username[:10] + ".." if len(username) > 10 else username
+        pseudo = Label(self.profile_account_label, text=f"{username}", font=("Arial", 13), bg="#062037", fg="white")
+        pseudo.place(relx=0.2, rely=0.15, anchor=NW)
+        
+        statut = Label(self.profile_account_label, text=f"En ligne", font=("Arial", 9), bg="#062037", fg="#00FF38")
+        statut.place(relx=0.2, rely=0.5, anchor=NW)
+        
+        money = self.db.getMoney(username)
+        money_label = Label(self.profile_account_label, text=f"{money} Crédit(s)", font=("Arial", 13), bg="#062037", fg="#EAB308")
+        money_label.place(relx=0.78, rely=0.5, anchor=CENTER)
+        
+        letter = username[0].upper()
+        letter_logo = Label(self.profile_account_label, text=letter, bd=0, highlightthickness=0, font=("Arial", 20, "bold"), bg="#2DA6FF", fg="white")
+        letter_logo.place(relx=0.09, rely=0.5, anchor=CENTER)
+
     
-    def addLogoDeconnexion(self, label) -> None:
+    def addLogoDeconnexion(self, label : Label, decalageX : int, decalageY : int, __configPictures : object) -> None:
+        def deconnexionAccount(event=None) -> None:
+            from infrastructure.services.getSetInformation import GetSetInformation
+            GetSetInformation().deleteFile("serverPseudo.txt")
+            
+            self.profile_account_label.destroy()
+            self.deconnexion_user.destroy()
+            self.friends_canvas.destroy()
+            
+            self.createAccountMenu()
+
         self.deconnexion_user = Label(label, image=self.deconnexion, bd=0, highlightthickness=0, cursor="hand2")
-        self.deconnexion_user.place(relx=0.8, rely=0.3, anchor=CENTER)
-        self.deconnexion_user.bind("<Button-1>", lambda event: self.deconnexionUser("serverPseudo.txt"))
+        self.deconnexion_user.bind("<Button-1>", lambda event: deconnexionAccount())
         
-    def addLogoFriends(self, label) -> None:
+        __configPictures.labelConfigWidthHeight(self.deconnexion_user, 45, 43)
+        __configPictures.labelPlaceXandYTopRight(self.deconnexion_user, decalageX, decalageY, self)
+        
+        
+    def addLogoFriends(self, label : Label, decalageX : int, decalageY : int, __configPictures : object) -> None:
         self.friends_canvas = Label(label, image=self.friends, bd=0, highlightthickness=0, cursor="hand2")
-        self.friends_canvas.place(relx=0.3, rely=0.3, anchor=CENTER)
         self.friends_canvas.bind("<Button-1>", lambda event: self.displayFriends())
         
-    def addLogoAccount(self, label) -> None:
+        __configPictures.labelConfigWidthHeight(self.friends_canvas, 51, 43)
+        __configPictures.labelPlaceXandYTopRight(self.friends_canvas, decalageX, decalageY, self)
+        
+        
+    def addLogoAccount(self, label : Label, decalageX : int, decalageY : int, __configPictures : object) -> None:
         self.account_button = Label(label, image=self.account_image, bd=0, highlightthickness=0, cursor="hand2")
         self.account_button.bind("<Button-1>", lambda event: self.displayAccount())
-        self.account_button.place(relx=0.5, rely=0.5, anchor=CENTER)
+        
+        __configPictures.labelConfigWidthHeight(self.account_button, 39, 43)
+        __configPictures.labelPlaceXandYTopRight(self.account_button, decalageX, decalageY, self)
 
-    
+
     def clickMenu(self, event, callback_zone1, callback_zone2, callback_zone3) -> None:
         canvas = event.widget
         x = canvas.canvasx(event.x)
@@ -382,16 +463,18 @@ class QuoridorLauncher:
         elif 0 <= x <= width and height * 2 / 3 <= y <= height:
             callback_zone3(event)
     
+    
     def createButtonShop(self) -> None:
-        username = self.get_username("serverPseudo.txt")
+        from infrastructure.services.getSetInformation import GetSetInformation
+        
+        username = GetSetInformation().get_username("serverPseudo.txt")
         listMap = self.db.getMapByUsername(username)
         money = self.db.getMoney(username)
 
         map_info = [
             ("Ice", 1000, 0.29),
             ("Electricity", 2500, 0.55),
-            ("Sugar", 5000, 0.81)
-        ]
+            ("Sugar", 5000, 0.81)]
 
         for i, (map_name, map_price, relx) in enumerate(map_info, start=1):
             if map_name not in listMap:
@@ -407,7 +490,9 @@ class QuoridorLauncher:
 
 
     def buy(self, price, map) -> None:
-        if self.isConnected("serverPseudo.txt"):
+        from infrastructure.services.getSetInformation import GetSetInformation
+        
+        if GetSetInformation().isConnected("serverPseudo.txt"):
             self.displayAccount()
         else:
             if map == "Ice":
@@ -416,7 +501,7 @@ class QuoridorLauncher:
                 x = 0.55
             elif map == "Sugar":
                 x = 0.81
-            pseudo = self.get_username("serverPseudo.txt")
+            pseudo = GetSetInformation().get_username("serverPseudo.txt")
             money = self.db.getMoney(pseudo)
             if money >= price:
                 self.db.removeMoney(pseudo, price)
@@ -427,19 +512,9 @@ class QuoridorLauncher:
             else:
                 label_buying_fail = Label(self.window, image=self.buying_fail, bd=0, highlightthickness=0)
                 label_buying_fail.place(relx=x, rely=0.5, anchor=CENTER)
-    
-    
-    def displayMoney(self) -> None:
-        username = self.get_username("serverPseudo.txt")
-        money = self.db.getMoney(username)
-        login = Label(self.window, text=f"Vous avez : {money}", font=("Arial", 20), bg="#10283D", fg="white")
-        login.place(relx=0.55, rely=0.95, anchor=CENTER)
-        money_image = Label(self.window, image=self.image_money, bd=0, highlightthickness=0, cursor="hand2")
-        money_image.place(relx=0.63, rely=0.945, anchor=CENTER)
             
             
     def displayFriends(self) -> None:
-        self.bg_connect.destroy()
         friends_panel = Label(self.window, image=self.list_friends, bd=0, highlightthickness=0)
         friends_panel.place(relx=0.90, rely=0.5, anchor=CENTER)
 
@@ -449,6 +524,8 @@ class QuoridorLauncher:
     def quit_friends_list(self, panel) -> None:
         panel.destroy()
         self.createAccountMenu()
+        if self.delete_friend_popup_label is not None:
+            self.delete_friend_popup_label.destroy()
             
         
     def display_notifications(self, friends_panel : Label) -> None:
@@ -469,6 +546,8 @@ class QuoridorLauncher:
     def quit_notifications(self, notifications_panel) -> None:
         notifications_panel.destroy()
         self.createAccountMenu()
+        if self.delete_friend_popup_label is not None:
+            self.delete_friend_popup_label.destroy()
 
 
     def back_friends_list(self, notifications_panel) -> None:
@@ -494,10 +573,10 @@ class QuoridorLauncher:
         
         text_invitation = Label(notifications_panel, text="Invitation à des parties :", bd=0, highlightthickness=0, font=("Arial", 13), fg="white", bg="#102A43")
         text_invitation.place(relx=0.09, rely=0.5, anchor=NW)
-        friend_game_demands = self.db.selectAllInvitingGames(self.get_username("serverPseudo.txt")) # demande de partie via la bdd
+        friend_game_demands = self.db.selectAllInvitingGames(self.getInformation.get_username("serverPseudo.txt")) # demande de partie via la bdd
         if len(friend_game_demands) == 0:
-            no_friend_demand = Label(notifications_panel, text="Aucune notifications ...", bd=0, highlightthickness=0, font=("Arial", 13), fg="white", bg="#102A43")
-            no_friend_demand.place(relx=0.5, rely=0.55, anchor=CENTER)
+            no_friend_demand = Label(notifications_panel, image=self.no_notification_text, bd=0, highlightthickness=0)
+            no_friend_demand.place(relx=0.09, rely=0.55, anchor=NW)
         else:
             for index, friend in enumerate(friend_game_demands):
                 friend = friend[:19] + ".." if len(friend) > 21 else friend
@@ -527,10 +606,10 @@ class QuoridorLauncher:
         text_friend_demand = Label(notifications_panel, text="Demande d'amis :", bd=0, highlightthickness=0, font=("Arial", 13), fg="white", bg="#102A43")
         text_friend_demand.place(relx=0.09, rely=0.1, anchor=NW)
         
-        friend_demands = self.db.selectAllInviting(self.get_username("serverPseudo.txt"), False)  # demande d'amis à récupérer depuis la bdd
+        friend_demands = self.db.selectAllInviting(self.getInformation.get_username("serverPseudo.txt"), False)  # demande d'amis à récupérer depuis la bdd
         if len(friend_demands) == 0:
-            no_friend_demand = Label(notifications_panel, text="Aucune notifications...", bd=0, highlightthickness=0, font=("Arial", 13), fg="white", bg="#102A43")
-            no_friend_demand.place(relx=0.5, rely=0.15, anchor=CENTER)
+            no_friend_demand = Label(notifications_panel, image=self.no_notification_text, bd=0, highlightthickness=0)
+            no_friend_demand.place(relx=0.09, rely=0.145, anchor=NW)
         else:
             for index, friend in enumerate(friend_demands):
                 friend = friend[:19] + ".." if len(friend) > 21 else friend
@@ -547,7 +626,7 @@ class QuoridorLauncher:
 
 
     def displayListFriends(self, friends_panel : Label) -> None:
-        if len(self.db.selectAllInviting(self.get_username("serverPseudo.txt"), False)) != 0 or len(self.db.selectAllInvitingGames(self.get_username("serverPseudo.txt"))) != 0:
+        if len(self.db.selectAllInviting(self.getInformation.get_username("serverPseudo.txt"), False)) != 0 or len(self.db.selectAllInvitingGames(self.getInformation.get_username("serverPseudo.txt"))) != 0:
             image_notifications = self.notifications
         else:
             image_notifications = self.no_notification
@@ -559,22 +638,12 @@ class QuoridorLauncher:
         button_leave_friends.place(relx=0.9, rely=0.045, anchor=CENTER)
         button_leave_friends.bind("<Button-1>", lambda event: self.quit_friends_list(friends_panel))
 
-
-        ResultFriends = self.db.selectAllFriends(self.get_username("serverPseudo.txt"))  # liste des amis à récupérer depuis la bdd
+        ResultFriends = self.db.selectAllFriends(self.getInformation.get_username("serverPseudo.txt"))  # liste des amis à récupérer depuis la bdd
         friends = ResultFriends[1]
         for index, friend in enumerate(friends):
-            result_statut = self.db.selectStatusFriends(friend[0])
-            if result_statut[0][0] == 1:
-                friend_statut_image = self.statut_online 
-            else:
-                friend_statut_image = self.statut_offline
-                
-            friend = friend[:19] + ".." if len(friend) > 21 else friend
-            friend_statut = Label(friends_panel, image=friend_statut_image, bd=0, highlightthickness=0)
-            friend_statut.place(relx=0.08, rely=0.205 + index * 0.05, anchor=NW)
             
             label_friend = Label(friends_panel, text=friend, bd=0, highlightthickness=0, font=("Arial", 13), fg="white", bg="#102A43")
-            label_friend.place(relx=0.13, rely=0.2 + index * 0.05, anchor=NW)
+            label_friend.place(relx=0.09, rely=0.2 + index * 0.05, anchor=NW)
 
             invite_friend = Label(friends_panel, image=self.invite_friends, bd=0, highlightthickness=0, cursor="hand2")
             invite_friend.place(relx=0.75, rely=0.21 + index * 0.05, anchor=CENTER)
@@ -584,21 +653,25 @@ class QuoridorLauncher:
             delete_friend.place(relx=0.9, rely=0.21 + index * 0.05, anchor=CENTER)
             delete_friend.bind("<Button-1>", lambda event, friend=friend: self.deleteFriends(friend))
 
-        entry_friend = Entry(friends_panel, bd=3, width=25, font=("Arial", 13), background="#102A43", foreground="white", insertbackground="white", highlightbackground="#2BB0ED", highlightcolor="#2BB0ED", highlightthickness=1, relief=FLAT)
-        entry_friend.place(relx=0.42, rely=0.13, anchor=CENTER)
+        self.entry_friend = Entry(friends_panel, bd=3, width=25, font=("Arial", 13), background="#102A43", foreground="white", insertbackground="white", highlightbackground="#2BB0ED", highlightcolor="#2BB0ED", highlightthickness=1, relief=FLAT)
+        self.entry_friend.place(relx=0.42, rely=0.13, anchor=CENTER)
 
-        search_button = Button(friends_panel, image=self.search_friends, bd=0, highlightthickness=0, cursor="hand2", command=lambda: self.searchFriend(entry_friend.get()))
+        search_button = Button(friends_panel, image=self.search_friends, bd=0, highlightthickness=0, cursor="hand2", command=lambda: self.searchFriend(self.entry_friend.get()))
         search_button.place(relx=0.9, rely=0.13, anchor=CENTER)
         
         self.friends_panel = friends_panel
         
         
     def invitFriend(self, friend : tuple) -> None:
-        self.db.sendInvitingGames(str(self.get_username("serverPseudo.txt")), friend[0], "127.0.0.1", 8000)
-
-    
+        from infrastructure.services.getSetInformation import GetSetInformation
+        
+        self.db.sendInvitingGames(str(GetSetInformation().get_username("serverPseudo.txt")), friend[0], "127.0.0.1", 8000)
+        
+        
     def acceptFriendDemand(self, friend : tuple) -> None:
-        self.db.acceptInviting(str(self.get_username("serverPseudo.txt")), friend[0])
+        from infrastructure.services.getSetInformation import GetSetInformation
+        
+        self.db.acceptInviting(str(GetSetInformation().get_username("serverPseudo.txt")), friend[0])
         self.notifications_panel.config(text="")
         for widget in self.notifications_panel.winfo_children():
             widget.destroy()
@@ -608,7 +681,9 @@ class QuoridorLauncher:
     
     
     def refuseFriendDemand(self, friend : tuple) -> None:
-        self.db.deleteInviting(friend[0], str(self.get_username("serverPseudo.txt")))
+        from infrastructure.services.getSetInformation import GetSetInformation
+        
+        self.db.deleteInviting(friend[0], str(GetSetInformation().get_username("serverPseudo.txt")))
         self.notifications_panel.config(text="")
         for widget in self.notifications_panel.winfo_children():
             widget.destroy()
@@ -618,7 +693,9 @@ class QuoridorLauncher:
         
         
     def acceptGameDemand(self, friend : tuple) -> None:
-        resultGameInfo = self.db.acceptInvitingGames(str(self.get_username("serverPseudo.txt")), friend[0])
+        from infrastructure.services.getSetInformation import GetSetInformation
+        
+        resultGameInfo = self.db.acceptInvitingGames(str(GetSetInformation().get_username("serverPseudo.txt")), friend[0])
         (ip, port) = resultGameInfo[0][0].split(":")
         print(ip, port)
         # joinSession(ip, int(port), 1)
@@ -630,7 +707,9 @@ class QuoridorLauncher:
     
     
     def refuseGameDemand(self, friend : tuple) -> None:
-        self.db.deleteInvitingGames(friend[0], str(self.get_username("serverPseudo.txt")))
+        from infrastructure.services.getSetInformation import GetSetInformation
+        
+        self.db.deleteInvitingGames(friend[0], str(GetSetInformation().get_username("serverPseudo.txt")))
         for widget in self.notifications_panel.winfo_children():
             widget.destroy()
         self.displayInvitatins(self.notifications_panel, True)
@@ -639,70 +718,65 @@ class QuoridorLauncher:
         
         
     def searchFriend(self, friend : str) -> None:
+        from infrastructure.services.getSetInformation import GetSetInformation
+        __getSetInformation = GetSetInformation()
+        
         friend = friend.replace(" ", "")
-        invList = self.db.selectAllInviting(self.get_username("serverPseudo.txt"), False)
-        ResultFriends = self.db.selectAllFriends(self.get_username("serverPseudo.txt"))
+        invList = self.db.selectAllInviting(__getSetInformation.get_username("serverPseudo.txt"), False)
+        ResultFriends = self.db.selectAllFriends(__getSetInformation.get_username("serverPseudo.txt"))
         friendsList = ResultFriends[1]
         
-        if friend != "" and friend != self.get_username("serverPseudo.txt") and not any(friend in tupleInfos for tupleInfos in friendsList) and not any(friend in tupleInfosInv for tupleInfosInv in invList):
-            self.db.sendInviting(self.get_username("serverPseudo.txt"), friend)
+        if friend != "" and friend != __getSetInformation.get_username("serverPseudo.txt") and not any(friend in tupleInfos for tupleInfos in friendsList) and not any(friend in tupleInfosInv for tupleInfosInv in invList):
+            self.db.sendInviting(__getSetInformation.get_username("serverPseudo.txt"), friend)
         
         
     def deleteFriends(self, friend):
-        delete = Tk()
-        delete.title("Confirmation de suppression")
-        delete.geometry("500x200")
-        delete.resizable(False, False)
-        delete.config(bg="#0F2234")
-        delete.iconbitmap("./assets/images/launcher/delete_friends.ico")
+        self.delete_friend_popup_label = Label(self.window, image=self.delete_friend_popup, bd=0, highlightthickness=0, cursor="hand2")
+        self.delete_friend_popup_label.place(relx=0.5, rely=0.5, anchor=CENTER)
+        
 
         def on_yes_click():
-            delete.destroy()
-            self.db.deleteFriends(self.get_username("serverPseudo.txt"), friend[0])
-            self.db.deleteFriends(friend[0], self.get_username("serverPseudo.txt"))
+            from infrastructure.services.getSetInformation import GetSetInformation
+            __getSetInformation = GetSetInformation()
+        
+            self.delete_friend_popup_label.destroy()
+            self.db.deleteFriends(__getSetInformation.get_username("serverPseudo.txt"), friend[0])
+            self.db.deleteFriends(friend[0], __getSetInformation.get_username("serverPseudo.txt"))
             self.displayListFriends(self.friends_panel)
 
         def on_no_click():
-            delete.destroy()
+            self.delete_friend_popup_label.destroy()
 
 
         if len(friend) > 15:
                 friend = friend[:15] + ".."
-        label = Label(delete, text=f"Êtes-vous sûr de vouloir supprimer l'ami '{friend}' ?", padx=20, pady=10, bd=0,
-                    highlightthickness=0, font=("Arial", 13), fg="white", bg="#0F2234")
-        label.place(relx=0.5, rely=0.4, anchor=CENTER)
+        label = Label(self.delete_friend_popup_label, text=f"Souhaitez-vous vraiment supprimer \n{friend[0]} de vos amis ?", bd=0,
+                    highlightthickness=0, font=("Inter", 22), fg="#E3F8FF", bg="#102A43")
+        label.place(relx=0.05, rely=0.35, anchor=NW)
+        label.config(justify="left")
 
-        button_frame = Frame(delete, bg="#0F2234")
-        button_frame.pack(pady=10)
 
-        yes_button = Button(button_frame, text="Oui", bg="green", fg="#FFF", font=("Arial", 13), width=18, cursor="hand2", activebackground="green", command=on_yes_click)
-        yes_button.pack(side="left", padx=20)
+        yes_button = Label(self.delete_friend_popup_label, image=self.delete_friend_button,bd=0, highlightthickness=0, cursor="hand2")
+        yes_button.place(relx=0.05, rely=0.78, anchor=NW)
+        yes_button.bind("<Button-1>", lambda event: on_yes_click())
 
-        no_button = Button(button_frame, text="Non", bg="red", fg="#FFF", font=("Arial", 13), width=18, cursor="hand2", activebackground="red", command=on_no_click)
-        no_button.pack(side="left", padx=20)
-
-        delete.update_idletasks() 
-        width = delete.winfo_width()
-        height = delete.winfo_height()
-        x = (delete.winfo_screenwidth() // 2) - (width // 2)
-        y = (delete.winfo_screenheight() // 2) - (height // 2)
-        delete.geometry(f"{width}x{height}+{x}+{y}")
-
-        button_frame.place(relx=0.5, rely=0.8, anchor="center")
-
-        delete.mainloop()
+        no_button = Button(self.delete_friend_popup_label, image=self.no_delete_friend_button,bd=0, highlightthickness=0, cursor="hand2")
+        no_button.place(relx=0.38, rely=0.78, anchor=NW)
+        no_button.bind("<Button-1>", lambda event: on_no_click())
 
 
     def displayShop(self) -> None:
-        self.changeMode()
-        statut = self.getStatut()
-        self.statut = 5
-        self.is_shop = True
-        self.background(self.statut)
-        self.createMenu(statut)
-        self.createButtonShop()
-        if not self.isConnected("serverPseudo.txt"):
-            self.displayMoney()
+        from infrastructure.services.verifConnection import VerifConnection
+        if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
+            self.changeMode()
+            self.statut = 5
+            self.is_shop = True
+            self.background(self.statut)
+            self.createMenu(None, "shop")
+            self.createButtonShop()
+            self.leaveLauncher()
+        else:
+            self.errorClientNetwork("noNetwork")
             
             
     def numberIA(self) -> None:
@@ -814,6 +888,9 @@ class QuoridorLauncher:
 
 
     def choiceMap(self) -> None:
+        from infrastructure.services.getSetInformation import GetSetInformation
+        __getSetInformation = GetSetInformation()
+        
         def action(event) -> None:
             selected_value = listMap.get()
             try:
@@ -833,11 +910,25 @@ class QuoridorLauncher:
                 print(f"Error: '{selected_value}' is not a valid map")
                 
         
-        if self.isConnected("serverPseudo.txt") == False:
-            username = self.get_username("serverPseudo.txt")
+        if __getSetInformation.isConnected("serverPseudo.txt") == False:
+            username = __getSetInformation.get_username("serverPseudo.txt")
             listMaps=self.db.getMapByUsername(username)
         else:
             listMaps=["Jungle", "Space", "Hell"]
+        
+        style = ttk.Style()
+        style.theme_use("clam")
+        style.configure("TCombobox",
+                        fieldbackground="#10273C",
+                        background="#10273C",
+                        foreground="white",
+                        arrowcolor="white",
+                        bordercolor="#5ED0FA",
+                        lightcolor="#5ED0FA",
+                        darkcolor="#5ED0FA",
+                        activebackground="#10273C")
+        style.map("TCombobox", fieldbackground=[("readonly", "#10273C")])
+
         listMap = ttk.Combobox(self.window, values=listMaps, state="readonly")
         listMap.current(0)
         X = 0.25
@@ -879,7 +970,7 @@ class QuoridorLauncher:
         self.is_shop = False
         self.statut = 0
         self.background(self.statut)
-        self.createMenu(self.statut)
+        self.createMenu(self.statut, "")
         self.numberIA()
         self.getIaDifficulty()
         self.numberPlayer()
@@ -887,6 +978,8 @@ class QuoridorLauncher:
         self.numberFence()
         self.choiceMap()
         self.buttonStart()
+        self.leaveLauncher()
+        
         
     """REJOINDRE UNE PARTIE EN RESEAU"""
     def menuJoinGameNetwork(self, event):
@@ -895,14 +988,16 @@ class QuoridorLauncher:
         if self.statut != 3:
             self.statut = 1
         self.background(self.statut)
-        self.createMenu(self.statut)
+        self.createMenu(self.statut, "")
         self.create_entries()
         self.choiceMap()
+        self.leaveLauncher()
+        
         
     def create_entries(self) -> None:
         ip = Label(self.window, text="Adresse IP :", font=("Arial", 10), bg="#0F2234", fg="#E3F8FF")
         ip.place(relx=0.25, rely=0.7, anchor=CENTER)
-        self.entryIp = Entry(self.window, width=20)
+        self.entryIp = Entry(self.window, bd=3, width=15, font=("Arial", 13), background="#102A43", foreground="white", insertbackground="white", highlightbackground="#2BB0ED", highlightcolor="#2BB0ED", highlightthickness=1, relief=FLAT)
         self.entryIp.place(relx=0.25, rely=0.73, anchor=CENTER)
 
         self.entryPortGame()
@@ -910,11 +1005,17 @@ class QuoridorLauncher:
         map = Label(self.window, text="Thème de la carte :", font=("Arial", 10), bg="#0F2234", fg="#E3F8FF")
         map.place(relx=0.45, rely=0.7, anchor=CENTER)
         
-        start = Button(self.window, image=self.join_game, cursor="hand2", activebackground="#035388", bd=0, highlightthickness=0, activeforeground="white", command=self.joinGameNetwork)
-        start.place(relx=0.25, rely=0.8, anchor=CENTER)
+        from infrastructure.services.verifConnection import VerifConnection
+        if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
+            start = Button(self.window, image=self.join_game, cursor="hand2", activebackground="#035388", bd=0, highlightthickness=0, activeforeground="white", command=self.joinGameNetwork)
+            search_game_button = Button(self.window, image=self.search_game,  cursor="hand2", bd=0, highlightthickness=0, command=self.displayIp, activebackground="#486581",  activeforeground="white")
+        else:
+            start = Button(self.window, image=self.join_game, cursor="hand2", activebackground="#035388", bd=0, highlightthickness=0, activeforeground="white", command=lambda: self.errorClientNetwork("noNetwork"))
+            search_game_button = Button(self.window, image=self.search_game,  cursor="hand2", bd=0, highlightthickness=0, command=lambda: self.errorClientNetwork("noNetwork"), activebackground="#486581",  activeforeground="white")
         
-        reset_button = Button(self.window, image=self.search_game,  cursor="hand2", bd=0, highlightthickness=0, command=self.displayIp, activebackground="#486581",  activeforeground="white")
-        reset_button.place(relx=0.4, rely=0.8, anchor=CENTER)
+        start.place(relx=0.25, rely=0.8, anchor=CENTER)
+        search_game_button.place(relx=0.4, rely=0.8, anchor=CENTER)
+        
         
     def joinGameNetwork(self) -> None:
         ip = self.entryIp.get()
@@ -943,14 +1044,15 @@ class QuoridorLauncher:
             self.error_label.place(relx=0.5, rely=0.9, anchor=CENTER)
             return
 
+        from infrastructure.services.getSetInformation import GetSetInformation
         port = int(portstr)
         self.window.destroy()
-        self.setUsername(self.pseudo)
+        GetSetInformation().setUsername(self.pseudo)
         joinSession(ip, port, self.selectMap)
         
     
     def displayIp(self) -> None:
-        scanNetwork = ScanNetwork(8000, 8005)
+        scanNetwork = ScanNetwork(8000, 8003)
         scanNetwork.scan()
         listip = scanNetwork.getIp()
         if len(listip) == 0:
@@ -966,13 +1068,16 @@ class QuoridorLauncher:
             label.pack(padx=5, pady=5)
             frame.bind("<Button-1>", lambda event, ip=ip, port=port: self.onIpClick(event, port))
             
+            
     def onIpClick(self, event, port):
+        from infrastructure.services.getSetInformation import GetSetInformation
+        
         ip = event.widget['text']
         port = int(port)
         self.window.destroy()
-        # self.db.insertUsername(ip, port, self.pseudo)
-        self.setUsername(self.pseudo)
+        GetSetInformation().setUsername(self.pseudo)
         joinSession(ip, port, self.selectMap)
+        
         
     """CREER UNE GAME EN LOCAL"""
         
@@ -981,16 +1086,18 @@ class QuoridorLauncher:
         self.is_shop = False
         self.statut = 2
         self.background(self.statut)
-        self.createMenu(self.statut)
+        self.createMenu(self.statut, "")
         self.choiceMap()
         self.numberPlayer()
         self.sizeBoard()
         self.numberFence()
         self.entryPortGame()
         self.startButtonNetwork()
+        self.leaveLauncher()
+        
         
     def entryPortGame(self) -> None:
-        if self.statut ==2:
+        if self.statut == 2:
             x = 0.65
             y = 0.7
             x2 = 0.65
@@ -1002,12 +1109,22 @@ class QuoridorLauncher:
             y2 = 0.73
         port = Label(self.window, text="Port :", font=("Arial", 10), bg="#0F2234", fg="#E3F8FF")
         port.place(relx=x, rely=y, anchor=CENTER)
-        self.entry_port = Entry(self.window, width=20)
+
+        port_values = [8000, 8001, 8002, 8003]
+        self.entry_port = ttk.Combobox(self.window, values=port_values, state="readonly")
+        self.entry_port.current(0)
         self.entry_port.place(relx=x2, rely=y2, anchor=CENTER)
     
+    
     def startButtonNetwork(self) -> None:
-        start = Button(self.window, image=self.create_game, bd=0, highlightthickness=0, cursor="hand2", activebackground="#035388",  activeforeground="white", command=self.startGame)
+        from infrastructure.services.verifConnection import VerifConnection
+        if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
+            start = Button(self.window, image=self.create_game, bd=0, highlightthickness=0, cursor="hand2", activebackground="#035388",  activeforeground="white", command=self.startGame)
+        else:
+            start = Button(self.window, image=self.create_game, bd=0, highlightthickness=0, cursor="hand2", activebackground="#035388",  activeforeground="white", command=lambda: self.errorClientNetwork("noNetwork"))
+            
         start.place(relx=0.25, rely=0.8, anchor=CENTER)
+    
     
     def startGame(self) -> None:
         portstr = self.entry_port.get()
@@ -1035,26 +1152,31 @@ class QuoridorLauncher:
             self.error_label = Label(self.window, text=f"Le nombre de barrières({nbr_fences}) pour une taille de 5x5 est incorrect (20 max).", font=("Arial", 13), bg="#0F2234", fg="red")
             self.error_label.place(relx=0.5, rely=0.9, anchor=CENTER)
         else:
+            from infrastructure.services.getSetInformation import GetSetInformation
+            
             self.window.destroy()
-            self.setUsername(self.pseudo)
+            GetSetInformation().setUsername(self.pseudo)
             startSession(port, nbr_player, grid_size, nbr_player, 0, nbr_fences, map)
     
-    
-    """SE CONNECTER OU S'INSCRIRE"""
     
     def getStatut(self) -> int:
         return self.statut
     
     
     def displayAccount(self) -> None:
-        self.changeMode()
-        self.is_shop = False
-        statut = self.getStatut()
-        self.statut = 4
-        self.background(self.statut)
-        self.createMenu(statut)
-        self.connexion()
-        self.inscription()
+        from infrastructure.services.verifConnection import VerifConnection
+        if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
+            self.changeMode()
+            self.is_shop = False
+            statut = self.getStatut()
+            self.statut = 4
+            self.background(self.statut)
+            self.createMenu(statut, "")
+            self.connexion()
+            self.inscription()
+            self.leaveLauncher()
+        else:
+            self.errorClientNetwork("noNetwork")
     
     
     def connexion(self) -> None:
@@ -1063,6 +1185,10 @@ class QuoridorLauncher:
         
         
     def addLogin(self):
+        def addLoginUserFunc() -> None:
+            from infrastructure.database.userDb import UserDb
+            UserDb().loginUser(self)
+            
         self.login_button.configure(state=DISABLED)
         self.register_button.configure(state=NORMAL)
         if len(self.widget_register) > 0:
@@ -1079,56 +1205,10 @@ class QuoridorLauncher:
         self.loginPassword = Entry(self.login, show="*")
         self.loginPassword.place(relx=0.54, rely=0.79, anchor=CENTER)
 
-        self.loginButton =  Button(self.login, text="Se connecter", bg="#2BB0ED", fg="#FFF", font=("Arial", 13), width=20, height=2, cursor="hand2", activebackground="#035388", activeforeground="white", command=self.loginUser)
+        self.loginButton =  Button(self.login, text="Se connecter", bg="#2BB0ED", fg="#FFF", font=("Arial", 13), width=20, height=2, cursor="hand2", activebackground="#035388", activeforeground="white", command=addLoginUserFunc)
         self.loginButton.place(relx=0.54, rely=0.85, anchor=CENTER)
         
         self.widget_login = [username, self.loginUsername, password, self.loginPassword, self.loginButton]
-    
-    
-    def loginUser(self):
-        self.db.connectDb()
-        select_query = self.db.select()
-        query = "SELECT * FROM users WHERE username = %s"
-        username = self.loginUsername.get().rstrip()
-        password = self.loginPassword.get().replace(" ", "")
-
-        select_query.execute(query, (username,))
-        result = select_query.fetchone()
-        select_query.close()
-
-        if result is not None:
-            stored_password = result[2]
-            hashed_password = hashlib.sha256(password.encode()).hexdigest()
-
-            if stored_password == hashed_password:
-                if hasattr(self, "infoLabel"):
-                    self.infoLabel.config(text="Vous êtes bien connecté.")
-                    self.pseudo = username
-                    self.setUsername(username)
-                    self.bg_not_connected.destroy()
-                    self.menuCreateGameSolo(event=None)
-                    return self.pseudo
-                else:
-                    self.infoLabel = Label(self.window, text="Vous êtes bien connecté.", fg="green", font=("Arial", 13), bg="#0F2234")
-                    self.infoLabel.place(relx=0.54, rely=0.9, anchor=CENTER)
-                    self.pseudo = username
-                    self.setUsername(username)
-                    self.bg_not_connected.destroy()
-                    self.menuCreateGameSolo(event=None)
-                    return self.pseudo
-            else:
-                if hasattr(self, "infoLabel"):
-                    self.infoLabel.config(text="Mot de passe incorrect.")
-                else:
-                    self.infoLabel = Label(self.window, text="Mot de passe incorrect.", fg="red", font=("Arial", 13), bg="#0F2234")
-                    self.infoLabel.place(relx=0.54, rely=0.9, anchor=CENTER)
-        else:
-            if hasattr(self, "infoLabel"):
-                self.infoLabel.config(text="Cet utilisateur n'existe pas.")
-            else:
-                self.infoLabel = Label(self.window, text="Cet utilisateur n'existe pas.", fg="red", font=("Arial", 13), bg="#0F2234")
-                self.infoLabel.place(relx=0.54, rely=0.9, anchor=CENTER)
-        self.widget_label = [self.infoLabel]
 
 
     def inscription(self) -> None:
@@ -1137,8 +1217,13 @@ class QuoridorLauncher:
         
         
     def addRegister(self):
+        def addAccountFunc() -> None:
+            from infrastructure.database.userDb import UserDb
+            UserDb().createAccount(self)
+            
         self.register_button.configure(state=DISABLED)
         self.login_button.configure(state=NORMAL)
+        
         if len(self.widget_login) > 0:
             for widget in self.widget_login:
                 widget.destroy()
@@ -1157,116 +1242,40 @@ class QuoridorLauncher:
         passwordConfirm.place(relx=0.54, rely=0.76, anchor=CENTER)
         self.registerPasswordConfirm = Entry(self.register, show="*")
         self.registerPasswordConfirm.place(relx=0.54, rely=0.79, anchor=CENTER)
-
-        self.registerButton = Button(self.register, text="S'inscrire", bg="#2BB0ED", fg="#FFF", font=("Arial", 13), width=20, height=2, cursor="hand2", activebackground="#035388", activeforeground="white", command=self.createAccount)
+        
+        self.registerButton = Button(self.register, text="S'inscrire", bg="#2BB0ED", fg="#FFF", font=("Arial", 13), width=20, height=2, cursor="hand2", activebackground="#035388", activeforeground="white", command=addAccountFunc)
         self.registerButton.place(relx=0.54, rely=0.85, anchor=CENTER)
         self.widget_register = [username, self.registerUsername, password, self.registerPassword, passwordConfirm, self.registerPasswordConfirm, self.registerButton]
         
-        
-    def createAccount(self):
-        self.db.connectDb()
-        username = self.registerUsername.get().rstrip()
-        password = self.registerPassword.get().replace(" ", "")
-        confirm_password = self.registerPasswordConfirm.get()
+    
+    def errorClientNetwork(self, errorStyle : str) -> None: 
+        def destroyErrorClientNetwork(event=None) -> None:
+            self.errorClientNetworkPopup.destroy()
 
-        if not username or not password or not confirm_password:
-            if hasattr(self, "infoLabel"):
-                self.infoLabel.config(text="Veuillez remplir tous les champs")
-            else:
-                self.infoLabel = Label(self.window, text="Veuillez remplir tous les champs", fg="red", font=("Arial", 13), bg="#0F2234")
-                self.infoLabel.place(relx=0.54, rely=0.9, anchor=CENTER)
-        elif password != confirm_password:
-            if hasattr(self, "infoLabel"):
-                self.infoLabel.config(text="Les mots de passe ne correspondent pas")
-            else:
-                self.infoLabel = Label(self.window, text="Les mots de passe ne correspondent pas", fg="red", font=("Arial", 13), bg="#0F2234")
-                self.infoLabel.place(relx=0.54, rely=0.9, anchor=CENTER)
-        else:
-            # Check si le username existe deja 
-            select_query = self.db.select()
-            select_query.execute("SELECT username FROM users WHERE username = %s", (username,))
-            existing_user = select_query.fetchone()
-            select_query.close()
+        def contactSupport(event=None) -> None:
+            import webbrowser
+            webbrowser.open("https://quoridor.maxencebombeeck.fr/contact")
 
-            if existing_user:
-                if hasattr(self, "infoLabel"):
-                    self.infoLabel.config(text=f"Ce pseudo '{username}' est déjà utilisé.")
-                else:
-                    self.infoLabel = Label(self.window, text=f"Ce pseudo '{username}' est déjà utilisé.", fg="red", font=("Arial", 13), bg="#0F2234")
-                    self.infoLabel.place(relx=0.54, rely=0.9, anchor=CENTER)
-            else:
-                try:
-                    # Si le pseudo est unique on l'insère dans la base de données
-                    insert_query = self.db.insert()
-                    query = "INSERT INTO users (username, password) VALUES (%s, %s)"
-
-                    hashed_password = hashlib.sha256(password.encode()).hexdigest()
-
-                    params = (username, hashed_password)
-                    insert_query.execute(query, params)
-                    
-                    # Fermeture de la requête d'insertion
-                    insert_query.close()
-
-                    # Vérifier si le label existe déjà, le mettre à jour sinon le créer
-                    if hasattr(self, "infoLabel"):
-                        self.infoLabel.config(text=f"Bravo {username} ! Votre compte à bien été créé.")
-                        self.pseudo = username
-                        self.setUsername(username)
-                        self.bg_not_connected.destroy()
-                        self.menuCreateGameSolo(event=None)
-                        return self.pseudo
-                    else:
-                        self.infoLabel = Label(self.window, text=f"Bravo {username} ! Vous êtes bien inscrit.", fg="green", font=("Arial", 13), bg="#0F2234")
-                        self.infoLabel.place(relx=0.54, rely=0.9, anchor=CENTER)
-                        self.pseudo = username
-                        self.setUsername(username)
-                        self.bg_not_connected.destroy()
-                        self.menuCreateGameSolo(event=None)
-                        return self.pseudo
-                finally:
-                    # Fermeture de la connexion à la base de données
-                    self.db.close()
-
-        self.widget_label = [self.infoLabel]
-        
-        
-    def setUsername(self, username):
-        try:
-            with open('serverPseudo.txt', 'a') as fichier:
-                fichier.write(username)
-        except IOError:
-            print("Erreur : impossible d'écrire dans le fichier.")
+        if errorStyle == "errorClientOfServer":
+            pictureError = self.error_client_network
+        elif errorStyle == "errorServerOfClient":
+            pictureError = self.error_server_network
+        elif errorStyle == "errorConnectClientOfServer":
+            pictureError = self.error_connect_server_network
+        elif errorStyle == "errorServerFull":
+            pictureError = self.errorServerFull
+        elif errorStyle == "errorLaunchServer":
+            pictureError = self.errorLaunchServer
+        elif errorStyle == "noNetwork":
+            pictureError = self.no_network
             
-            
-    """ Vérifie si l'utilisateur est connecté"""
-    def isConnected(self, file_path):
-        try:
-            with open(file_path, 'r') as file:
-                content = file.read().strip()
-                return len(content) == 0
-        except IOError:
-            print("Erreur : impossible de lire le fichier.")
-            return False
+        self.errorClientNetworkPopup = Label(self.window, image=pictureError, bd=0, highlightthickness=0)
+        self.errorClientNetworkPopup.place(relx=0.5, rely=0.5, anchor=CENTER)
 
-
-    def get_username(self, file_path):
-        try:
-            with open(file_path, 'r') as file:
-                username = file.read().strip()
-                return username
-        except IOError:
-            print("Erreur : impossible de lire le fichier.")
-            return False
-
-    def deconnexionUser(self, file_path):
-        try:
-            with open(file_path, 'w') as file:
-                file.write("")
-        except IOError:
-            print("Erreur : impossible de lire le fichier.")
-            return False
-        self.bg_connect.destroy()
-        self.createMenu(self.getStatut())
-        if self.is_shop == True:
-            self.displayShop()
+        self.errorClientNetworkButton = Label(self.errorClientNetworkPopup, image=self.error_client_network_btn, bd=0, highlightthickness=0, cursor="hand2")
+        self.errorClientNetworkButton.place(relx=0.3, rely=0.81, anchor=CENTER)
+        self.errorClientNetworkButton.bind("<Button-1>", destroyErrorClientNetwork)
+        
+        self.errorClientNetworkButtonLink = Label(self.errorClientNetworkPopup, image=self.error_client_network_btn_link, bd=0, highlightthickness=0, cursor="hand2")
+        self.errorClientNetworkButtonLink.place(relx=0.7, rely=0.81, anchor=CENTER)
+        self.errorClientNetworkButtonLink.bind("<Button-1>", contactSupport)

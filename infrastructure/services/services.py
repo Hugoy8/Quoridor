@@ -26,12 +26,16 @@ class Board:
                 self.volume_pion = float(lines[3].strip())
                 self.volume_fence = float(lines[4].strip())
                 self.volume_nofence = float(lines[5].strip())
+                self.button_fence = str(lines[7].strip())
         self.sound_map = mixer.Sound(f"./assets/sounds/{self.map}.mp3")
         self.sound_map.play(loops=-1)
         self.sound_map.set_volume(self.volume_map)
     
     
     def caseClicked(self, event : int) -> None:
+        if self.settings.popup != None:
+            self.settings.popup.destroy()
+            self.settings.popup = None
         item_id = event.widget.find_closest(event.x, event.y)[0]
         tags = self.canvas.gettags(item_id)
         x = int(tags[0])
@@ -141,7 +145,7 @@ class Board:
             self.img_win_p1 = ImageTk.PhotoImage(img_win_p1)
             
             label = Label(self.window, image=self.img_win_p1, bd=0, highlightthickness=0)
-            label.place(x=self.window.winfo_screenwidth()//2.8, y=self.window.winfo_screenheight()//4)
+            label.place(relx=0.5, rely=0.5, anchor=CENTER)
             
         elif self.current_player.get_player() == 2:
             img_win_p2 = Image.open(f"./assets/images/{self.map}/victory_p2.png")
@@ -149,7 +153,7 @@ class Board:
             self.img_win_p2 = ImageTk.PhotoImage(img_win_p2)
             
             label = Label(self.window, image=self.img_win_p2,  bd=0, highlightthickness=0)
-            label.place(x=self.window.winfo_screenwidth()//2.8, y=self.window.winfo_screenheight()//4)
+            label.place(relx=0.5, rely=0.5, anchor=CENTER)
             
         elif self.current_player.get_player() == 3:
             img_win_p3 = Image.open(f"./assets/images/{self.map}/victory_p3.png")
@@ -157,7 +161,7 @@ class Board:
             self.img_win_p3 = ImageTk.PhotoImage(img_win_p3)
             
             label = Label(self.window, image=self.img_win_p3,  bd=0, highlightthickness=0)
-            label.place(x=self.window.winfo_screenwidth()//2.8, y=self.window.winfo_screenheight()//4)
+            label.place(relx=0.5, rely=0.5, anchor=CENTER)
             
         elif self.current_player.get_player() == 4:
             img_win_p4 = Image.open(f"./assets/images/{self.map}/victory_p4.png")
@@ -165,24 +169,28 @@ class Board:
             self.img_win_p4 = ImageTk.PhotoImage(img_win_p4)
             
             label = Label(self.window, image=self.img_win_p4,  bd=0, highlightthickness=0)
-            label.place(x=self.window.winfo_screenwidth()//2.8, y=self.window.winfo_screenheight()//4)
+            label.place(relx=0.5, rely=0.5, anchor=CENTER)
 
         # Ajout des boutons
         def rejouer():
             self.window.destroy()
-            import main
-            main()
+            from domain.launcher.launcher import QuoridorLauncher
+
+            run = QuoridorLauncher("")
         
         # Quitter la partie
         def quitgame():
             self.window.destroy()
             from infrastructure.services.deletePycache import deletePycache
             deletePycache()
-            
-        quit_button = Button(self.window, text="Quitter", font=("Arial", 14), fg="white", bg="#DB0000", bd=2, highlightthickness=0, width=20, command=quitgame)
-        quit_button.pack(side='bottom', padx=10, pady=40)
-        replay_button = Button(self.window, text="Rejouer", font=("Arial", 14), fg="white", bg="#78B000", bd=2, highlightthickness=0, width=20, command=rejouer)
-        replay_button.pack(side='bottom', padx=10, pady=10)
+        
+        replay_button = Label(self.window, image=self.restart_game_victory, bd=0, highlightthickness=0)
+        replay_button.place(relx=0.445, rely=0.675, anchor=CENTER)
+        replay_button.bind("<Button-1>", lambda e:rejouer())
+        
+        quit_button = Label(self.window, image=self.leave_game_victory, bd=0, highlightthickness=0)
+        quit_button.place(relx=0.55, rely=0.675, anchor=CENTER)
+        quit_button.bind("<Button-1>", lambda e:quitgame())
         
         # Son de victoire
         sound_victory = mixer.Sound("./assets/sounds/victory.mp3")
@@ -252,11 +260,40 @@ class Board:
         window_height = self.window.winfo_screenheight()
 
         
-        # """Tour du joueur"""
-        # current_player_number = self.current_player.get_player()
-        # current_player_color = player_colors.get(current_player_number, "gray")
-        # Label(self.window, text="Tour : ", font=("Arial", 14), bg="white", fg="black").place(x=0, y=0)
-        # Label(self.window, text="Joueur " + str(current_player_number), font=("Arial", 14), foreground=current_player_color, bg="white").place(x=55, y=0)
+        # Affichage Tour du joueur
+        current_player_number = self.current_player.get_player()
+
+        # Sélection de l'image du joueur en fonction du numéro
+        if current_player_number == 1:
+            current_player_image = self.current_player1_image
+        elif current_player_number == 2:
+            current_player_image = self.current_player2_image
+        elif current_player_number == 3:
+            current_player_image = self.current_player3_image
+        elif current_player_number == 4:
+            current_player_image = self.current_player4_image
+        else:
+            current_player_image = None
+
+        if current_player_image:
+            if self.display_current_player:
+                self.display_current_player.destroy()
+                
+            if self.map == "jungle":
+                coX, coY = 0.82, 0.913
+            elif self.map == "space":
+                coX, coY = 0.826, 0.916
+            elif self.map == "hell":
+                coX, coY = 0.822, 0.913
+            elif self.map == "ice":
+                coX, coY = 0.82, 0.915
+            elif self.map == "electricity":
+                coX, coY = 0.82, 0.915
+            elif self.map == "sugar":
+                coX, coY = 0.822, 0.915
+                
+            self.display_current_player = Label(self.window, image=current_player_image, bd=0, highlightthickness=0, anchor=CENTER)
+            self.display_current_player.place(relx=coX, rely=coY, anchor="center")
 
         
         for index, nbr_fence_player in enumerate(self.players):
@@ -267,10 +304,6 @@ class Board:
             window_width = self.window.winfo_screenwidth()
             window_height = self.window.winfo_screenheight()
             
-            if b == 0 and a not in self.pop_up_no_fence:
-                    self.pop_up_no_fence.append(a)
-                    self.popUpNoFence(a)
-                    
             if self.nb_players == 2:
                 if index == 0:
                     # Joueur 1 (en haut au milieu)
@@ -301,8 +334,7 @@ class Board:
             label = Label(self.window, image=self.leavepopup)
             label.place(relx=0.5, rely=0.05, anchor='center')
             
-        
-        self.window.bind("<space>", self.changeFenceOrientation)
+        self.window.bind(f"{self.button_fence}", self.changeFenceOrientation)
         tab =[]
         self.pillar_rects = []
         for i in range(self.size*2-1):
@@ -376,6 +408,10 @@ class Board:
                 tab.append(tab2)
             
     def buildFenceOnClick(self,event):
+        if self.settings.popup != None:
+            self.settings.popup.destroy()
+            self.settings.popup = None
+            
         if self.playerHasFence() == False :
             print("")
         else :
@@ -393,6 +429,14 @@ class Board:
                         sound_build_fence.play()
                         sound_build_fence.set_volume(self.volume_nofence)
                     else :
+                        for index, nbr_fence_player in enumerate(self.players):
+                            a = nbr_fence_player.get_player()
+                            b = nbr_fence_player.get_nb_fence()
+                            
+                            if b == 0 and a not in self.pop_up_no_fence:
+                                self.pop_up_no_fence.append(a)
+                                self.popUpNoFence(a)
+                
                         # Son de pose de barrière
                         sound_build_fence = mixer.Sound("./assets/sounds/build_fence.mp3")
                         sound_build_fence.play()

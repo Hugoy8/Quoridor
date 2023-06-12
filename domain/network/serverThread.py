@@ -33,33 +33,17 @@ class ServerThread(threading.Thread):
         
         # Variable qui stocke la class de jeu.
         self.board = None
-        self.setIP(self.host)
-        self.setPort(self.port)
-    
-    def setIP(self, ip):
-        try:
-            with open('serverIP.txt', 'w') as fichier:
-                fichier.write(ip + '\n')
-            print("IP enregistrée avec succès dans le fichier.")
-        except IOError:
-            print("Erreur : impossible d'écrire l'ip dans le fichier.")
-
-    def setPort(self, port):
-        try:
-            with open('serverPort.txt', 'w') as fichier:
-                fichier.write(str(port) + '\n')
-            print("Port enregistré avec succès dans le fichier.")
-        except IOError:
-            print("Erreur : impossible d'écrire le port dans le fichier.")
+        
         
     def startThread(self, boardInfos : Board) -> None:
         self.board = boardInfos
         self.start()
         
+        
     def run(self) -> None: 
-        try:
-            if self.typeGameThread == 2:
-                while self.statusServer == True:
+        if self.typeGameThread == 2:
+            try:
+                while self.statusServer:
                     # Réception des informations du client.
                     dataRecvArray = self.socket_client.recv(4096)
                     dataRecvClient = pickle.loads(dataRecvArray)
@@ -90,11 +74,9 @@ class ServerThread(threading.Thread):
                             self.board.refreshCurrentPlayer()
                             self.board.refreshPossibleCaseMovementForCurrentPlayer()
                             self.board.displayBoard(False)
-        except:
-            if self.typeGameThread == 2:
-                print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
-                self.socket_client.close()
-                self.serverStopCrash()
+            except:
+                self.serverStopDisconnectClient()
+        
         
     def SendBoard(self, x : int, y : int, typeClick : int, orientation : str) -> None:
         # typeClick = 0 (caseClicked)
@@ -117,21 +99,18 @@ class ServerThread(threading.Thread):
                 self.socket_client.send(dataSendtable)
                 time.sleep(0.1)
             except socket.error:
-                print("Erreur d'envoie du tableau ...")
-                print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
-                self.socket_client.close()
-                self.serverStopCrash()
+                self.serverStopDisconnectClient()
     
-    def serverStopCrash(self) -> None:
-        self.statusServer = False
-        print("Arrêt du serveur Crash...")
-        self.board.displayBoard(True)
-        time.sleep(1)
-        self.socketServer.close()
-        exit()
+    
+    def playError(self, errorStyle : str) -> None:
+        from domain.launcher.launcher import QuoridorLauncher
         
-    def serverStop(self) -> None:
+        runError = QuoridorLauncher(errorStyle)
+        
+        
+    def serverStopDisconnectClient(self) -> None:
+        self.board.window.destroy()
         self.statusServer = False
-        print("Arrêt du serveur ...")
+        self.socket_client.close()
         self.socketServer.close()
-        exit()
+        self.playError("errorServerOfClient")

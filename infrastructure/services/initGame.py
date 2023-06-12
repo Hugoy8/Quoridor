@@ -5,7 +5,6 @@ from domain.pillar.pillar import Pillar
 from PIL import Image, ImageTk
 from pygame import mixer
 from infrastructure.database.config import Database
-from infrastructure.services.getInformation import GetInformation
 from domain.bot.bot import Bot
 import os
 from infrastructure.services.services import Board
@@ -33,7 +32,8 @@ class InitGame:
             # Espace base de données.
             self.board.db = db
             
-            self.board.pseudo = GetInformation.getInfos("serverPseudo.txt")
+            from infrastructure.services.getSetInformation import GetSetInformation
+            self.board.pseudo = GetSetInformation().get_username("serverPseudo.txt")
             
             self.board.db.insertUsername(self.board.db.ip, self.board.db.port, self.board.pseudo)
         else:
@@ -65,6 +65,7 @@ class InitGame:
         self.board.waiting_room1 = None
         self.board.waiting_room2 = None
         self.board.pop_up_no_fence = []
+        self.board.popup_settings = None
         
         mixer.init()
         
@@ -104,12 +105,17 @@ class InitGame:
             self.board.map = "hell"
         elif select_map == 4:
             self.board.map = "ice"
-        
+        elif select_map == 5:
+            self.board.map = "electricity"
+        elif select_map == 6:
+            self.board.map = "sugar"
+            
         self.board.volume_map = 0.1
         self.board.volume_victory = 0.3
         self.board.volume_pion = 0.4
         self.board.volume_fence = 1
         self.board.volume_nofence = 1
+        self.button_fence = ""
         
         
         self.board.name_bg = size
@@ -184,8 +190,59 @@ class InitGame:
         pillar_hover = Image.open(f"./assets/images/{self.board.map}/pillier_hover.png")
         pillar_hover = pillar_hover.resize((pillar_taille, pillar_taille))
         self.board.pillar_hover = ImageTk.PhotoImage(pillar_hover)
+        
+        # IMAGE CURRENT PLAYER
+        current_player1_image = Image.open(f"./assets/images/{self.board.map}/current_player1.png")
+        current_player1_image = current_player1_image.resize((40, 43))
+        self.board.current_player1_image = ImageTk.PhotoImage(current_player1_image)
+        
+        current_player2_image = Image.open(f"./assets/images/{self.board.map}/current_player2.png")
+        current_player2_image = current_player2_image.resize((40, 43))
+        self.board.current_player2_image = ImageTk.PhotoImage(current_player2_image)
+        
+        current_player3_image = Image.open(f"./assets/images/{self.board.map}/current_player3.png")
+        current_player3_image = current_player3_image.resize((40, 43))
+        self.board.current_player3_image = ImageTk.PhotoImage(current_player3_image)
+        
+        current_player4_image = Image.open(f"./assets/images/{self.board.map}/current_player4.png")
+        current_player4_image = current_player4_image.resize((40, 43))
+        self.board.current_player4_image = ImageTk.PhotoImage(current_player4_image)
+        
+        leave_game_victory = Image.open(f"./assets/images/{self.board.map}/leave_game_victory.png")
+        leave_game_victory = leave_game_victory.resize((157, 42))
+        self.board.leave_game_victory = ImageTk.PhotoImage(leave_game_victory)
+        
+        restart_game_victory = Image.open(f"./assets/images/{self.board.map}/restart_game_victory.png")
+        restart_game_victory = restart_game_victory.resize((157, 42))
+        self.board.restart_game_victory = ImageTk.PhotoImage(restart_game_victory)
+        
+        popup_escape_game = Image.open(f"./assets/images/pauseMenu/popup_escape_game.png")
+        popup_escape_game = popup_escape_game.resize((662, 670))
+        self.board.popup_escape_game = ImageTk.PhotoImage(popup_escape_game)
+        
+        button_popup_resumegame = Image.open(f"./assets/images/pauseMenu/button_popup_resume_game.png")
+        button_popup_resumegame = button_popup_resumegame.resize((155, 40))
+        self.board.button_popup_resumegame = ImageTk.PhotoImage(button_popup_resumegame)
+        
+        button_popup_quitgame = Image.open(f"./assets/images/pauseMenu/button_popup_quitgame.png")
+        button_popup_quitgame = button_popup_quitgame.resize((155, 40))
+        self.board.button_popup_quitgame = ImageTk.PhotoImage(button_popup_quitgame)
+        
+        bind_changing = Image.open(f"./assets/images/launcher/bind_changing.png")
+        bind_changing = bind_changing.resize((48, 48))
+        self.board.bind_changing = ImageTk.PhotoImage(bind_changing)
 
+        bind = Image.open(f"./assets/images/launcher/bind.png")
+        bind = bind.resize((48, 48))
+        self.board.bind = ImageTk.PhotoImage(bind)
+        
+        self.board.display_current_player = None
+        
+        from infrastructure.services.settingsGame import SettingsGame
+        self.board.settings = SettingsGame(self.board.window, self.board.popup_escape_game, self.board.button_popup_resumegame, self.board.button_popup_quitgame, self.board.bind, self.board.bind_changing, self.board)
+        
         self.board.loadVolumeSettings()
+        self.board.window.bind("<KeyPress-Escape>", lambda event: self.board.settings.displayBreakGame(event))
 
         for i in range(self.board.size*2-1):
             if i%2 == 0 :

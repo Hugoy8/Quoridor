@@ -5,7 +5,7 @@ import pickle
 
 
 class WaitingRoomNetwork(threading.Thread):
-    def __init__(self, role : str, waitingRoomUi : WaitingRoomUi, typeGame : int, numClient : int, userSocket : socket, serverClass : object) -> None:
+    def __init__(self, role : str, waitingRoomUi : WaitingRoomUi, typeGame : int, numClient : int, userSocket : socket, serverClass : object, clientConfigClass : object) -> None:
         threading.Thread.__init__(self)
         # Variable qui va contenir le type de joueur (client ou server).
         self.role = role
@@ -13,7 +13,7 @@ class WaitingRoomNetwork(threading.Thread):
         self.waitingRoomUi = waitingRoomUi
         
         # Variable qui permet de stocker l'état de la fenêtre de la salle d'attente.
-        self.__stateWindow = True
+        self.stateWindow = True
         
         # Variable qui contient le type de partie (2 ou 4 joueurs).
         self.typeGame = typeGame
@@ -23,7 +23,8 @@ class WaitingRoomNetwork(threading.Thread):
         if self.role == "Client":
             # Variable du socket utilisateur.
             self.userSocket = userSocket
-        
+
+            self.clientConfig = clientConfigClass
         # Variable qui contient la liste des joueurs dans la salle d'attente.
         if self.role == "Server":
             # Variable qui contient l'object de la class Server.
@@ -48,7 +49,7 @@ class WaitingRoomNetwork(threading.Thread):
     
     
     def setStateWindow(self, choice : bool) -> None:
-        self.__stateWindow = choice
+        self.stateWindow = choice
         
     
     def refreshTimeOut(self) -> None:
@@ -60,8 +61,8 @@ class WaitingRoomNetwork(threading.Thread):
             self.listCheckConnections = {}
             
             while self.serverClass.stateListenServer:
-                self.serverClass.socketServer.settimeout(0.2)
                 try:
+                    self.serverClass.socketServer.settimeout(0.2)
                     (clientSocket, (ip, port))= self.serverClass.socketServer.accept()
                     
                     if len(self.serverClass.listClients) == 3:
@@ -72,8 +73,6 @@ class WaitingRoomNetwork(threading.Thread):
                         messageAutorisation = "OK"
                         messageAutorisation = messageAutorisation.encode("utf-8")
                         clientSocket.send(messageAutorisation)
-                        
-                    self.refreshTimeOut()
                 
                     numClient = len(self.serverClass.listClients) + 1
                     self.serverClass.listClients[numClient] = clientSocket
@@ -84,8 +83,8 @@ class WaitingRoomNetwork(threading.Thread):
                     textTemp = 'Client_' + str(numTemp+1)
                     self.serverClass.players.append(textTemp)
                     
-                    from domain.network.checkConnection import CheckConnection
-                    self.checkAlgorithm = CheckConnection(clientSocket, numClient, self, self.serverClass)
+                    from domain.network.checkConnectionServer import CheckConnectionServer
+                    self.checkAlgorithm = CheckConnectionServer(clientSocket, numClient, self, self.serverClass)
                     self.listCheckConnections[numClient] = self.checkAlgorithm
                     self.checkAlgorithm.start()
                     
@@ -104,8 +103,11 @@ class WaitingRoomNetwork(threading.Thread):
                                 socketClient.send(dataSendInfosAttente)
                 except socket.timeout:
                     continue
-            self.refreshTimeOut()
-            self.disableStateCheck()
+                except socket.error:
+                    break
+            if self.serverClass.statusServer:
+                self.refreshTimeOut()
+                self.disableStateCheck()
             
         elif self.typeGame == 2:
             # Ecoute du serveur sur le réseau.
@@ -120,8 +122,8 @@ class WaitingRoomNetwork(threading.Thread):
             self.listCheckConnections = {}
             
             while self.serverClass.stateListenServer:
-                self.serverClass.socketServer.settimeout(0.2)
                 try:
+                    self.serverClass.socketServer.settimeout(0.2)
                     (socket_client, (ip, port)) = self.serverClass.socketServer.accept()
                     
                     if len(self.serverClass.listClients) == 1:
@@ -141,8 +143,8 @@ class WaitingRoomNetwork(threading.Thread):
                     dataSendInfos = pickle.dumps(infosList)
                     socket_client.send(dataSendInfos)
                     
-                    from domain.network.checkConnection import CheckConnection
-                    self.checkAlgorithm = CheckConnection(socket_client, 1, self, self.serverClass)
+                    from domain.network.checkConnectionServer import CheckConnectionServer
+                    self.checkAlgorithm = CheckConnectionServer(socket_client, 1, self, self.serverClass)
                     self.listCheckConnections[1] = self.checkAlgorithm
                     self.checkAlgorithm.start()
                     
@@ -151,14 +153,18 @@ class WaitingRoomNetwork(threading.Thread):
                     self.socketClient = socket_client
                 except socket.timeout:
                     continue
-            self.refreshTimeOut()
-            self.disableStateCheck()
+                except socket.error:
+                    break
+            if self.serverClass.statusServer:
+                self.refreshTimeOut()
+                self.disableStateCheck()
     
     
     def serverSendLaunch(self) -> None:
+        infosListAttente = ([False, False, 0, 0, False])
+        
         if self.typeGame == 4:
             # Envoie du status de la salle d'attente au client.
-            infosListAttente = ([False, False, 0, 0, False])
             dataSendInfosAttente = pickle.dumps(infosListAttente)
                         
             for player, socketClient in self.serverClass.listClients.items():
@@ -167,18 +173,19 @@ class WaitingRoomNetwork(threading.Thread):
                         
         elif self.typeGame == 2:
             # Envoie du status de la salle d'attente au client.
-            infosListAttente = ([False, False, 0, 0, False])
             dataSendInfosAttente = pickle.dumps(infosListAttente)
             
             self.socketClient.send(dataSendInfosAttente)
-
+            
+        self.waitingRoomUi.status = False
                             
                             
     def clientWaiting(self) -> None:
-        while self.__stateWindow:
+        while self.stateWindow:
             try:
                 dataRecvServer = self.userSocket.recv(4096)
                 InfosAttente = pickle.loads(dataRecvServer)
+                
                 
                 if InfosAttente[1] == True and InfosAttente[0] == True:
                     if self.typeGame == 4:
@@ -189,19 +196,29 @@ class WaitingRoomNetwork(threading.Thread):
                     self.waitingRoomUi.remove(int(InfosAttente[6]))
                     self.waitingRoomUi.setNumClient(InfosAttente[5])
                     self.waitingRoomUi.configPictures()
-                    
                 
                 self.setStateWindow(InfosAttente[0])
-            except:
-                print("Le serveur s'est déconnectée pendant la salle d'attente.")
-                self.waitingRoomUi.destroyWindow()
-                self.userSocket.close()
-                import main
-                main()
-                break
-        
+                
+            except socket.error:
+                print("Exception Client Waiting")
+                if self.stateWindow:
+                    self.waitingRoomUi.status = False
+                    self.stateWindow = False
+                    self.userSocket.close()
+                    self.clientConfig.autorisationToPlay = False
+                    
+                    import time
+                    time.sleep(2)
+                    
+                    self.playError("errorClientOfServer")
         self.waitingRoomUi.status = False
+    
+    
+    def playError(self, errorStyle : str) -> None:
+        from domain.launcher.launcher import QuoridorLauncher
         
+        runError = QuoridorLauncher(errorStyle)
+    
     
     def disableStateCheck(self):
         for checkClass in self.listCheckConnections.values():

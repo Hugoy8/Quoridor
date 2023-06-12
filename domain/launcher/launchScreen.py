@@ -28,11 +28,22 @@ class LaunchScreen(threading.Thread):
 
 
     def createWindow(self):
+        # Centrage dans l'écran.
+        os.environ['SDL_VIDEO_CENTERED'] = '1'
+        
+        pygame.display.set_caption("Lancement du jeu en cours ...")
+        
+        # Zone de récupération de la taille écran en fonction de l'os.
         if os.name == "nt":
-            pygame.display.init()
-            pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+            screenInfo = pygame.display.Info()
+            self.screenWidth = screenInfo.current_w
+            self.screenHeight = screenInfo.current_h
         else:
-            pygame.display.set_mode((1920, 1080))
+            import pyautogui
+            self.screenWidth, self.screenHeight = pyautogui.size()
+            self.screenHeight -= 120
+        
+        self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight))
 
         self.screen = pygame.display.get_surface()
         self.clock = pygame.time.Clock()
@@ -48,5 +59,4 @@ class LaunchScreen(threading.Thread):
 
     def destroyWindow(self):
         pygame.quit()
-
 

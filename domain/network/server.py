@@ -44,7 +44,7 @@ class Server:
         
         # Variable qui contient l'état de l'écoute de la partie.
         self.stateListenServer = False
-        
+            
         # Zone de base de donnée d'initialisation.
         from infrastructure.database.config import Database
         self.db = Database()
@@ -61,67 +61,67 @@ class Server:
             
         if self.host == "":
             # Recupération de l'ip du pc qui souhaite héberger un serveur.
-            ip = ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][0])
+            self.ip = ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][0])
         else: 
-            ip = self.host
-        print("Voici l'ip d'hébergement du serveur de jeu : "+str(ip))
+            self.ip = self.host
         
-        self.db.dropTableIfExists(ip, self.port)
-        self.db.createTableGame(ip, self.port)
+        self.db.dropTableIfExists(self.ip, self.port)
+        self.db.createTableGame(self.ip, self.port)
         
         # Attribution du port et de l'adresse ip.
         try: 
-            self.socketServer.bind((ip,self.port))
+            self.socketServer.bind((self.ip,self.port))
             self.stateListenServer = True
         except socket.error:
-            print("[-] Erreur pendant le lancement du serveur.")
-            exit()
+            from domain.launcher.launcher import QuoridorLauncher
+        
+            runError = QuoridorLauncher("errorLaunchServer")
 
         if self.typeGame == 2:
             while self.stateListenServer:
+                
                 # Section salle d'attente.
                 waitingRoomUI = WaitingRoomUi("Server", self.typeGame, 0, self)
-                waitingRoomNetwork = WaitingRoomNetwork("Server", waitingRoomUI, self.typeGame, 0, self.socketServer, self)
+                waitingRoomNetwork = WaitingRoomNetwork("Server", waitingRoomUI, self.typeGame, 0, self.socketServer, self, "")
                 waitingRoomUI.setWaitingRoomNetwork(waitingRoomNetwork)
                 waitingRoomNetwork.start()
                 waitingRoomUI.waitNetwork()
                 
                 while waitingRoomUI.status == True:
-                    time.sleep(0.5)
-
+                    time.sleep(0.1)
+                    
                 # Arrêt des threading de Salle d'attente.
                 waitingRoomNetwork.stopAllThread()
                 waitingRoomNetwork.join()
                 
-                # Attribution d'un numéro au Client, et enregistrement dans une variable.
-                self.playersThread = [2, 'Server_1', 'Client_2']
-                
-                # Envoie des informations d'enregistrement au client.
-                infoList = ([self.typeGame, self.players[0], self.playerPlayed, [size, nb_players , nb_IA, nb_fences, mapID]])
-                dataSendInfos = pickle.dumps(infoList)
-                try:
-                    waitingRoomNetwork.socketClient.send(dataSendInfos)
-                except socket.error:
-                    print("Erreur d'envoie des informations d'enregistrement ...")
-                    print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
-                    waitingRoomNetwork.socketClient.close()
-                    self.serverStopCrash()
-                
-                # Zone d'initialisation de la liste de clients dans la base de donnée.
-                self.db.setNumPerso(1)
+                if self.statusServer:
+                    # Attribution d'un numéro au Client, et enregistrement dans une variable.
+                    self.playersThread = [2, 'Server_1', 'Client_2']
+                    
+                    # Envoie des informations d'enregistrement au client.
+                    infoList = ([self.typeGame, self.players[0], self.playerPlayed, [size, nb_players , nb_IA, nb_fences, mapID]])
+                    dataSendInfos = pickle.dumps(infoList)
+                    try:
+                        waitingRoomNetwork.socketClient.send(dataSendInfos)
+                    except socket.error:
+                        waitingRoomNetwork.socketClient.close()
+                        self.serverStopCrash()
+                    
+                    # Zone d'initialisation de la liste de clients dans la base de donnée.
+                    self.db.setNumPerso(1)
 
-                # Assiniation de l'ip et le port dans la class base de données.
-                self.db.setIP(ip)
-                self.db.setPort(self.port)
-            
-                treading_server = ServerThread(ip, self.port, waitingRoomNetwork.socketClient, self.typeGame, self.players, self.playerPlayed, self.socketServer, self.statusServer, "")
+                    # Assiniation de l'ip et le port dans la class base de données.
+                    self.db.setIP(self.ip)
+                    self.db.setPort(self.port)
                 
-                # Variable qui stocke la class du jeu.
-                Network = True
-                self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, treading_server, "instance", 1, self.db)
-                
-                treading_server.startThread(self.board)
-                self.players[0] += 1
+                    treading_server = ServerThread(self.ip, self.port, waitingRoomNetwork.socketClient, self.typeGame, self.players, self.playerPlayed, self.socketServer, self.statusServer, "")
+                    
+                    # Variable qui stocke la class du jeu.
+                    Network = True
+                    self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, treading_server, "instance", 1, self.db)
+                    
+                    treading_server.startThread(self.board)
+                    self.players[0] += 1
 
         elif self.typeGame == 4:
             # Ecoute du serveur sur le réseau.
@@ -129,14 +129,15 @@ class Server:
                 self.socketServer.listen(400)
                 self.statusServer = True
             except socket.error:
-                print("Erreur pendant le lancement du serveur.")
                 self.statusServer = False
-                import main
-                main()
+                
+                from domain.launcher.launcher import QuoridorLauncher
+        
+                runError = QuoridorLauncher("errorLaunchServer")
                 
             # Section salle d'attente.
             waitingRoomUI = WaitingRoomUi("Server", self.typeGame, 0, self)
-            waitingRoomNetwork = WaitingRoomNetwork("Server", waitingRoomUI, self.typeGame, 0, self.socketServer, self)
+            waitingRoomNetwork = WaitingRoomNetwork("Server", waitingRoomUI, self.typeGame, 0, self.socketServer, self, "")
             waitingRoomUI.setWaitingRoomNetwork(waitingRoomNetwork)
             waitingRoomNetwork.start()
             waitingRoomUI.waitNetwork()
@@ -147,45 +148,62 @@ class Server:
             # Arrêt des threading de Salle d'attente.
             waitingRoomNetwork.stopAllThread()
             waitingRoomNetwork.join()
-            
-            # Socket Server pour le tour de rôle.
-            self.listClients[0] = self.socketServer
-
-            listInfosBoard = [size, nb_players , nb_IA, nb_fences, mapID]
                 
-            # Envoie des informations d'enregistrement au client.
-            for player, socketClient in self.listClients.items():
-                if player != 0:
-                    self.players[0] = player+1
-                    infoList = ([4, self.players, self.playerPlayed, listInfosBoard])
-                    dataSendInfos = pickle.dumps(infoList)
-                    try:
-                        socketClient.send(dataSendInfos)
-                    except socket.error:
-                        print("Erreur d'envoie des informations d'enregistrement ...")
-                        print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
-                        socketClient.close()
-                        self.socketServer.close()
-            
-            # Zone d'initialisation de la liste de clients dans la base de donnée.
-            self.db.setNumPerso(1)
-            
-            # Assiniation de l'ip et le port dans la class base de données.
-            self.db.setIP(ip)
-            self.db.setPort(self.port)
+            if self.statusServer:
+                # Socket Server pour le tour de rôle.
+                self.listClients[0] = self.socketServer
+
+                listInfosBoard = [size, nb_players , nb_IA, nb_fences, mapID]
+                    
+                # Envoie des informations d'enregistrement au client.
+                for player, socketClient in self.listClients.items():
+                    if player != 0:
+                        self.players[0] = player+1
+                        infoList = ([4, self.players, self.playerPlayed, listInfosBoard])
+                        dataSendInfos = pickle.dumps(infoList)
+                        try:
+                            socketClient.send(dataSendInfos)
+                        except socket.error:
+                            socketClient.close()
+                            self.serverStopCrash()
                 
-            # Variable qui stocke la class du jeu.
-            Network = True
-            self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, self, "instance", 1, self.db)
-
-            self.serverPlayers = ServerPlayers(self, self.serverToPlay, self.board)
-            self.serverPlayers.start()
+                # Zone d'initialisation de la liste de clients dans la base de donnée.
+                self.db.setNumPerso(1)
+                
+                # Assiniation de l'ip et le port dans la class base de données.
+                self.db.setIP(self.ip)
+                self.db.setPort(self.port)
+                    
+                # Variable qui stocke la class du jeu.
+                Network = True
+                self.board = Board(size, nb_players , nb_IA, nb_fences, mapID, Network, self, "instance", 1, self.db)
+                
+                self.serverPlayers = ServerPlayers(self, self.serverToPlay, self.board)
+                
+                from domain.network.checkAllConnection import CheckAllConnection
+                self.checkAllAlorithm = CheckAllConnection(self.serverPlayers, self)
+                self.serverPlayers.setCheckClass(self.checkAllAlorithm)
+                
+                self.serverPlayers.start() 
+                
+                self.checkAllAlorithm.start()
+                
+        if self.statusServer:
+            threading_graphique = Graphique(self.board, "server")
+            threading_graphique.start()
+                
+                
+    def disableStateCheck(self):
+        for checkClass in self.listCheckConnections.values():
+            checkClass.setStateCheck(False)
             
-
-        threading_graphique = Graphique(self.board, "server")
-        threading_graphique.start()
             
-            
+    def stopAllThread(self):
+        for checkAlgorithm in self.listCheckConnections.values():
+            if checkAlgorithm.is_alive():
+                checkAlgorithm.join()
+                
+                
     def SendBoard(self, x : int, y : int, typeClick : int, orientation : str) -> None:
         # typeClick = 0 (caseClicked)
         # typeClick = 1 (fenceClicked)
@@ -199,7 +217,7 @@ class Server:
             orientation = 1
         
         for player, socketClient in self.listClients.items():
-            if player != 0 and socketClient.fileno() != -1:
+            if player != 0 and socketClient.fileno() != -1 and player not in self.serverPlayers.diconnectPlayers:
                 if self.serverToPlay.getPlayerToPlay()+1 == player:
                     messagePlayertoPlay = "You"
                 else:
@@ -210,10 +228,8 @@ class Server:
                     socketClient.send(dataSendtable)
                     time.sleep(0.1)
                 except socket.error:
-                    print("Erreur d'envoie des informations d'enregistrement ...")
-                    print("\nLe client %s:%s s'est déconnecté" % (self.host, self.port))
                     socketClient.close()
-                    self.socketServer.close()
+                    self.serverStopCrash()
     
     
     def verifPlayertoPlay(self, player : int) -> str:
@@ -224,10 +240,10 @@ class Server:
 
     
     def serverStopCrash(self) -> None:
-        print("Arrêt du serveur...")
         self.exit_event.set()
         self.statusServer = False
         self.socketServer.close()
-        pygame.quit()
-        import main
-        main()
+        
+        from domain.launcher.launcher import QuoridorLauncher
+        
+        runError = QuoridorLauncher("errorServerOfClient")

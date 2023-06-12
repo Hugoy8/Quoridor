@@ -18,13 +18,10 @@ class ScanNetwork:
         plaguePort = str(self.firstPort) + "-" + str(self.endPort)
 
         # Scan du réseau en mode furtif
-        print("Scan du réseau en cours ...")
         scan = nmap.PortScanner()
         scan.scan(hosts=f"{self.firstIp}-255", arguments="-sS -n -T4 -PN -p " + str(plaguePort))
 
         # Récupération des adresses IP des serveurs actifs
-        print("Traitement des données ...")
-        
         for host in scan.all_hosts():
             if scan[host].state() == "up":
                 for proto in scan[host].all_protocols():

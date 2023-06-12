@@ -11,34 +11,45 @@ class Client(threading.Thread):
         self.board = boardInfos
         # Liste qui contient tous les paramètres reçu par le serveur.
         self.Infos = Infos
+        # Variable qui stocke l'état de l'écoute.
+        self.statusListenClient = True
+        
         
     def runClient(self, client : socket) -> None:
         # Boucle en de jeu en 2 joueurs.
         if self.Infos[0] == 2:
-            while True:
+            while self.statusListenClient:
                 # Réception des informations du serveur.
                 try:
                     dataRecvArray = client.recv(4096)
                     dataRecvServer = pickle.loads(dataRecvArray)
                     
+                    print(dataRecvServer)
                     self.fonctionBoard(dataRecvServer)
-                except:
-                    print("Erreur de réception des informations du serveur ...")
-                    import main
-                    main()
+                except socket.error:
+                    from domain.launcher.launcher import QuoridorLauncher
+                    
+                    self.statusListenClient = False
+                    self.board.window.destroy()
+                    runError = QuoridorLauncher("errorClientOfServer")
+                    break
                     
         elif self.Infos[0] == 4:
-            while True:
+            while self.statusListenClient:
                 # Réception des informations du serveur.
                 try:
                     dataRecvArray = client.recv(4096)
                     dataRecvServer = pickle.loads(dataRecvArray)
                     
                     self.fonctionBoard(dataRecvServer)
-                except:
-                    print("Erreur de réception des informations du serveur ...")
-                    import main
-                    main()
+                except socket.error:
+                    from domain.launcher.launcher import QuoridorLauncher
+                    
+                    self.statusListenClient = False
+                    self.board.window.destroy()
+                    runError = QuoridorLauncher("errorClientOfServer")
+                    break
+        
         
     def fonctionBoard(self, dataRecvServer : list) -> None:
         # Affichage graphique des changements du serveur.

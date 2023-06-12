@@ -55,6 +55,16 @@ class Database(threading.Thread):
         )
 
 
+    def selectPassword(self, username : str) -> str:
+        self.connectDb()
+        select_queryPeoples = self.select()
+        select_queryPeoples.execute(f"SELECT password FROM users WHERE username = '{username}'")
+        resultPeoples = select_queryPeoples.queries.fetchall()
+        select_queryPeoples.close()
+        self.db.close()
+        return resultPeoples
+    
+    
     def sendInviting(self, usernamePlayer : str, usernameUseradd : str) -> None:
         self.connectDb()
         cursor = self.db.cursor()
@@ -109,8 +119,18 @@ class Database(threading.Thread):
         select_queryFriends.close()
         self.db.close()
         return resultStatus
+        
     
-    
+    def selectAllPeoplesGame(self, ip : str, port : int) -> list:
+        self.connectDb()
+        select_queryPeoples = self.select()
+        select_queryPeoples.execute(f"SELECT username FROM Game{ip.replace('.', '_')}{port}")
+        resultPeoples = select_queryPeoples.queries.fetchall()
+        select_queryPeoples.close()
+        self.db.close()
+        return resultPeoples
+        
+        
     def setStatusUser(self, username : str, status : int) -> None:
         self.connectDb()
         update_query = self.update()
@@ -242,7 +262,7 @@ class Database(threading.Thread):
         self.db.close()
         
         
-    def dropTableIfExists(self, ip, port):
+    def dropTableIfExists(self, ip : str, port : int):
         self.connectDb()
         cursor = self.db.cursor()
         table_name = f"Game{ip.replace('.', '_')}{port}"
@@ -301,14 +321,14 @@ class Database(threading.Thread):
             print("User not found.")
 
 
-    def deconnexionUser(self, ip: str, port: int, id: int):
-        self.connectDb()
-        delete_query = self.delete()
-        delete_query.execute(f"DELETE FROM Game{ip.replace('.', '_')}{port} WHERE ID = {id}")
+    # def deconnexionUser(self, ip: str, port: int, id: int):
+    #     self.connectDb()
+    #     delete_query = self.delete()
+    #     delete_query.execute(f"DELETE FROM Game{ip.replace('.', '_')}{port} WHERE ID = {id}")
 
-        self.db.commit()
-        delete_query.close()
-        self.db.close()
+    #     self.db.commit()
+    #     delete_query.close()
+    #     self.db.close()
     
     
     def refreshTabel(self, ip: str, port: int):
@@ -348,6 +368,7 @@ class Database(threading.Thread):
         else:
             print("User not found.")
             
+            
     def getMoney(self, username):
         self.connectDb()
         select_query = self.select()
@@ -360,6 +381,7 @@ class Database(threading.Thread):
             return result[0]
         else:
             return 0
+
 
     def removeMoney(self, username, money):
         self.connectDb()
@@ -376,6 +398,7 @@ class Database(threading.Thread):
             self.db.close()
         else:
             print("User not found.")
+    
     
     def addMap(self, username, map_name):
         if username == " ":
@@ -397,6 +420,7 @@ class Database(threading.Thread):
         else:
             print("User not found.")
     
+    
     def getUserIdByUsername(self, username):
         self.connectDb()
         select_query = self.select()
@@ -410,12 +434,14 @@ class Database(threading.Thread):
         else:
             return None
     
+    
     def addPurchase(self, user_id, map):
         self.connectDb()
         insert_query = self.insert()
         insert_query.execute("INSERT INTO purchases (user_id, map_name) VALUES (%s, %s)", (user_id, map))
         insert_query.close()
         self.db.close()
+        
         
     def getMapByUsername(self, username):
         self.connectDb()
