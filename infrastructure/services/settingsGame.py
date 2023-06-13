@@ -11,6 +11,7 @@ class SettingsGame:
         self.popup = None
         self.board = board
     
+    
     def displayBreakGame(self, event) -> None:
         """Affiche le menu pause du jeu"""
         if self.popup is None:
@@ -38,8 +39,24 @@ class SettingsGame:
 
     def quitGame(self) -> None:
         """Quitte le jeu"""
+        import os
         self.board.sound_map.stop()
         self.window.destroy()
+        if self.board.networkStatus:
+            if self.board.nb_players == 2:
+                if self.board.typeNetwork == "instance":
+                    self.board.InstanceNetwork.statusServer = False
+                    self.board.InstanceNetwork.socket_client.close()
+                    self.board.InstanceNetwork.socketServer.close()
+                elif self.typeNetwork == "socket":
+                        self.clientClass.statusListenClient = False
+            elif self.board.nb_players == 4:
+                if self.board.typeNetwork == "instance":
+                    self.board.InstanceNetwork.checkAllAlorithm.setStateCheck(False)
+                    self.board.InstanceNetwork.socketServer.close()
+                elif self.typeNetwork == "socket":
+                        self.clientClass.statusListenClient = False
+        os._exit(0)
 
 
     def buttonQuitGame(self) -> None:

@@ -17,6 +17,10 @@ class Board:
         initGame.startInit(size, nb_players, nb_IA, nb_fence, select_map, Network, InstanceNetwork, typeNetwork, playerUser, db)
         
         
+    def setClientClass(self, clientClass : object) -> None:
+        self.clientClass = clientClass
+        
+        
     def loadVolumeSettings(self) -> None:
         with open("settings.txt", "r") as file:
             lines = file.readlines()
@@ -66,6 +70,12 @@ class Board:
                 if child.winfo_exists():
                     child.destroy()
             self.windowVictory()
+            if self.networkStatus:
+                if self.nb_players == 2 or self.nb_players == 4:
+                    if self.typeNetwork == "socket":
+                        self.clientClass.statusListenClient = False
+                    elif self.typeNetwork == "instance":
+                        self.InstanceNetwork.statusServer = False
         else:
             self.resetPossibleCaseMovement() 
             self.refreshCurrentPlayer()
@@ -145,6 +155,17 @@ class Board:
 
         # Ajout des boutons
         def rejouer():
+            if self.networkStatus:
+                if self.nb_players == 2:
+                    if self.typeNetwork == "instance":
+                        self.InstanceNetwork.statusServer = False
+                        self.InstanceNetwork.socket_client.close()
+                        self.InstanceNetwork.socketServer.close()
+                elif self.nb_players == 4:
+                    if self.typeNetwork == "instance":
+                        self.InstanceNetwork.checkAllAlorithm.setStateCheck(False)
+                        self.InstanceNetwork.socketServer.close()
+                
             self.window.destroy()
             from domain.launcher.launcher import QuoridorLauncher
 
@@ -155,6 +176,7 @@ class Board:
             self.window.destroy()
             from infrastructure.services.deletePycache import deletePycache
             deletePycache()
+            exit()
         
         replay_button = Label(self.window, image=self.restart_game_victory, bd=0, highlightthickness=0)
         replay_button.place(relx=0.445, rely=0.675, anchor=CENTER)
@@ -168,8 +190,8 @@ class Board:
         sound_victory = mixer.Sound("./assets/sounds/victory.mp3")
         sound_victory.play()
         sound_victory.set_volume(self.volume_victory)
-        if self.networkStatus == True:
-            if self.typeNetwork == "instance" :
+        if self.networkStatus:
+            if self.typeNetwork == "instance":
                 username = self.db.selectUsername(self.db.ip, self.db.port,  self.current_player.get_player())
                 self.db.addWin(username)
                 self.db.addMoney(username)

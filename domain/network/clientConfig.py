@@ -96,6 +96,8 @@ class ClientConfig:
                 
                 try:
                     threading_client = Client(client, self.board, self.Infos)
+                    self.board.setClientClass(threading_client)
+                    
                     threading_client.start()
                 except:
                     import main

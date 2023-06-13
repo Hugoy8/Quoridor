@@ -56,10 +56,14 @@ class ServerThread(threading.Thread):
                         
                         if self.board.victory():
                             self.board.windowVictory()
+                            self.statusServer = False
+                            break
                         else:
                             self.board.refreshCurrentPlayer()
                             if self.board.victory():
                                 self.board.windowVictory()
+                                self.statusServer = False
+                                break
                             else:
                                 self.board.refreshCurrentPlayer()
                                 self.board.refreshPossibleCaseMovementForCurrentPlayer()
@@ -109,8 +113,11 @@ class ServerThread(threading.Thread):
         
         
     def serverStopDisconnectClient(self) -> None:
-        self.board.window.destroy()
-        self.statusServer = False
-        self.socket_client.close()
-        self.socketServer.close()
-        self.playError("errorServerOfClient")
+        try:
+            self.statusServer = False
+            self.socket_client.close()
+            self.socketServer.close()
+            self.board.window.destroy()
+            self.playError("errorServerOfClient")
+        except:
+            self.playError("errorServerOfClient")

@@ -104,21 +104,25 @@ class ServerPlayers(threading.Thread):
                         
                         if self.board.victory():
                             self.board.windowVictory()
+                            self.status = False
                             break
                         else:
                             self.board.refreshCurrentPlayer()
                             if self.board.victory():
                                 self.board.windowVictory()
+                                self.status = False
                                 break
                             else:
                                 self.board.refreshCurrentPlayer()
                                 if self.board.victory():
                                     self.board.windowVictory()
+                                    self.status = False
                                     break
                                 else:
                                     self.board.refreshCurrentPlayer()
                                     if self.board.victory():
                                         self.board.windowVictory()
+                                        self.status = False
                                         break
                                     else:
                                         self.board.refreshCurrentPlayer()

@@ -14,6 +14,7 @@ class Graphique(threading.Thread):
         from domain.network.network import mainThread
         mainThread(self.runGraphique())
     
+    
     def runGraphique(self) -> None:
         self.board.start()
         if self.playerUser == "server":

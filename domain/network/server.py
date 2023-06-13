@@ -6,11 +6,10 @@ from domain.network.serverPlayers import ServerPlayers
 from domain.network.serverToPlay import ServerToPlay
 from domain.network.waitingRoomNetwork import WaitingRoomNetwork
 from domain.network.waitingRoomUi import WaitingRoomUi
-
 import time
 import pickle
-import pygame
 import threading
+
 
 class Server:
     def __init__(self, host : str, port : int, typeGame : str) -> None:
@@ -51,7 +50,7 @@ class Server:
         self.db.start()
 
         
-    def server_config(self, size : int, nb_players : int, nb_IA : int, nb_fences : int, mapID : int) -> None:
+    def server_config(self, size : int, nb_players : int, nb_IA : int, nb_fences : int, mapID : int, listInfosInvit : list, GameInvit : bool) -> None:
         # Variable du socket du client.
         self.socketServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socketServer.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -65,6 +64,10 @@ class Server:
         else: 
             self.ip = self.host
         
+        if GameInvit:
+            dbSendGames = listInfosInvit[0]
+            dbSendGames.sendInvitingGames(str(listInfosInvit[1]), listInfosInvit[2], str(self.ip), str(self.port))
+            
         self.db.dropTableIfExists(self.ip, self.port)
         self.db.createTableGame(self.ip, self.port)
         
@@ -79,7 +82,6 @@ class Server:
 
         if self.typeGame == 2:
             while self.stateListenServer:
-                
                 # Section salle d'attente.
                 waitingRoomUI = WaitingRoomUi("Server", self.typeGame, 0, self)
                 waitingRoomNetwork = WaitingRoomNetwork("Server", waitingRoomUI, self.typeGame, 0, self.socketServer, self, "")

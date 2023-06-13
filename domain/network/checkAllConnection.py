@@ -23,6 +23,9 @@ class CheckAllConnection(threading.Thread):
         possibleCheck = True
         while self.stateCheck:
             for player, socketClient in self.listClientsSockets.items():
+                if self.stateCheck == False:
+                    break
+                
                 if player != 0 and socketClient != self.serverPlayers.ClientToPlay:
                     
                     for playerDisconnect, typePlayer in self.serverPlayers.diconnectPlayers.items():

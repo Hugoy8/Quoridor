@@ -80,7 +80,7 @@ class QuoridorLauncher:
             self.notifs.status = False
             self.window.destroy()
             deletePycache()
-            exit()
+            os._exit(0)
             
         self.leave_button = Label(self.window, image=self.leave_game_network, cursor="hand2", bd=0, highlightthickness=0)
         self.leave_button.place(relx=0.95, rely=0.92, anchor=CENTER)
@@ -678,8 +678,9 @@ class QuoridorLauncher:
         
     def invitFriend(self, friend : tuple) -> None:
         from infrastructure.services.getSetInformation import GetSetInformation
-        
-        self.db.sendInvitingGames(str(GetSetInformation().get_username("serverPseudo.txt")), friend[0], "127.0.0.1", 8000)
+        listInfosInvitGames = [self.db, str(GetSetInformation().get_username("serverPseudo.txt")), friend[0]]
+        self.window.destroy()
+        startSession(8003, 2, 9, 2, 0, 20, GetSetInformation().getLinesSettings("settings.txt", 7)[0], listInfosInvitGames, True)
         
         
     def acceptFriendDemand(self, friend : tuple) -> None:
@@ -745,6 +746,8 @@ class QuoridorLauncher:
         
         if friend != "" and friend != __getSetInformation.get_username("serverPseudo.txt") and not any(friend in tupleInfos for tupleInfos in friendsList) and not any(friend in tupleInfosInv for tupleInfosInv in invList):
             self.db.sendInviting(__getSetInformation.get_username("serverPseudo.txt"), friend)
+            
+        self.entry_friend.delete(0, tk.END)
         
         
     def deleteFriends(self, friend):
@@ -1068,7 +1071,6 @@ class QuoridorLauncher:
         from infrastructure.services.getSetInformation import GetSetInformation
         port = int(portstr)
         self.window.destroy()
-        GetSetInformation().setUsername(self.pseudo)
         joinSession(ip, port, self.selectMap)
         
     
@@ -1116,7 +1118,6 @@ class QuoridorLauncher:
         ip = str(ip)
         port = int(port)
         self.window.destroy()
-        GetSetInformation().setUsername(self.pseudo)
         joinSession(ip, port, self.selectMap)
             
         
@@ -1198,11 +1199,8 @@ class QuoridorLauncher:
             self.error_label = Label(self.window, text=f"Le nombre de barrières({nbr_fences}) pour une taille de 5x5 est incorrect (20 max).", font=("Arial", 13), bg="#0F2234", fg="red")
             self.error_label.place(relx=0.5, rely=0.9, anchor=CENTER)
         else:
-            from infrastructure.services.getSetInformation import GetSetInformation
-            
             self.window.destroy()
-            GetSetInformation().setUsername(self.pseudo)
-            startSession(port, nbr_player, grid_size, nbr_player, 0, nbr_fences, map)
+            startSession(port, nbr_player, grid_size, nbr_player, 0, nbr_fences, map, "", False)
 
 
     def errorClientNetwork(self, errorStyle : str) -> None: 

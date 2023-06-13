@@ -16,20 +16,23 @@ class Client(threading.Thread):
         
         
     def runClient(self, client : socket) -> None:
+        self.client = client
         # Boucle en de jeu en 2 joueurs.
         if self.Infos[0] == 2:
             while self.statusListenClient:
                 # Réception des informations du serveur.
                 try:
                     dataRecvArray = client.recv(4096)
+                    if self.statusListenClient == False:
+                        break
                     dataRecvServer = pickle.loads(dataRecvArray)
                     
-                    print(dataRecvServer)
                     self.fonctionBoard(dataRecvServer)
                 except socket.error:
                     from domain.launcher.launcher import QuoridorLauncher
                     
                     self.statusListenClient = False
+                    client.close()
                     self.board.window.destroy()
                     runError = QuoridorLauncher("errorClientOfServer")
                     break
@@ -39,6 +42,8 @@ class Client(threading.Thread):
                 # Réception des informations du serveur.
                 try:
                     dataRecvArray = client.recv(4096)
+                    if self.statusListenClient == False:
+                        break
                     dataRecvServer = pickle.loads(dataRecvArray)
                     
                     self.fonctionBoard(dataRecvServer)
@@ -46,6 +51,7 @@ class Client(threading.Thread):
                     from domain.launcher.launcher import QuoridorLauncher
                     
                     self.statusListenClient = False
+                    client.close()
                     self.board.window.destroy()
                     runError = QuoridorLauncher("errorClientOfServer")
                     break
@@ -61,18 +67,22 @@ class Client(threading.Thread):
             if self.Infos[0] == 4:
                 if self.board.victory():
                     self.board.windowVictory()
+                    self.statusListenClient = False
                 else:
                     self.board.refreshCurrentPlayer()
                     if self.board.victory():
                         self.board.windowVictory()
+                        self.statusListenClient = False
                     else:
                         self.board.refreshCurrentPlayer()
                         if self.board.victory():
                             self.board.windowVictory()
+                            self.statusListenClient = False
                         else:
                             self.board.refreshCurrentPlayer()
                             if self.board.victory():
                                 self.board.windowVictory()
+                                self.statusListenClient = False
                             else:
                                 self.board.refreshCurrentPlayer()
                                 if dataRecvServer[4] == "You":
@@ -82,10 +92,12 @@ class Client(threading.Thread):
             elif self.Infos[0] == 2:
                 if self.board.victory():
                     self.board.windowVictory()
+                    self.statusListenClient = False
                 else:
                     self.board.refreshCurrentPlayer()
                     if self.board.victory():
                         self.board.windowVictory()
+                        self.statusListenClient = False
                     else:
                         self.board.refreshCurrentPlayer()
                         self.board.refreshPossibleCaseMovementForCurrentPlayer()

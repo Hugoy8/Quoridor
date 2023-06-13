@@ -60,7 +60,7 @@ class Authentification:
             for widget in self.launcher.widget_register:
                 widget.destroy()
                 
-        relXLabel = 0.271
+        relXLabel = 0.221
         username = Label(self.window, text="Pseudo :", font=("Arial", 16), bg="#0F2234", fg="#E3F8FF")
         username.place(relx=relXLabel, rely=0.55, anchor=NW)
         
@@ -96,7 +96,7 @@ class Authentification:
             for widget in self.launcher.widget_login:
                 widget.destroy()
             
-        relXLabel = 0.271
+        relXLabel = 0.221
         username = Label(self.window, text="Pseudo :", font=("Arial", 16), bg="#0F2234", fg="#E3F8FF")
         username.place(relx=relXLabel, rely=0.5, anchor=NW)
         self.registerUsername = Entry(self.launcher.register, fg="white", width=31, font=("Arial", 16), background="#062037", highlightbackground="#486581")
