@@ -35,7 +35,7 @@ class InitLauncher():
 
         (self.widthWindow, self.heightWindow) = (self.launcher.window.winfo_screenwidth(), self.launcher.window.winfo_screenheight())
         
-        # self.launcher.window.attributes("-topmost", True)
+        self.launcher.window.attributes("-topmost", True)
         
         self.launcher.window.title("Mon Launcher")
         
