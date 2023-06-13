@@ -1014,6 +1014,7 @@ class QuoridorLauncher:
             from infrastructure.services.verifConnection import VerifConnection
             if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
                 if typeButton == "JoinGame":
+                    self.notifs.status = False
                     self.joinGameNetwork()
                 elif typeButton == "ScanGames":
                     self.displayIp()
@@ -1161,6 +1162,7 @@ class QuoridorLauncher:
             from infrastructure.services.verifConnection import VerifConnection
             if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
                 if typeButton == "startGame":
+                    self.notifs.status = False
                     self.startGame()
             else:
                 self.errorClientNetwork("noNetwork")
