@@ -16,8 +16,8 @@ class Bot :
     
     def botPlaysRandom(self) -> list:
         action = self.randomChoice(["move","build"])
-        if action == "build"  and self.board.playerHasFence() == True and self.board.allPossibleBuildFence() !=[]:
-            build = self.botBuildRandomFence(self.board.allPossibleBuildFence())
+        if action == "build"  and self.board.fenceStructure.playerHasFence() == True and self.board.fenceStructure.allPossibleBuildFence() !=[]:
+            build = self.botBuildRandomFence(self.board.fenceStructure.allPossibleBuildFence())
             if build != False :
                 return ["build", build]
         return ["move",self.randomChoice(self.board.movement.allPossibleMoveForPlayer(self.board.current_player))]
@@ -216,7 +216,7 @@ class Bot :
         return currentPath
     
     def botWillMove(self, pathDistance : list):
-        if self.board.playerHasFence() == True and self.currentPlayerHaveShortestPath(pathDistance) == False :
+        if self.board.fenceStructure.playerHasFence() == True and self.currentPlayerHaveShortestPath(pathDistance) == False :
             return self.haveFocusOnPlayerswithShortestPath(pathDistance)
         return False
     
@@ -248,7 +248,7 @@ class Bot :
             canbuild = []
             for pillar in self.board.board[position[0] + x][position[1] + y].get_neighborsPillar():
                 pillarPosition = pillar.get_position()
-                if self.board.isPossibleFence(pillarPosition[0],pillarPosition[1]):
+                if self.board.fenceStructure.isPossibleFence(pillarPosition[0],pillarPosition[1]):
                     canbuild.append(pillarPosition)
             return canbuild
         return False
@@ -271,8 +271,8 @@ class Bot :
     def playDifficult2(self):
         random_number = random.randint(1, 4)
         if random_number == 4 :
-            if self.board.playerHasFence() == True and self.board.allPossibleBuildFence() !=[]:
-                build = self.botBuildRandomFence(self.board.allPossibleBuildFence())
+            if self.board.fenceStructure.playerHasFence() == True and self.board.fenceStructure.allPossibleBuildFence() !=[]:
+                build = self.botBuildRandomFence(self.board.fenceStructure.allPossibleBuildFence())
                 if build != False :
                     return ["build", build]
             return ["move",self.randomChoice(self.board.movement.allPossibleMoveForPlayer(self.board.current_player))]

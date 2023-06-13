@@ -61,3 +61,46 @@ class FenceStructure:
         if fence.get_build() == 1:
             return True
         return False
+    
+    
+    def changeFenceOrientation(self, event=None) -> None:
+        self.board.displayBoard(False)
+        if self.board.fence_orientation == "vertical":
+            self.board.fence_orientation = "horizontal"
+        else :
+            self.board.fence_orientation = "vertical"
+            
+    def playerHasFence(self) -> bool:
+        nb_fence_current_player  = self.board.current_player.get_nb_fence()
+        if nb_fence_current_player <= 0 :
+            return False
+        return True
+    
+    def isPossibleFence(self, x : int, y : int) -> bool:
+        if self.board.fence_orientation == "vertical":
+            fence = self.board.board[x-1][y]
+            if fence.get_build() == 1:
+                return False
+            fence = self.board.board[x+1][y]
+            if fence.get_build() == 1:
+                return False
+        else :
+            fence = self.board.board[x][y-1]
+            if fence.get_build() == 1:
+                return False
+            fence = self.board.board[x][y+1]
+            if fence.get_build() == 1:
+                return False
+        return True
+    
+    def allPossibleBuildFence(self) -> list:
+        list = [] 
+        for i in range(1,self.board.size*2-1,2):
+            for j in range(1,self.board.size*2-1,2):
+                self.board.fence_orientation == "vertical"
+                if self.isPossibleFence(i, j) == True :
+                    list.append([i,j,0])
+                self.board.fence_orientation == "horizontal"
+                if self.isPossibleFence(i, j) == True :
+                    list.append([i,j,1])
+        return list

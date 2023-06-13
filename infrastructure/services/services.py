@@ -279,7 +279,7 @@ class Board:
             label = Label(self.window, image=self.leavepopup)
             label.place(relx=0.5, rely=0.05, anchor='center')
             
-        self.window.bind(f"{self.button_fence}", self.changeFenceOrientation)
+        self.window.bind(f"{self.button_fence}", self.fenceStructure.changeFenceOrientation)
         tab =[]
         self.pillar_rects = []
         for i in range(self.size*2-1):
@@ -357,13 +357,13 @@ class Board:
             self.settings.popup.destroy()
             self.settings.popup = None
             
-        if self.playerHasFence() == True :
+        if self.fenceStructure.playerHasFence() == True :
             item_id = event.widget.find_withtag("current")[0], 
             tags = self.canvas.gettags(item_id)
             if len(tags) >= 2 :
                 x = int(tags[0])
                 y = int(tags[1])
-                if self.isPossibleFence(x,y) == True :
+                if self.fenceStructure.isPossibleFence(x,y) == True :
                     self.fenceStructure.buildFence(x,y)
                     if self.movement.fenceNotCloseAccesGoal()==False :
                         self.fenceStructure.deBuildFence(x,y)
@@ -419,13 +419,13 @@ class Board:
                                 self.displayBoard(False)     
                         
     def on_hover(self, event):
-        if self.playerHasFence() == True :
+        if self.fenceStructure.playerHasFence() == True :
             item_id = event.widget.find_withtag("current")[0]
             tags = self.canvas.gettags(item_id)
             if len(tags) >= 2 and item_id in self.pillar_rects:
                 x = int(tags[0])
                 y = int(tags[1])
-                if self.isPossibleFence(x,y) == True :
+                if self.fenceStructure.isPossibleFence(x,y) == True :
                     self.canvas.itemconfig(item_id, image=self.pillar_hover)
                     if self.fence_orientation == "vertical":
                         fence = self.canvas.find_withtag(str(x-1) + "_" + str(y))
@@ -448,7 +448,7 @@ class Board:
         if item_id in self.pillar_rects:
             x = int(tags[0])
             y = int(tags[1])
-            if self.isPossibleFence(x,y) == True :
+            if self.fenceStructure.isPossibleFence(x,y) == True :
                 pillar = self.board[x][y]
                 if pillar.get_build() != 1:
                     self.canvas.itemconfig(item_id, image=self.pillar_vide)
@@ -500,39 +500,6 @@ class Board:
             self.current_player = self.players[self.current_player.get_player()]
     
     
-    def changeFenceOrientation(self, event=None) -> None:
-        self.displayBoard(False)
-        if self.fence_orientation == "vertical":
-            self.fence_orientation = "horizontal"
-        else :
-            self.fence_orientation = "vertical"
-        
-    
-    
-    def playerHasFence(self) -> bool:
-        nb_fence_current_player  = self.current_player.get_nb_fence()
-        if nb_fence_current_player <= 0 :
-            return False
-        return True
-    
-    def isPossibleFence(self, x : int, y : int) -> bool:
-        if self.fence_orientation == "vertical":
-            fence = self.board[x-1][y]
-            if fence.get_build() == 1:
-                return False
-            fence = self.board[x+1][y]
-            if fence.get_build() == 1:
-                return False
-        else :
-            fence = self.board[x][y-1]
-            if fence.get_build() == 1:
-                return False
-            fence = self.board[x][y+1]
-            if fence.get_build() == 1:
-                return False
-        return True
-    
-    
     def victory(self) -> bool:
         position = self.current_player.displayPlace()
         if self.current_player.get_player() == 1 :
@@ -571,19 +538,6 @@ class Board:
                     if j%2 == 0 :
                         case = self.board[i][j]
                         case.set_possibleMove(0)
-    
-    
-    def allPossibleBuildFence(self) -> list:
-        list = [] 
-        for i in range(1,self.size*2-1,2):
-            for j in range(1,self.size*2-1,2):
-                self.fence_orientation == "vertical"
-                if self.isPossibleFence(i, j) == True :
-                    list.append([i,j,0])
-                self.fence_orientation == "horizontal"
-                if self.isPossibleFence(i, j) == True :
-                    list.append([i,j,1])
-        return list
 
 def SendBoardClient(x : int, y : int, typeClick : int, client : socket, orientation : str, playerUser : int) -> None:
     # typeClick = 0 (caseClicked)

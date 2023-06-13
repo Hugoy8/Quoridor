@@ -15,8 +15,8 @@ class Bot:
     
     def botPlaysRandom(self) -> list:
         action = self.randomChoice(["move","build"])
-        if action == "build"  and self.board.playerHasFence() == True and self.board.allPossibleBuildFence() !=[]:
-            build = self.botBuildRandomFence(self.board.allPossibleBuildFence())
+        if action == "build"  and self.board.fenceStructure.playerHasFence() == True and self.board.fenceStructure.allPossibleBuildFence() !=[]:
+            build = self.botBuildRandomFence(self.board.fenceStructure.allPossibleBuildFence())
             if build != False :
                 return ["build", build]
         return ["move",self.randomChoice(self.board.movement.allPossibleMoveForPlayer())]
