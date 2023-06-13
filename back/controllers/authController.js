@@ -13,6 +13,7 @@ const pool = mysql.createPool({
 });
 
 exports.signup = (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
     const { username, password, confirmPassword } = req.body;
     if (!username || !password || !confirmPassword) {
         return res.status(400).json({ error: 'Veuillez remplir tous les champs' });
@@ -29,10 +30,10 @@ exports.signup = (req, res) => {
             return res.status(500).json({ error: 'Erreur lors de la vérification du nom d\'utilisateur' });
         }
 
-        if (result.rows.length > 0) {
+        if (result.length > 0) {
             return res.status(400).json({ error: 'Ce nom d\'utilisateur est déjà pris' });
         }
-
+        
         const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
 
         const query = `INSERT INTO users (username, password) VALUES ('${username}', '${hashedPassword}')`;
@@ -191,7 +192,17 @@ exports.purchaseMap = (req, res) => {
                 return res.status(500).json({ error: 'Erreur lors de l\'achat de la carte' });
             }
 
-            res.json({ message: 'Carte achetée avec succès', newBalance });
+            const purchaseTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+            const insertPurchaseQuery = `INSERT INTO purchases (user_id, map_name, purchase_time) VALUES (${userId}, '${mapName}', '${purchaseTime}')`;
+            pool.query(insertPurchaseQuery, (err) => {
+                if (err) {
+                    console.error('Erreur lors de l\'ajout de l\'achat à l\'historique :', err);
+                    return res.status(500).json({ error: 'Erreur lors de l\'ajout de l\'achat à l\'historique' });
+                }
+            
+                res.json({ message: 'Carte achetée avec succès', newBalance });
+            });            
         });
     });
 };

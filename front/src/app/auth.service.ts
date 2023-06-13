@@ -15,7 +15,7 @@ interface JwtPayload {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'https://quoridor-api-production.up.railway.app/api';
+  private apiUrl = 'https://quoridor-api.onrender.com/api';
 
   constructor(private http: HttpClient) {}
 
