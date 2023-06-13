@@ -2,13 +2,14 @@ from tkinter import *
 import tkinter as tk
 
 class SettingsGame:
-    def __init__(self, window: Tk, popup_escape_game: Label, button_popup_resumegame: Button, button_popup_quitgame: Button) -> None:
+    def __init__(self, window: Tk, popup_escape_game: Label, button_popup_resumegame: Button, button_popup_quitgame: Button, board: object) -> None:
         """Initialise les paramètres du jeu"""
         self.window = window
         self.popup_escape_game = popup_escape_game
         self.button_popup_resumegame = button_popup_resumegame
         self.button_popup_quitgame = button_popup_quitgame
         self.popup = None
+        self.board = board
     
     def displayBreakGame(self, event) -> None:
         """Affiche le menu pause du jeu"""
@@ -37,6 +38,7 @@ class SettingsGame:
 
     def quitGame(self) -> None:
         """Quitte le jeu"""
+        self.board.sound_map.stop()
         self.window.destroy()
 
 

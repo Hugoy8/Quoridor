@@ -228,12 +228,19 @@ class InitGame:
         button_popup_quitgame = Image.open(f"./assets/images/pauseMenu/button_popup_quitgame.png")
         button_popup_quitgame = button_popup_quitgame.resize((168 , 27))
         self.board.button_popup_quitgame = ImageTk.PhotoImage(button_popup_quitgame)
+        
+        self.board.item_fence = {}
+
+        for i in range(21):
+            item_fence = Image.open(f"./assets/images/{self.board.map}/fence_number/{i}.png")
+            item_fence = item_fence.resize((45, 32))
+            self.board.item_fence[i] = ImageTk.PhotoImage(item_fence)
 
         
         self.board.display_current_player = None
         
         from infrastructure.services.settingsGame import SettingsGame
-        self.board.settings = SettingsGame(self.board.window, self.board.popup_escape_game, self.board.button_popup_resumegame, self.board.button_popup_quitgame)
+        self.board.settings = SettingsGame(self.board.window, self.board.popup_escape_game, self.board.button_popup_resumegame, self.board.button_popup_quitgame, self.board)
         
         self.board.loadVolumeSettings()
         self.board.window.bind("<KeyPress-Escape>", lambda event: self.board.settings.displayBreakGame(event))

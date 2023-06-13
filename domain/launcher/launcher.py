@@ -77,6 +77,7 @@ class QuoridorLauncher:
         def leaveAll(event=None) -> None:
             from infrastructure.services.deletePycache import deletePycache
             
+            self.notifs.status = False
             self.window.destroy()
             deletePycache()
             exit()

@@ -252,23 +252,23 @@ class Board:
             if self.nb_players == 2:
                 if index == 0:
                     # Joueur 1 (en haut au milieu)
-                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width/2.2, y=73, anchor="center")
+                    Label(self.window, image=self.item_fence[b], bd=0, highlightthickness=0).place(x=window_width/2.2, y=73, anchor="center")
                 elif index == 1:
                     # Joueur 2 (en bas au milieu)
-                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width/1.8, y=window_height-70, anchor="center")
+                    Label(self.window, image=self.item_fence[b], bd=0, highlightthickness=0).place(x=window_width/1.83, y=window_height-70, anchor="center")
             elif self.nb_players == 4:
                 if index == 0:
                     # Joueur 1 (en haut au milieu)
-                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width/2.2, y=70, anchor="center")
+                    Label(self.window, image=self.item_fence[b], bd=0, highlightthickness=0).place(x=window_width/2.2, y=70, anchor="center")
                 elif index == 1:
                     # Joueur 2 (en bas au milieu)
-                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width/1.8, y=window_height-70, anchor="center")
+                    Label(self.window, image=self.item_fence[b], bd=0, highlightthickness=0).place(x=window_width/1.83, y=window_height-70, anchor="center")
                 elif index == 2:
-                    # Joueur 3 (en bas au milieu)
-                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=60, y=window_height/1.72, anchor="w")
+                    # Joueur 3 (a gauche au milieu)
+                    Label(self.window, image=self.item_fence[b], bd=0, highlightthickness=0).place(x=48, y=window_height/1.68, anchor="w")
                 elif index == 3:
-                    # Joueur 4 (à gauche au milieu)
-                    Label(self.window, text=f"{b}", font=("Arial", 16), foreground=player_color).place(x=window_width-60, y=window_height/2.4, anchor="e")
+                    # Joueur 4 (à droite au milieu)
+                    Label(self.window, image=self.item_fence[b], bd=0, highlightthickness=0).place(x=window_width-48, y=window_height/2.5, anchor="e")
                     
         if leave == True:
             #PopUp de leave d'un joueur
