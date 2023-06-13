@@ -38,8 +38,8 @@ class VerifNotifs(threading.Thread):
                                 if self.startVerif:
                                     if GetSetInformation().getLinesSettings("Settings.txt", 1)[0] == "True":
                                         volumeNotifs = GetSetInformation().getLinesSettings("Settings.txt", 9)[0]
-                                        self.soundNotifsFriends.set_volume(int(volumeNotifs))
                                         self.soundNotifsFriends.play()
+                                        self.soundNotifsFriends.set_volume(float(volumeNotifs))
                                     self.startVerif = True
                                 self.friendsNotifs.append(friend)
                                 
@@ -49,8 +49,8 @@ class VerifNotifs(threading.Thread):
                                 if self.startVerif:
                                     if GetSetInformation().getLinesSettings("Settings.txt", 1)[0] == "True":
                                         volumeNotifs = GetSetInformation().getLinesSettings("Settings.txt", 9)[0]
-                                        self.soundNotifsGames.set_volume(int(volumeNotifs))
                                         self.soundNotifsGames.play()
+                                        self.soundNotifsGames.set_volume(float(volumeNotifs))
                                     self.startVerif = True
                                 self.gamesNotifs.append(game)
                         

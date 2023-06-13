@@ -89,6 +89,9 @@ class QuoridorLauncher:
     def createMenu(self, statut : None or int, btnCliked : str) -> None:
         self.statut = statut
         
+        if self.statut == 4 or self.statut == 5 or  self.statut == 6:
+            self.statut = None
+            
         self.menu = getattr(self, f"menu{self.statut}")
         canvas = Canvas(self.window, width=self.menu.width(), height=self.menu.height(), bd=0, highlightthickness=0, cursor="hand2")
         canvas.place(relx=0.023, y=self.window.winfo_screenheight() / 2 - self.menu.height() / 2)
