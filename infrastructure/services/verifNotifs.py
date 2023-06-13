@@ -16,6 +16,9 @@ class VerifNotifs(threading.Thread):
         
         mixer.init()
         
+        self.soundNotifsFriends = mixer.Sound(f"./assets/sounds/notifsFriends.mp3")
+        self.soundNotifsGames = mixer.Sound(f"./assets/sounds/notifsGames.mp3")
+        
         self.startVerif = False
 
 
@@ -33,11 +36,10 @@ class VerifNotifs(threading.Thread):
                         for friend in resultFriends:
                             if len(resultFriends) > len(self.friendsNotifs):
                                 if self.startVerif:
-                                    self.soundNotifs = mixer.Sound(f"./assets/sounds/notifsFriends.mp3")
                                     if GetSetInformation().getLinesSettings("Settings.txt", 1)[0] == "True":
                                         volumeNotifs = GetSetInformation().getLinesSettings("Settings.txt", 9)[0]
-                                        self.soundNotifs.set_volume(int(volumeNotifs))
-                                        self.soundNotifs.play()
+                                        self.soundNotifsFriends.set_volume(int(volumeNotifs))
+                                        self.soundNotifsFriends.play()
                                     self.startVerif = True
                                 self.friendsNotifs.append(friend)
                                 
@@ -45,11 +47,10 @@ class VerifNotifs(threading.Thread):
                         for game in resultGames:
                             if len(resultGames) > len(self.gamesNotifs):
                                 if self.startVerif:
-                                    self.soundNotifs = mixer.Sound(f"./assets/sounds/notifsGames.mp3")
                                     if GetSetInformation().getLinesSettings("Settings.txt", 1)[0] == "True":
                                         volumeNotifs = GetSetInformation().getLinesSettings("Settings.txt", 9)[0]
-                                        self.soundNotifs.set_volume(int(volumeNotifs))
-                                        self.soundNotifs.play()
+                                        self.soundNotifsGames.set_volume(int(volumeNotifs))
+                                        self.soundNotifsGames.play()
                                     self.startVerif = True
                                 self.gamesNotifs.append(game)
                         
