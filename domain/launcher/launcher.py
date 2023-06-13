@@ -29,8 +29,8 @@ class QuoridorLauncher:
         
         # Lancement de la vérification des notifications.
         from infrastructure.services.verifNotifs import VerifNotifs
-        notifs = VerifNotifs(self.db)
-        notifs.start()
+        self.notifs = VerifNotifs(self.db)
+        self.notifs.start()
         
         if os.name == "nt":
             launchScreen.status = False
@@ -973,6 +973,7 @@ class QuoridorLauncher:
             else:
                 map = self.selectMap
                 self.window.destroy()
+                self.notifs.status = False
                 restartGame(grid_size, nb_player, nb_ia, nbr_fences, map, self.selectIaDifficulty)
                 
         start = Button(self.window, image=self.start_game, command=start_game, cursor="hand2", bd=0, highlightthickness=0, activebackground="#035388",  activeforeground="white")
