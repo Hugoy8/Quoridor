@@ -27,6 +27,11 @@ class QuoridorLauncher:
         # Lancement de l'affichage du launcher.
         self.menuCreateGameSolo(event=None)
         
+        # Lancement de la vérification des notifications.
+        from infrastructure.services.verifNotifs import VerifNotifs
+        notifs = VerifNotifs(self.db)
+        notifs.start()
+        
         if os.name == "nt":
             launchScreen.status = False
             
@@ -702,8 +707,11 @@ class QuoridorLauncher:
         
         resultGameInfo = self.db.acceptInvitingGames(str(GetSetInformation().get_username("serverPseudo.txt")), friend[0])
         (ip, port) = resultGameInfo[0][0].split(":")
-        print(ip, port)
-        # joinSession(ip, int(port), 1)
+        
+        mapFavoritePlayer = GetSetInformation().getLinesSettings("settings.txt", 7)
+        
+        joinSession(ip, int(port), int(mapFavoritePlayer[0]))
+        
         for widget in self.notifications_panel.winfo_children():
             widget.destroy()
         self.displayInvitatins(self.notifications_panel, True)
@@ -739,7 +747,7 @@ class QuoridorLauncher:
         self.delete_friend_popup_label = Label(self.window, image=self.delete_friend_popup, bd=0, highlightthickness=0, cursor="hand2")
         self.delete_friend_popup_label.place(relx=0.5, rely=0.5, anchor=CENTER)
         
-
+        
         def on_yes_click():
             from infrastructure.services.getSetInformation import GetSetInformation
             __getSetInformation = GetSetInformation()
@@ -748,28 +756,28 @@ class QuoridorLauncher:
             self.db.deleteFriends(__getSetInformation.get_username("serverPseudo.txt"), friend[0])
             self.db.deleteFriends(friend[0], __getSetInformation.get_username("serverPseudo.txt"))
             self.displayListFriends(self.friends_panel)
-
+            
         def on_no_click():
             self.delete_friend_popup_label.destroy()
-
-
+            
+            
         if len(friend) > 15:
                 friend = friend[:15] + ".."
         label = Label(self.delete_friend_popup_label, text=f"Souhaitez-vous vraiment supprimer \n{friend[0]} de vos amis ?", bd=0,
                     highlightthickness=0, font=("Inter", 22), fg="#E3F8FF", bg="#102A43")
         label.place(relx=0.05, rely=0.35, anchor=NW)
         label.config(justify="left")
-
-
+        
+        
         yes_button = Label(self.delete_friend_popup_label, image=self.delete_friend_button,bd=0, highlightthickness=0, cursor="hand2")
         yes_button.place(relx=0.05, rely=0.78, anchor=NW)
         yes_button.bind("<Button-1>", lambda event: on_yes_click())
-
+        
         no_button = Button(self.delete_friend_popup_label, image=self.no_delete_friend_button,bd=0, highlightthickness=0, cursor="hand2")
         no_button.place(relx=0.38, rely=0.78, anchor=NW)
         no_button.bind("<Button-1>", lambda event: on_no_click())
-
-
+        
+        
     def displayShop(self) -> None:
         self.changeMode()
         self.statut = 5
@@ -792,8 +800,8 @@ class QuoridorLauncher:
         if self.statut == 0:
             nbrIA = Label(self.window, text="Nombre d'IA", font=("Arial", 10), bg="#0F2234", fg="#E3F8FF")
             nbrIA.place(relx=0.45, rely=0.7, anchor=CENTER)
-    
-    
+            
+            
     def getIaDifficulty(self) -> None:
         def action(event) -> None:
             self.selectIaDifficulty = listIAdifficulty.get()
@@ -806,7 +814,7 @@ class QuoridorLauncher:
                     self.selectIaDifficulty = 3
             except ValueError:
                 print(f"Error: '{self.selectIaDifficulty}' is not a valid level")
-
+                
         listIAdifficultys=["Facile", "Moyenne", "Difficile"]
         listIAdifficulty = ttk.Combobox(self.window, values=listIAdifficultys, state="readonly")
         listIAdifficulty.current(0)
@@ -815,12 +823,12 @@ class QuoridorLauncher:
         if self.statut == 0:
             nbrIA = Label(self.window, text="Difficulté des bots", font=("Arial", 10), bg="#0F2234", fg="#E3F8FF")
             nbrIA.place(relx=0.55, rely=0.7, anchor=CENTER)
-
-
+            
+            
     def numberPlayer(self) -> None:
         def action(event) -> None:
             self.selectPlayer = int(listPlayer.get())
-
+            
         if self.statut == 0:
             listPlayers = [1, 2, 3, 4]
             currentSelection = 1
@@ -835,12 +843,12 @@ class QuoridorLauncher:
         if self.statut == 0 or self.statut == 2:
             nbrPlayer = Label(self.window, text="Nombre de Joueur(s)", font=("Arial", 10), bg="#0F2234", fg="#E3F8FF")
             nbrPlayer.place(relx=0.35, rely=0.7, anchor=CENTER)
-
-
+            
+            
     def sizeBoard(self) -> None:
         def action(event) -> None:
             self.selectSize = int(listSize.get())
-
+            
         listSizes=[5, 7, 9, 11]
         listSize = ttk.Combobox(self.window, values=listSizes, state="readonly")
         listSize.current(0)
@@ -856,20 +864,20 @@ class QuoridorLauncher:
             y2 = 0.7
         listSize.place(relx=x, rely=y, anchor=CENTER)
         listSize.bind("<<ComboboxSelected>>", action)
-
+        
         nbrIA = Label(self.window, text="Taille du plateau", font=("Arial", 10), bg="#0F2234", fg="#E3F8FF")
         nbrIA.place(relx=x2, rely=y2, anchor=CENTER)
-
-
+        
+        
     def numberFence(self) -> None:
         def action(event) -> None:
             self.selectFence = int(listFence.get())
-
+            
         listFences = []
         for i in range(4, 41):
             if i % 4 == 0:
                 listFences.append(i)
-
+                
         listFence = ttk.Combobox(self.window, values=listFences, state="readonly")
         listFence.current(0)
         if self.statut == 0:
@@ -886,8 +894,8 @@ class QuoridorLauncher:
         listFence.bind("<<ComboboxSelected>>", action)
         nbrFence = Label(self.window, text="Nombre de barrières", font=("Arial", 10), bg="#0F2234", fg="#E3F8FF")
         nbrFence.place(relx=x2, rely=y2, anchor=CENTER)
-
-
+        
+        
     def choiceMap(self) -> None:
         from infrastructure.services.getSetInformation import GetSetInformation
         __getSetInformation = GetSetInformation()
@@ -929,7 +937,7 @@ class QuoridorLauncher:
                         darkcolor="#5ED0FA",
                         activebackground="#10273C")
         style.map("TCombobox", fieldbackground=[("readonly", "#10273C")])
-
+        
         listMap = ttk.Combobox(self.window, values=listMaps, state="readonly")
         listMap.current(0)
         X = 0.25
@@ -962,7 +970,7 @@ class QuoridorLauncher:
                 map = self.selectMap
                 self.window.destroy()
                 restartGame(grid_size, nb_player, nb_ia, nbr_fences, map, self.selectIaDifficulty)
-
+                
         start = Button(self.window, image=self.start_game, command=start_game, cursor="hand2", bd=0, highlightthickness=0, activebackground="#035388",  activeforeground="white")
         start.place(relx=0.25, rely=0.8, anchor=CENTER)
     
@@ -1148,7 +1156,7 @@ class QuoridorLauncher:
             from infrastructure.services.verifConnection import VerifConnection
             if VerifConnection("").isConnectDatabase() and VerifConnection("https://google.com").isConnectInternet():
                 if typeButton == "startGame":
-                    self.startGame
+                    self.startGame()
             else:
                 self.errorClientNetwork("noNetwork")
                 

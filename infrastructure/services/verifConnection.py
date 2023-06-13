@@ -11,8 +11,10 @@ class VerifConnection:
             response = requests.get(self.pathSite, timeout=5)
             return response.status_code == 200
         except requests.ConnectionError or requests.Timeout:
+            print("No internet connection")
             return False
         except:
+            print("No internet connection")
             return False
 
 
@@ -27,6 +29,8 @@ class VerifConnection:
             connectBdd.close()
             return True
         except mysql.connector.Error:
+            print("No bdd connection")
             return False
         except:
+            print("No bdd connection")
             return False

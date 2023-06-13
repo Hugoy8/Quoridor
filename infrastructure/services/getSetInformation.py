@@ -5,8 +5,22 @@ class GetSetInformation:
                 fichier.write(username + '\n')
         except IOError:
             print("Erreur : impossible d'écrire dans le fichier.")
-
-
+            
+            
+    def getLinesSettings(self, file_path: str, numLine: int) -> list or False:
+        try:
+            with open(file_path, 'r') as file:
+                lines = file.readlines()
+                
+                if 1 <= numLine <= len(lines):
+                    line = lines[numLine - 1].strip().split()
+                    return line
+                else:
+                    return False
+        except IOError:
+            return False
+        
+    
     def setPassword(self, password: str) -> None:
         try:
             with open('serverPseudo.txt', 'a') as fichier:

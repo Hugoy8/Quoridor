@@ -252,19 +252,19 @@ class InitLauncher():
         self.launcher.menuNone = ImageTk.PhotoImage(menu_image_None)
         
         login_image = Image.open(f"./assets/images/launcher/connexion.png")
-        login_image = login_image.resize((189, 39))
+        login_image = login_image.resize((189, 33))
         self.launcher.login_image = ImageTk.PhotoImage(login_image)
         
         login_false_image = Image.open(f"./assets/images/launcher/connexion_false.png")
-        login_false_image = login_false_image.resize((189, 39))
+        login_false_image = login_false_image.resize((189, 33))
         self.launcher.login_false_image = ImageTk.PhotoImage(login_false_image)
         
         register_image = Image.open(f"./assets/images/launcher/inscription.png")
-        register_image = register_image.resize((189, 39))
+        register_image = register_image.resize((189, 33))
         self.launcher.register_image = ImageTk.PhotoImage(register_image)
         
         register_false_image = Image.open(f"./assets/images/launcher/inscription_false.png")
-        register_false_image = register_false_image.resize((189, 39))
+        register_false_image = register_false_image.resize((189, 33))
         self.launcher.register_false_image = ImageTk.PhotoImage(register_false_image)
         
         
