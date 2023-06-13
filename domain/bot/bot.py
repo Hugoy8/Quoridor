@@ -20,7 +20,7 @@ class Bot :
             build = self.botBuildRandomFence(self.board.allPossibleBuildFence())
             if build != False :
                 return ["build", build]
-        return ["move",self.randomChoice(self.board.allPossibleMoveForPlayer(self.board.current_player))]
+        return ["move",self.randomChoice(self.board.movement.allPossibleMoveForPlayer(self.board.current_player))]
             
             
     def currentBotPlaysBasedOnDifficulty(self, difficulty : int) -> None:
@@ -45,25 +45,25 @@ class Bot :
                 self.fence_orientation = "vertical"
             else :
                 self.fence_orientation = "horizontal"
-            self.board.buildFence(x_co_fence,y_co_fence)
-            if self.board.fenceNotCloseAccesGoal()==False :
+            self.board.fenceStructure.buildFence(x_co_fence,y_co_fence)
+            if self.board.movement.fenceNotCloseAccesGoal()==False :
                 possibleBuildFence.remove(build)
-                self.board.deBuildFence(x_co_fence,y_co_fence)
+                self.board.fenceStructure.deBuildFence(x_co_fence,y_co_fence)
             else : 
-                self.board.deBuildFence(x_co_fence,y_co_fence)
+                self.board.fenceStructure.deBuildFence(x_co_fence,y_co_fence)
                 return [x_co_fence, y_co_fence, orientation]
         return False
     
     
     def doAction(self, action : list) -> None:
         if action[0] == "move":
-            self.board.move(action[1][0],action[1][1])
+            self.board.movement.move(action[1][0],action[1][1])
         else :
             if action[1][2] == "vertical":
                 self.fence_orientation = "vertical"
             else :
                 self.fence_orientation = "horizontal"
-            self.board.buildFence(action[1][0],action[1][1])
+            self.board.fenceStructure.buildFence(action[1][0],action[1][1])
             
     
     def updateNeighborsForEachCase(self) -> None:
@@ -174,7 +174,7 @@ class Bot :
     def haveBestPathForPlayer(self, player : object) -> list :
         listCase = self.haveAllCasePositionWinForPlayer(player)
         sumPath = self.havePathForEachCase(listCase, player)
-        movement = self.nextMove(sumPath, self.board.allPossibleMoveForPlayer(player))
+        movement = self.nextMove(sumPath, self.board.movement.allPossibleMoveForPlayer(player))
         # print("L : ", sumPath[0][0])
         if movement == None :
             return self.botPlaysRandom()
@@ -259,12 +259,12 @@ class Bot :
         possibleBuildFence = canbuild
         while possibleBuildFence !=[]:
             build = self.randomChoice(possibleBuildFence)
-            self.board.buildFence(build[0],build[1])
-            if self.board.fenceNotCloseAccesGoal()==False :
+            self.board.fenceStructure.buildFence(build[0],build[1])
+            if self.board.movement.fenceNotCloseAccesGoal()==False :
                 possibleBuildFence.remove([build[0],build[1]])
-                self.board.deBuildFence(build[0],build[1])
+                self.board.fenceStructure.deBuildFence(build[0],build[1])
             else : 
-                self.board.deBuildFence(build[0],build[1])
+                self.board.fenceStructure.deBuildFence(build[0],build[1])
                 return [build[0], build[1], self.board.fence_orientation]
         return False
     
@@ -275,7 +275,7 @@ class Bot :
                 build = self.botBuildRandomFence(self.board.allPossibleBuildFence())
                 if build != False :
                     return ["build", build]
-            return ["move",self.randomChoice(self.board.allPossibleMoveForPlayer(self.board.current_player))]
+            return ["move",self.randomChoice(self.board.movement.allPossibleMoveForPlayer(self.board.current_player))]
         return self.haveBestPathForPlayer(self.board.current_player)
         
         

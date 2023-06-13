@@ -50,7 +50,7 @@ class ServerThread(threading.Thread):
                     
                     # Affichage graphique des changements du client.
                     if dataRecvClient[2] == 0:
-                        self.board.move(int(dataRecvClient[0]),int(dataRecvClient[1]))
+                        self.board.movement.move(int(dataRecvClient[0]),int(dataRecvClient[1]))
                         self.board.resetPossibleCaseMovement() 
                         self.board.refreshCurrentPlayer()
                         
@@ -66,9 +66,9 @@ class ServerThread(threading.Thread):
                                 self.board.displayBoard(False)
                             
                     elif dataRecvClient[2] == 1:
-                        self.board.buildFenceNetwork(int(dataRecvClient[0]),int(dataRecvClient[1]), int(dataRecvClient[3]))
-                        if self.board.fenceNotCloseAccesGoal() == False :
-                            self.board.deBuildFence(int(dataRecvClient[0]),int(dataRecvClient[1]))
+                        self.board.fenceStructure.buildFenceNetwork(int(dataRecvClient[0]),int(dataRecvClient[1]), int(dataRecvClient[3]))
+                        if self.board.movement.fenceNotCloseAccesGoal() == False :
+                            self.board.fenceStructure.deBuildFence(int(dataRecvClient[0]),int(dataRecvClient[1]))
                         else :
                             self.board.resetPossibleCaseMovement() 
                             self.board.refreshCurrentPlayer()

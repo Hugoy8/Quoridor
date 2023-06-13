@@ -54,7 +54,7 @@ class Board:
             elif self.typeNetwork == "socket":
                 SendBoardClient(x, y, 0, self.InstanceNetwork, self.fence_orientation, self.playerUser)
 
-        self.move(x,y)
+        self.movement.move(x,y)
         # son de déplacement
         sound_move = mixer.Sound("./assets/sounds/move.mp3")
         sound_move.play()
@@ -292,8 +292,8 @@ class Board:
                         if case.displayPlayer() == "P0" :
                             if case.get_possibleMove() != 0 and self.victory() == False:
                                 position = self.current_player.displayPlace()
-                                self.move_case = self.canvas.create_image(j*self.widget_space, i*self.widget_space, image=self.moove_possible, anchor="nw", tags=case.get_possibleMove())
-                                self.canvas.tag_bind(self.move_case, "<Button-1>", self.caseClicked)
+                                self.movement.move_case = self.canvas.create_image(j*self.widget_space, i*self.widget_space, image=self.moove_possible, anchor="nw", tags=case.get_possibleMove())
+                                self.canvas.tag_bind(self.movement.move_case, "<Button-1>", self.caseClicked)
                             else :
                                 self.canvas.create_image(j*self.widget_space, i*self.widget_space, image=self.no_player, anchor="nw")
                         elif case.displayPlayer() == "P1" :
@@ -364,9 +364,9 @@ class Board:
                 x = int(tags[0])
                 y = int(tags[1])
                 if self.isPossibleFence(x,y) == True :
-                    self.buildFence(x,y)
-                    if self.fenceNotCloseAccesGoal()==False :
-                        self.deBuildFence(x,y)
+                    self.fenceStructure.buildFence(x,y)
+                    if self.movement.fenceNotCloseAccesGoal()==False :
+                        self.fenceStructure.deBuildFence(x,y)
                         self.displayBoard(False)
                         sound_build_fence = mixer.Sound("./assets/sounds/no_fence.mp3")
                         sound_build_fence.play()
@@ -499,15 +499,6 @@ class Board:
         else :
             self.current_player = self.players[self.current_player.get_player()]
     
-            
-    def move(self, x : int, y : int) -> None:
-        position = self.current_player.displayPlace()
-        case = self.board[position[0]][position[1]]
-        case.set_player(0)
-        case = self.board[position[0]+x][position[1]+y]
-        case.set_player(self.current_player.get_player())
-        self.current_player.move(position[0]+x,position[1]+y)
-                    
     
     def changeFenceOrientation(self, event=None) -> None:
         self.displayBoard(False)
@@ -542,61 +533,6 @@ class Board:
         return True
     
     
-    def buildFence(self, x : int, y : int) -> None:
-        pillar = self.board[x][y]
-        pillar.buildPillar()
-        if self.fence_orientation == "vertical":
-            fence = self.board[x-1][y]
-            fence.buildFence()
-            fence = self.board[x+1][y]
-            fence.buildFence()
-        else:
-            fence = self.board[x][y-1]
-            fence.buildFence()
-            fence = self.board[x][y+1]
-            fence.buildFence()
-        nb_fence_current_player  = self.current_player.get_nb_fence()
-        self.current_player.set_fence(nb_fence_current_player-1)
-        self.displayBoard(False)
-        
-        
-    def buildFenceNetwork(self, x : int, y : int, orientation : int) -> None:
-        pillar = self.board[x][y]
-        pillar.buildPillar()
-        if orientation == 0:
-            fence = self.board[x-1][y]
-            fence.buildFence()
-            fence = self.board[x+1][y]
-            fence.buildFence()
-        else:
-            fence = self.board[x][y-1]
-            fence.buildFence()
-            fence = self.board[x][y+1]
-            fence.buildFence()
-        nb_fence_current_player  = self.current_player.get_nb_fence()
-        self.current_player.set_fence(nb_fence_current_player-1)
-        self.displayBoard(False)
-        
-        
-    def deBuildFence(self, x : int, y : int) -> None:
-        pillar = self.board[x][y]
-        if self.fence_orientation == "vertical":
-            fence = self.board[x-1][y]
-            fence.set_build(0)
-            fence = self.board[x+1][y]
-            fence.set_build(0)
-            if self.board[x][y-1].get_build() == 0 and self.board[x][y+1].get_build() == 0:
-                pillar.set_build(0)
-        else :
-            fence = self.board[x][y-1]
-            fence.set_build(0)
-            fence = self.board[x][y+1]
-            fence.set_build(0)
-            if self.board[x-1][y].get_build() == 0 and self.board[x+1][y].get_build() == 0:
-                pillar.set_build(0)
-        nb_fence_current_player  = self.current_player.get_nb_fence()
-        self.current_player.set_fence(nb_fence_current_player+1)
-    
     def victory(self) -> bool:
         position = self.current_player.displayPlace()
         if self.current_player.get_player() == 1 :
@@ -621,64 +557,9 @@ class Board:
         return False
     
     
-    def thereIsFence(self, x : int, y : int) -> bool:
-        fence = self.board[x][y]
-        if fence.get_build() == 1:
-            return True
-        return False
-        
-        
-    def isPossibleWay2(self, case : object, player : object):
-        self.list_case_check.append(case.get_position())
-        if case.get_position()[0] == (self.size-1)*2 and player == 1:
-            return True
-        elif case.get_position()[0] == 0 and player == 2:
-            return True
-        elif case.get_position()[1] == (self.size-1)*2 and player == 3:
-            return True
-        elif case.get_position()[1] == 0 and player == 4:
-            return True
-        for neighbor in case.get_neighbors() :
-            if self.alreadyChecked(neighbor.get_position()[0], neighbor.get_position()[1]) == False and self.isPossibleWay2(neighbor, player) == True :
-                return True
-            
-            
-    def seachPossibleWayForPlayer(self, player : str) -> bool:
-        self.list_case_check = []
-        if self.isPossibleWay2(self.board[self.players[player-1].displayPlace()[0]][self.players[player-1].displayPlace()[1]], player) !=True :
-            return False
-        else :
-            return True
-        
-        
-    def fenceNotCloseAccesGoal(self) -> bool:
-        self.bot.updateNeighborsForEachCase()
-        for i in range(self.nb_players):
-            if self.seachPossibleWayForPlayer(i+1) == False :
-                return False
-        return True
-    
-    def isPossibleMove(self, x : int, y : int) -> bool:
-        position = self.current_player.displayPlace()
-        if position[0]==0:
-            if x ==-2:
-                return False
-        if position[1]==0:
-            if y==-2:
-                return False
-        if position[0]==(self.size-1)*2:
-            if x==2:
-                return False
-        if position[1]==(self.size-1)*2:
-            if y==2:
-                return False
-        if self.thereIsFence(position[0]+int(x/2), position[1]+int(y/2)) == True :
-            return False        
-        return True   
-    
     def refreshPossibleCaseMovementForCurrentPlayer(self) -> None:
         position = self.current_player.displayPlace()
-        list_possible_move = self.allPossibleMoveForPlayer(self.current_player)
+        list_possible_move = self.movement.allPossibleMoveForPlayer(self.current_player)
         for coord in list_possible_move :
             case = self.board[position[0]+coord[0]][position[1]+coord[1]]
             case.set_possibleMove([coord[0],coord[1]])
@@ -690,26 +571,6 @@ class Board:
                     if j%2 == 0 :
                         case = self.board[i][j]
                         case.set_possibleMove(0)
-                    
-                    
-    def allPossibleMoveForPlayer(self, player : object) -> list:
-        list2 = []
-        position = player.displayPlace()
-        self.bot.updateNeighborsForEachCase()
-        for neighbor in self.board[position[0]][position[1]].get_neighbors():
-            if neighbor.get_player() == 0 :
-                list2.append([neighbor.get_position()[0] - position[0], neighbor.get_position()[1] - position[1]])
-            else :
-                can_jump = False
-                for neighbor2 in neighbor.get_neighbors():
-                    if neighbor2.get_player() == 0 and neighbor2.get_position()[0] == position[0] + (neighbor.get_position()[0] - position[0])*2 and neighbor2.get_position()[1] == position[1] + (neighbor.get_position()[1] - position[1])*2 :
-                        list2.append([(neighbor.get_position()[0] - position[0])*2, (neighbor.get_position()[1] - position[1])*2])
-                        can_jump = True
-                if can_jump == False :
-                    for neighbor2 in neighbor.get_neighbors():
-                        if neighbor2.get_player() == 0 :
-                            list2.append([neighbor2.get_position()[0] - position[0], neighbor2.get_position()[1] - position[1]])
-        return list2
     
     
     def allPossibleBuildFence(self) -> list:
