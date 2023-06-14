@@ -679,8 +679,9 @@ class QuoridorLauncher:
     def invitFriend(self, friend : tuple) -> None:
         from infrastructure.services.getSetInformation import GetSetInformation
         listInfosInvitGames = [self.db, str(GetSetInformation().get_username("serverPseudo.txt")), friend[0]]
+        self.notifs.status = False
         self.window.destroy()
-        startSession(8003, 2, 9, 2, 0, 20, GetSetInformation().getLinesSettings("settings.txt", 7)[0], listInfosInvitGames, True)
+        startSession(8003, 2, 9, 2, 0, 20, int(GetSetInformation().getLinesSettings("settings.txt", 7)[0]), listInfosInvitGames, True)
         
         
     def acceptFriendDemand(self, friend : tuple) -> None:
@@ -715,13 +716,17 @@ class QuoridorLauncher:
         
         mapFavoritePlayer = GetSetInformation().getLinesSettings("settings.txt", 7)
         
-        joinSession(ip, int(port), int(mapFavoritePlayer[0]))
+        self.notifs.status = False
         
         for widget in self.notifications_panel.winfo_children():
             widget.destroy()
         self.displayInvitatins(self.notifications_panel, True)
         
         self.displayGameInvitations(self.notifications_panel, False)
+        
+        self.window.destroy()
+        
+        joinSession(str(ip), int(port), int(mapFavoritePlayer[0]))
     
     
     def refuseGameDemand(self, friend : tuple) -> None:
