@@ -4,6 +4,7 @@ from PIL import Image, ImageTk
 import os
 from tkinter import Tk
 
+
 class InitLauncher():
     def __init__(self, launcher : object, launcherScreen : LaunchScreen, db : Database) -> None:
         self.launcher = launcher
@@ -61,7 +62,10 @@ class InitLauncher():
         self.launcher.selectIaDifficulty = 1
         self.launcher.statut = 0
         self.launcher.db = self.db
-        self.launcher.selectFavoriteMap = self.launcher.loadFavoriteMap()
+        
+        from domain.launcher.settingsLauncher import SettingsLauncher
+        self.settingsLauncher = SettingsLauncher(self, self.launcher.window, self.launcher.db)
+        self.launcher.selectFavoriteMap = self.settingsLauncher.loadFavoriteMap()
         
         self.addProgressLaunchScreen()
         
@@ -389,8 +393,8 @@ class InitLauncher():
         register_button = register_button.resize((378, 45))
         self.launcher.register_button = ImageTk.PhotoImage(register_button)
         
-        from domain.launcher.authentification import Authentification
-        self.launcher.authentification = Authentification(self, self.launcher.window, self.launcher.statut, self.launcher.db)
+        
+    
         
         self.addProgressLaunchScreen()
         

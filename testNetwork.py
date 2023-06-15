@@ -1,5 +1,7 @@
-from domain.network.network import joinSession, startSession
+import pkg_resources
 
-joinSession("127.0.0.1", 8000, 1)
-
-#startSession(8000, 2, 5, 2, 0, 20, 1, "", False)
+try:
+    version = pkg_resources.get_distribution("threading").version
+    print(f"Threading version: {version}")
+except pkg_resources.DistributionNotFound:
+    print("Threading is not installed.")

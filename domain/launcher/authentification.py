@@ -1,12 +1,13 @@
 from tkinter import *
 
 class Authentification:
-    def __init__(self, launcher, window, statut, db):
+    def __init__(self, launcher, window, statut, db, launcherMenu : object):
         self.launcher = launcher
         self.window = window
         self.statut = statut
         self.login = True
         self.db = db
+        self.launcherMenu = launcherMenu
 
 
     def getStatut(self) -> int:
@@ -14,13 +15,13 @@ class Authentification:
     
     
     def displayAccount(self) -> None:
-        self.launcher.changeMode()
+        self.launcherMenu.changeMode()
         self.launcher.is_shop = False
         statut = self.getStatut()
         self.launcher.statut = 4
         self.launcher.background(self.launcher.statut)
-        self.launcher.createMenu(statut, "")
-        self.launcher.leaveLauncher()
+        self.launcherMenu.createMenu(statut, "")
+        self.launcherMenu.leaveLauncher()
         self.addLogin()
     
     
