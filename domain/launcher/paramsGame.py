@@ -1,4 +1,4 @@
-from tkinter import *
+from tkinter import CENTER, Label, Button
 from tkinter import ttk
 from infrastructure.services.services import restartGame
 

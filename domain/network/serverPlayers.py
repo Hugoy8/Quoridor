@@ -25,25 +25,36 @@ class ServerPlayers(threading.Thread):
         self.checkClass = checkClass
         
         
-    def sendInfosToClients(self, dataRecvClient : list) -> None:
+    def sendInfosToClients(self, dataRecvClient : list, typeSend : str, playerDisconnect : int) -> None:
         for player, socketClient in self.server.listClients.items():
-            print("Player send : " + str(player) + "\n")
             time.sleep(0.1)
             # On vérifie si le joueur est bien connecté et prêt à recevoir les donnnées, et on vérifie de ne pas envoyé au serveur et au client déconnectée.
-            if player != dataRecvClient[4]-1 and socketClient.fileno() != -1 and player != 0 and player not in self.diconnectPlayers:
-                try:
-                    messagePlayertoPlay = self.server.verifPlayertoPlay(player-1)
-                    DataMove = ([dataRecvClient[0], dataRecvClient[1], dataRecvClient[2], dataRecvClient[3], str(messagePlayertoPlay)])
-                    
-                    dataSendtable = pickle.dumps(DataMove)
-                    socketClient.send(dataSendtable)
-                except OSError:
-                    print(f"Erreur lors de l'envoi du message à Joueur {player}")
+            if typeSend == "NoNetwork":
+                if player != dataRecvClient[4]-1 and socketClient.fileno() != -1 and player != 0 and player not in self.diconnectPlayers:
+                    try:
+                        messagePlayertoPlay = self.server.verifPlayertoPlay(player-1)
+                        DataMove = ([dataRecvClient[0], dataRecvClient[1], dataRecvClient[2], dataRecvClient[3], str(messagePlayertoPlay)])
+                        
+                        dataSendtable = pickle.dumps(DataMove)
+                        socketClient.send(dataSendtable)
+                    except OSError:
+                        print(f"Erreur lors de l'envoi du message à Joueur {player}")
+                        
+            elif typeSend == "Network":
+                if socketClient.fileno() != -1 and player != 0 and player != playerDisconnect:
+                    try:
+                        messagePlayertoPlay = self.server.verifPlayertoPlay(player-1)
+                        DataMove = ([dataRecvClient[0], dataRecvClient[1], dataRecvClient[2], dataRecvClient[3], str(messagePlayertoPlay)])
+                        
+                        dataSendtable = pickle.dumps(DataMove)
+                        socketClient.send(dataSendtable)
+                    except OSError:
+                        print(f"Erreur lors de l'envoi du message à Joueur {player}")
                                 
                                 
     def run(self):
-        iaToPlay = False
         while self.status:
+            iaToPlay = False
             # Je récupére le socket du client qui doit jouer.
             try:
                 self.numClientActive = None
@@ -67,28 +78,59 @@ class ServerPlayers(threading.Thread):
                         iaToPlay = True
                         
                         from domain.bot.bot import Bot
-                        botClass = Bot()
+                        botClass = Bot(True)
                         botClass.setBoard(self.board)
-                        resultChoice = botClass.currentBotPlaysBasedOnDifficulty(1)
+                        resultChoice = botClass.currentBotPlaysBasedOnDifficulty(2)
                         
                         if resultChoice[0] == "move":
                             DataMoveBot = ([int(resultChoice[1][0]), int(resultChoice[1][1]), int(0), int(0), int(player)])
                         else:
                             DataMoveBot = ([int(resultChoice[1][0]), int(resultChoice[1][1]), int(1), int(resultChoice[1][2]), int(player)])
-                        self.sendInfosToClients(DataMoveBot)
-                        botClass.doAction(resultChoice)
+                        self.sendInfosToClients(DataMoveBot, "Network", self.numClientActive)
+                        
+                        if resultChoice[0] == "move":
+                            self.board.move(int(resultChoice[1][0]),int(resultChoice[1][1]))
+                            
+                        elif resultChoice[0] == "build":
+                            self.board.buildFenceNetwork(int(resultChoice[1][0]),int(resultChoice[1][1]), int(resultChoice[1][2]))
+                            if self.board.fenceNotCloseAccesGoal() == False :
+                                self.board.deBuildFence(int(resultChoice[1][0]),int(resultChoice[1][1]))
                         
                         self.serverToPlay.changePlayerToPlay()
                         
                         self.board.resetPossibleCaseMovement() 
                         self.board.refreshCurrentPlayer()
                         
+                        if self.board.victory():
+                            self.board.windowVictory()
+                            self.status = False
+                            break
+                        else:
+                            self.board.refreshCurrentPlayer()
+                            if self.board.victory():
+                                self.board.windowVictory()
+                                self.status = False
+                                break
+                            else:
+                                self.board.refreshCurrentPlayer()
+                                if self.board.victory():
+                                    self.board.windowVictory()
+                                    self.status = False
+                                    break
+                                else:
+                                    self.board.refreshCurrentPlayer()
+                                    if self.board.victory():
+                                        self.board.windowVictory()
+                                        self.status = False
+                                        break
+                                    else:
+                                        self.board.refreshCurrentPlayer()
+                        
                         if not self.serverToPlay.getPlayerToPlay() < 3:
                             self.board.refreshPossibleCaseMovementForCurrentPlayer()
-                            
+                        
                         self.board.displayBoard(False)
                         
-                        break
                         
                 if iaToPlay == False:
                     self.ClientToPlay.settimeout(None)
@@ -141,8 +183,7 @@ class ServerPlayers(threading.Thread):
                                 self.board.refreshPossibleCaseMovementForCurrentPlayer()
                             self.board.displayBoard(False)
                             
-                    self.sendInfosToClients(dataRecvClient)
-                iaToPlay = False
+                    self.sendInfosToClients(dataRecvClient, "NoNetwork", None)
                 
             except Exception as e:
                 if not None in self.diconnectPlayers:

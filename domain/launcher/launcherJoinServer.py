@@ -1,4 +1,4 @@
-from tkinter import *
+from tkinter import Label, Button, CENTER, Entry, FLAT
 from domain.network.network import joinSession
 from domain.network.scanNetwork import ScanNetwork
 

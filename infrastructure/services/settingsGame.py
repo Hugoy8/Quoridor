@@ -56,6 +56,10 @@ class SettingsGame:
                     self.board.InstanceNetwork.socketServer.close()
                 elif self.typeNetwork == "socket":
                         self.clientClass.statusListenClient = False
+                        
+        from infrastructure.services.deletePycache import deletePycache
+        deletePycache()
+        
         os._exit(0)
 
 

@@ -1,4 +1,4 @@
-from tkinter import *
+from tkinter import Label, Button, CENTER
 
 class LauncherShop:
     def __init__(self, launcher, window, db, authentification : object):

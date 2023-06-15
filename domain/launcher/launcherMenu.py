@@ -1,4 +1,4 @@
-from tkinter import *
+from tkinter import Label, CENTER, Canvas, NW
 import os
 
 class LauncherMenu:

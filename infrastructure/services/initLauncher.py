@@ -4,7 +4,6 @@ from PIL import Image, ImageTk
 import os
 from tkinter import Tk
 
-
 class InitLauncher():
     def __init__(self, launcher : object, launcherScreen : LaunchScreen, db : Database) -> None:
         self.launcher = launcher
@@ -98,7 +97,30 @@ class InitLauncher():
         self.launcher.pseudo = " "
         self.launcher.bg_not_connected = None
         self.launcher.delete_friend_popup_label = None
-    
+        
+        from domain.launcher.paramsGame import ParamsGame
+        self.launcher.paramsGame = ParamsGame(self.launcher, self.launcher.window, self.launcher.db)
+        
+        from domain.launcher.launcherMenu import LauncherMenu
+        self.launcher.launcherMenu = LauncherMenu(self.launcher, self.launcher.window, self.launcher.db)
+        
+        from domain.launcher.authentification import Authentification
+        self.launcher.authentification = Authentification(self.launcher, self.launcher.window, self.launcher.statut, self.launcher.db, self.launcher.launcherMenu)
+        
+        from domain.launcher.settingsLauncher import SettingsLauncher
+        self.launcher.settingsLauncher = SettingsLauncher(self.launcher, self.launcher.window, self.launcher.db)
+        
+        from domain.launcher.launcherCreateServer import LauncherCreateServer
+        self.launcher.launcherCreateServer = LauncherCreateServer(self.launcher, self.launcher.window)
+        
+        from domain.launcher.launcherJoinServer import launcherJoinServer
+        self.launcher.launcherJoinServer = launcherJoinServer(self.launcher, self.launcher.window, self.launcher.launcherCreateServer)
+        
+        from domain.launcher.launcherShop import LauncherShop
+        self.launcher.launcherShop = LauncherShop(self.launcher, self.launcher.window, self.launcher.db, self.launcher.authentification)
+        
+        from domain.launcher.launcherFriends import launcherFriends
+        self.launcher.launcherFriends = launcherFriends(self.launcher, self.launcher.window, self.launcher.db, self.launcher.launcherMenu)
         
         self.addProgressLaunchScreen()
         
@@ -111,7 +133,6 @@ class InitLauncher():
         self.launcher.buying_fail = Image.open(f"./assets/images/launcher/buying_fail.png")
         self.launcher.buying_fail = self.launcher.buying_fail.resize((385, 66))
         self.launcher.buying_fail = ImageTk.PhotoImage(self.launcher.buying_fail)
-        
         
         leave_friend = Image.open(f"./assets/images/launcher/leave_friend.png")
         leave_friend = leave_friend.resize((29, 29))
@@ -392,10 +413,7 @@ class InitLauncher():
         register_button = Image.open(f"./assets/images/launcher/register_button.png")
         register_button = register_button.resize((378, 45))
         self.launcher.register_button = ImageTk.PhotoImage(register_button)
-        
-        
-    
-        
+
         self.addProgressLaunchScreen()
         
         self.launchScreen.status = False

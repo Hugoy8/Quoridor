@@ -1,4 +1,4 @@
-from tkinter import *
+from tkinter import Label, CENTER
 import os
 
 
@@ -19,30 +19,6 @@ class QuoridorLauncher:
         
         initGame.startInit()
         
-        from domain.launcher.paramsGame import ParamsGame
-        self.paramsGame = ParamsGame(self, self.window, self.db)
-        
-        from domain.launcher.launcherMenu import LauncherMenu
-        self.launcherMenu = LauncherMenu(self, self.window, self.db)
-        
-        from domain.launcher.authentification import Authentification
-        self.authentification = Authentification(self, self.window, self.statut, self.db, self.launcherMenu)
-        
-        from domain.launcher.settingsLauncher import SettingsLauncher
-        self.settingsLauncher = SettingsLauncher(self, self.window, self.db)
-        
-        from domain.launcher.launcherCreateServer import LauncherCreateServer
-        self.launcherCreateServer = LauncherCreateServer(self, self.window)
-        
-        from domain.launcher.launcherJoinServer import launcherJoinServer
-        self.launcherJoinServer = launcherJoinServer(self, self.window, self.launcherCreateServer)
-        
-        from domain.launcher.launcherShop import LauncherShop
-        self.launcherShop = LauncherShop(self, self.window, self.db, self.authentification)
-        
-        from domain.launcher.launcherFriends import launcherFriends
-        self.launcherFriends = launcherFriends(self, self.window, self.db, self.launcherMenu)
-    
         # Lancement de l'affichage du launcher.
         self.menuCreateGameSolo(event=None)
         
@@ -155,6 +131,9 @@ class QuoridorLauncher:
 
         def contactSupport(event=None) -> None:
             import webbrowser
+            
+            self.window.attributes("-topmost", False)
+            
             webbrowser.open("https://quoridor.maxencebombeeck.fr/contact")
 
         if errorStyle == "errorClientOfServer":

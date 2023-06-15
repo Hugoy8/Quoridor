@@ -1,4 +1,4 @@
-from tkinter import *
+from tkinter import Label, CENTER, Button
 from tkinter import ttk
 from domain.network.network import startSession
 

@@ -40,7 +40,7 @@ class InitGame:
             # Variable bool qui autorise le multijoueur.
             self.board.networkStatus = False
             
-        self.board.bot = Bot()
+        self.board.bot = Bot(False)
         self.board.bot.setBoard(self.board)
             
         self.board.window = Tk()

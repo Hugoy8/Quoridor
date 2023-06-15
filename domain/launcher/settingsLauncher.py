@@ -1,4 +1,4 @@
-from tkinter import *
+from tkinter import Label, CENTER, Scale
 import tkinter as tk
 from tkinter import ttk
 

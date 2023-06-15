@@ -2,9 +2,10 @@ import random
 from queue import PriorityQueue
 import time
 
-class Bot :
-    def __init__(self) -> None:
+class Bot:
+    def __init__(self, networkStatus : bool) -> None:
         self.board = None
+        self.networkStatus = networkStatus
         
         
     def setBoard(self, newBoard : object) -> None:
@@ -13,6 +14,7 @@ class Bot :
         
     def randomChoice(self, allPossibleChoice : list ) -> str or list:
         return random.choice(allPossibleChoice)
+    
     
     def botPlaysRandom(self) -> list:
         action = self.randomChoice(["move","build"])
@@ -23,15 +25,18 @@ class Bot :
         return ["move",self.randomChoice(self.board.allPossibleMoveForPlayer(self.board.current_player))]
             
             
-    def currentBotPlaysBasedOnDifficulty(self, difficulty : int) -> None:
+    def currentBotPlaysBasedOnDifficulty(self, difficulty : int) -> None or list:
         if difficulty ==  1 :
             action = self.botPlaysRandom()
         if difficulty == 2:
             action = self.playDifficult2()
         if difficulty == 3 :
             action = self.playDifficult3(self.botWillMove(self.playerDistanceToWin()))
-        self.doAction(action)
         
+        if self.networkStatus:
+            return action
+        else:
+            self.doAction(action)
             
             
     def botBuildRandomFence(self, allPossibleBuildFence : list) -> list:
@@ -65,7 +70,7 @@ class Bot :
                 self.fence_orientation = "horizontal"
             self.board.buildFence(action[1][0],action[1][1])
             
-    
+            
     def updateNeighborsForEachCase(self) -> None:
         for i in range(self.board.get_size()*2-1):
             if i%2 == 0 :
@@ -79,6 +84,7 @@ class Bot :
         x2 = int(coordinates2[0])
         y2 = int(coordinates2[1])
         return abs(x1 - x2) + abs(y1 - y2)   #abs = absolute distance
+    
     
     def algorithm(self, board : object, startCase : object, endCase :object) -> list :
         count = 0
@@ -115,6 +121,7 @@ class Bot :
                         open_set.put((f_score[neighbor], count, neighbor))
                         open_set_hash.add(neighbor)
         return False
+    
     
     def reconstruct_path(self, came_from : list, current : object) -> list:
         path = []
@@ -153,6 +160,7 @@ class Bot :
                     list.append([x,y])
         return list
     
+    
     def havePathForEachCase(self, listCase : list, player : object) -> list:
         listPath = []
         for case in listCase:
@@ -161,6 +169,7 @@ class Bot :
                 listPath.append(path)
         listPath.sort(key=lambda x: x[0])
         return listPath
+        
         
     def nextMove(self, paths : list, possibleMove : list) -> list:
         x = self.board.current_player.displayPlace()[0]
@@ -171,14 +180,16 @@ class Bot :
                     if x + move[0] == element[0] and y + move[1] == element[1] :
                         return [move[0], move[1]]
                 
+                
     def haveBestPathForPlayer(self, player : object) -> list :
         listCase = self.haveAllCasePositionWinForPlayer(player)
         sumPath = self.havePathForEachCase(listCase, player)
         movement = self.nextMove(sumPath, self.board.allPossibleMoveForPlayer(player))
-        # print("L : ", sumPath[0][0])
+        
         if movement == None :
             return self.botPlaysRandom()
         return ["move", movement]
+    
     
     def updateNeighborsForEachFence(self) -> None:
         for i in range(self.board.get_size()*2-1):
@@ -196,7 +207,7 @@ class Bot :
         for player in self.board.players :
             list.append([player, self.havePathForEachCase(self.haveAllCasePositionWinForPlayer(player), player)[0][0]])
         return list
-
+    
     
     def currentPlayerHaveShortestPath(self, pathDistance : list) -> bool :
         pathCurrentPlayer = pathDistance[self.board.current_player.get_player()-1][1]
@@ -215,10 +226,12 @@ class Bot :
                 currentPath.append([player, path])
         return currentPath
     
+    
     def botWillMove(self, pathDistance : list):
         if self.board.playerHasFence() == True and self.currentPlayerHaveShortestPath(pathDistance) == False :
             return self.haveFocusOnPlayerswithShortestPath(pathDistance)
         return False
+    
     
     def playDifficult3(self, listPlayerAndPath : bool or list):
         if listPlayerAndPath != False :
@@ -227,6 +240,7 @@ class Bot :
             if build != False :
                 return ["fence", build]
         return self.haveBestPathForPlayer(self.board.current_player)
+    
     
     def getPillarInFrontOfPlayer(self, player : object):
         position = player.displayPlace()
@@ -253,6 +267,7 @@ class Bot :
             return canbuild
         return False
     
+    
     def botWillBuildGoodFence(self, canbuild : bool or list):
         if canbuild == False :
             return False
@@ -268,6 +283,7 @@ class Bot :
                 return [build[0], build[1], self.board.fence_orientation]
         return False
     
+    
     def playDifficult2(self):
         random_number = random.randint(1, 4)
         if random_number == 4 :
@@ -277,8 +293,3 @@ class Bot :
                     return ["build", build]
             return ["move",self.randomChoice(self.board.allPossibleMoveForPlayer(self.board.current_player))]
         return self.haveBestPathForPlayer(self.board.current_player)
-        
-        
-        
-        
-        
