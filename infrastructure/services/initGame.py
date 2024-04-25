@@ -8,6 +8,8 @@ from infrastructure.database.config import Database
 from domain.bot.bot import Bot
 import os
 from infrastructure.services.services import Board
+from infrastructure.services.fenceStructure import FenceStructure
+from infrastructure.services.movement import Movement
 
 
 class InitGame:
@@ -42,6 +44,9 @@ class InitGame:
             
         self.board.bot = Bot()
         self.board.bot.setBoard(self.board)
+        
+        self.board.fenceStructure = FenceStructure(self.board)
+        self.board.movement = Movement(self.board)
             
         self.board.window = Tk()
         self.board.window.title("Quoridor")

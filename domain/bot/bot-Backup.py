@@ -15,11 +15,11 @@ class Bot:
     
     def botPlaysRandom(self) -> list:
         action = self.randomChoice(["move","build"])
-        if action == "build"  and self.board.playerHasFence() == True and self.board.allPossibleBuildFence() !=[]:
-            build = self.botBuildRandomFence(self.board.allPossibleBuildFence())
+        if action == "build"  and self.board.fenceStructure.playerHasFence() == True and self.board.fenceStructure.allPossibleBuildFence() !=[]:
+            build = self.botBuildRandomFence(self.board.fenceStructure.allPossibleBuildFence())
             if build != False :
                 return ["build", build]
-        return ["move",self.randomChoice(self.board.allPossibleMoveForPlayer())]
+        return ["move",self.randomChoice(self.board.movement.allPossibleMoveForPlayer())]
 
 
     def currentBotPlaysBasedOnDifficulty(self, difficulty : int) -> None:
@@ -39,22 +39,22 @@ class Bot:
                 self.fence_orientation = "vertical"
             else :
                 self.fence_orientation = "horizontal"
-            self.board.buildFence(x_co_fence,y_co_fence)
-            if self.board.fenceNotCloseAccesGoal()==False :
+            self.board.fenceStructure.buildFence(x_co_fence,y_co_fence)
+            if self.board.movement.fenceNotCloseAccesGoal()==False :
                 possibleBuildFence.remove(build)
-                self.board.deBuildFence(x_co_fence,y_co_fence)
+                self.board.fenceStructure.deBuildFence(x_co_fence,y_co_fence)
             else : 
-                self.board.deBuildFence(x_co_fence,y_co_fence)
+                self.board.fenceStructure.deBuildFence(x_co_fence,y_co_fence)
                 return [x_co_fence, y_co_fence, orientation]
         return False
     
     
     def doAction(self, action : list) -> None:
         if action[0] == "move":
-            self.board.move(action[1][0],action[1][1])
+            self.board.movement.move(action[1][0],action[1][1])
         else :
             if action[1][2] == "vertical":
                 self.fence_orientation = "vertical"
             else :
                 self.fence_orientation = "horizontal"
-            self.board.buildFence(action[1][0],action[1][1])
+            self.board.fenceStructure.buildFence(action[1][0],action[1][1])
