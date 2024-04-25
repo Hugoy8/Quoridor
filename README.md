@@ -25,7 +25,7 @@ pip install pillow
 ## Lancement du programme
 
 ### Exécuter le jeu
-Pour démarrer le jeu, exécutez le fichier `launcher.py`. Vous aurez l'option de jouer en solo ou en multijoueur.
+Pour démarrer le jeu, exécutez le fichier `main.py`. Vous aurez l'option de jouer en solo ou en multijoueur.
 
 ### Configuration de la partie
 Avant de lancer une partie, vous devez configurer les paramètres suivants :
